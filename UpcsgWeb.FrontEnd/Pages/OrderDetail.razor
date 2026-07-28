@@ -1,0 +1,196 @@
+@page "/orders/{Id:int}"
+@attribute [Authorize]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IOrderService OrderService
+@inject ISnackbar Snackbar
+
+<PageTitle>Order #@Id - UPCSG</PageTitle>
+
+<div class="upcsg-page">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_order is null)
+    {
+        <MudAlert Severity="Severity.Warning">Order not found, or it isn't yours.</MudAlert>
+        <MudButton Class="upcsg-ghost-button px-6 mt-4" Variant="Variant.Outlined" Href="orders">Back to My Orders</MudButton>
+    }
+    else
+    {
+        <MudLink Href="orders" Class="mb-4 d-inline-block">&larr; My Orders</MudLink>
+
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")</p>
+                <h1 class="upcsg-title-xl">Order #@_order.Id</h1>
+            </div>
+            <span class="upcsg-chip">@OrderStatusDisplay.Label(_order.Status)</span>
+        </div>
+
+        <OrderStatusTrail Status="_order.Status" />
+
+        @if (_order.Status == OrderStatusDto.Cancelled && !string.IsNullOrWhiteSpace(_order.CancellationReason))
+        {
+            <MudAlert Severity="Severity.Error" Class="my-4">
+                Cancelled: @_order.CancellationReason
+            </MudAlert>
+        }
+
+        @* A bounced receipt is the one state where the guilder must act again. *@
+        @if (_order.Status == OrderStatusDto.AwaitingPayment && !string.IsNullOrWhiteSpace(_order.ReceiptRejectionReason))
+        {
+            <MudAlert Severity="Severity.Warning" Class="my-4">
+                Your receipt was sent back: @_order.ReceiptRejectionReason
+            </MudAlert>
+        }
+
+        <section class="upcsg-section upcsg-cartgrid">
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Items</MudText>
+
+                <MudSimpleTable Dense="true" Hover="false" Striped="false" Bordered="false"
+                                Elevation="0" Class="upcsg-recordtable">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Variant</th>
+                            <th class="upcsg-num">Unit</th>
+                            <th class="upcsg-num">Qty</th>
+                            <th class="upcsg-num">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in _order.Lines)
+                        {
+                            <tr>
+                                <td>@line.ItemName</td>
+                                <td>@(string.IsNullOrWhiteSpace(line.Variant) ? "—" : line.Variant)</td>
+                                <td class="upcsg-num">&#8369;@line.UnitPrice.ToString("N2")</td>
+                                <td class="upcsg-num">@line.Quantity</td>
+                                <td class="upcsg-num">&#8369;@line.LineTotal.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">Total</td>
+                            <td class="upcsg-num">&#8369;@_order.Total.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </MudSimpleTable>
+
+                @if (!string.IsNullOrWhiteSpace(_order.Note))
+                {
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">Your note: @_order.Note</MudText>
+                }
+            </MudPaper>
+
+            <aside class="upcsg-panel upcsg-checkout">
+                @if (_order.Status == OrderStatusDto.AwaitingPayment)
+                {
+                    <h2 class="upcsg-checkout__title">Send your GCash receipt</h2>
+                    <p class="upcsg-checkout__fineprint mb-4">
+                        Pay &#8369;@_order.Total.ToString("0.00") to the guild's GCash number, then enter the
+                        reference number from your receipt. Officers only see your order once this is in.
+                    </p>
+
+                    <MudTextField @bind-Value="_reference"
+                                  Label="GCash reference number"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Class="mb-3" />
+
+                    <MudTextField @bind-Value="_screenshotUrl"
+                                  Label="Screenshot link (optional)"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-4" />
+
+                    <MudButton Variant="Variant.Filled"
+                               Size="Size.Large"
+                               FullWidth="true"
+                               Class="upcsg-cta-button"
+                               Disabled="_busy || string.IsNullOrWhiteSpace(_reference)"
+                               OnClick="SubmitReceiptAsync">
+                        Submit Receipt
+                    </MudButton>
+                }
+                else if (_order.Receipt is not null)
+                {
+                    <h2 class="upcsg-checkout__title">Payment</h2>
+                    <div class="upcsg-checkout__row">
+                        <span>Reference</span>
+                        <span>@_order.Receipt.ReferenceNumber</span>
+                    </div>
+                    <div class="upcsg-checkout__row">
+                        <span>Submitted</span>
+                        <span>@_order.Receipt.SubmittedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_order.Receipt.ScreenshotUrl))
+                    {
+                        <MudLink Href="@_order.Receipt.ScreenshotUrl" Target="_blank" Class="mt-3 d-inline-block">
+                            View screenshot
+                        </MudLink>
+                    }
+                }
+                else
+                {
+                    <h2 class="upcsg-checkout__title">Payment</h2>
+                    <p class="upcsg-checkout__fineprint">No receipt on file.</p>
+                }
+            </aside>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private OrderDto? _order;
+    private string _reference = string.Empty;
+    private string? _screenshotUrl;
+    private bool _loading = true;
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            _order = await OrderService.GetAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SubmitReceiptAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.SubmitReceiptAsync(Id, _reference, _screenshotUrl);
+            Snackbar.Add("Receipt submitted. An officer will verify it shortly.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+}

@@ -1,0 +1,53 @@
+@using UpcsgWeb.Shared.Contracts
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Item.Title" Label="Title" Variant="Variant.Outlined" Required="true" Class="mb-3" />
+        <MudTextField @bind-Value="Item.Description" Label="Description" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+
+        <MudDatePicker @bind-Date="_startDate" Label="Date" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTimePicker @bind-Time="_startTime" Label="Start time" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTimePicker @bind-Time="_endTime" Label="End time (optional)" Variant="Variant.Outlined" Class="mb-3" />
+
+        <MudTextField @bind-Value="Item.Location" Label="Location" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="Item.PosterUrl" Label="Poster URL" Variant="Variant.Outlined" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   Disabled="string.IsNullOrWhiteSpace(Item.Title) || _startDate is null" OnClick="Save">
+            Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public EventDto Item { get; set; } = default!;
+
+    private DateTime? _startDate;
+    private TimeSpan? _startTime;
+    private TimeSpan? _endTime;
+
+    protected override void OnInitialized()
+    {
+        // Date and time are separate controls; recombined on save.
+        _startDate = Item.StartDateTime.Date;
+        _startTime = Item.StartDateTime.TimeOfDay;
+        _endTime = Item.EndDateTime?.TimeOfDay;
+    }
+
+    private void Save()
+    {
+        var date = _startDate!.Value.Date;
+        Item.StartDateTime = date.Add(_startTime ?? TimeSpan.FromHours(18));
+
+        // An end time is assumed to be the same day — the guild doesn't run overnight events.
+        Item.EndDateTime = _endTime is null ? null : date.Add(_endTime.Value);
+
+        MudDialog.Close(DialogResult.Ok(Item));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

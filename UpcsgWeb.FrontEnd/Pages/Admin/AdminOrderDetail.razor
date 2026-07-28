@@ -1,0 +1,341 @@
+@page "/admin/orders/{Id:int}"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IOrderService OrderService
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+
+<PageTitle>Order #@Id - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <MudLink Href="admin/orders" Class="mb-3 d-inline-block">&larr; All orders</MudLink>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_order is null)
+    {
+        <MudAlert Severity="Severity.Warning" Square="true" Elevation="0">Order not found.</MudAlert>
+    }
+    else
+    {
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">
+                    Guilder #@_order.UserId &middot; placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")
+                </p>
+                <h1 class="upcsg-title-xl">Order #@_order.Id</h1>
+            </div>
+            <span class="upcsg-statuspill upcsg-statuspill--@OrderStatusDisplay.Slug(_order.Status)">
+                @OrderStatusDisplay.Label(_order.Status)
+            </span>
+        </div>
+
+        <AdminNav />
+
+        @if (!string.IsNullOrWhiteSpace(_order.ReceiptRejectionReason)
+             && _order.Status == OrderStatusDto.AwaitingPayment)
+        {
+            <MudAlert Severity="Severity.Warning" Square="true" Elevation="0" Class="mt-4">
+                Receipt was sent back: @_order.ReceiptRejectionReason
+            </MudAlert>
+        }
+
+        <div class="upcsg-orderdetail mt-4">
+            <div>
+                @* ---------- What was ordered ---------- *@
+                <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                    <MudText Typo="Typo.overline" Class="upcsg-panel__title">Items</MudText>
+
+                    <MudSimpleTable Dense="true" Hover="false" Striped="false" Bordered="false"
+                                    Elevation="0" Class="upcsg-recordtable">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Variant</th>
+                                <th class="upcsg-num">Unit</th>
+                                <th class="upcsg-num">Qty</th>
+                                <th class="upcsg-num">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in _order.Lines)
+                            {
+                                <tr>
+                                    <td>@line.ItemName</td>
+                                    <td>@(string.IsNullOrWhiteSpace(line.Variant) ? "—" : line.Variant)</td>
+                                    <td class="upcsg-num">&#8369;@line.UnitPrice.ToString("N2")</td>
+                                    <td class="upcsg-num">@line.Quantity</td>
+                                    <td class="upcsg-num">&#8369;@line.LineTotal.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4">Total</td>
+                                <td class="upcsg-num">&#8369;@_order.Total.ToString("N2")</td>
+                            </tr>
+                        </tfoot>
+                    </MudSimpleTable>
+
+                    @* Prices are the ones captured at checkout, not today's. *@
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                        Prices shown are what the guilder was charged at checkout, even if the
+                        item has been repriced since.
+                    </MudText>
+
+                    @if (!string.IsNullOrWhiteSpace(_order.Note))
+                    {
+                        <MudAlert Severity="Severity.Normal" Square="true" Elevation="0"
+                                  Icon="@Icons.Material.Outlined.StickyNote2" Class="mt-3">
+                            <strong>Guilder's note:</strong> @_order.Note
+                        </MudAlert>
+                    }
+                </MudPaper>
+
+                @* ---------- GCash receipt ---------- *@
+                <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
+                    <MudText Typo="Typo.overline" Class="upcsg-panel__title">GCash receipt</MudText>
+
+                    @if (_order.Receipt is null)
+                    {
+                        <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                            No receipt yet. The guilder submits one from their order page, which is
+                            what moves this into your queue.
+                        </MudText>
+                    }
+                    else
+                    {
+                        <MudStack Row="true" Wrap="Wrap.Wrap" Spacing="6" Class="mb-4">
+                            <div>
+                                <MudText Typo="Typo.overline" Class="upcsg-fact__key">Reference</MudText>
+                                <MudText Typo="Typo.body2" Class="upcsg-fact__mono">
+                                    @_order.Receipt.ReferenceNumber
+                                </MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.overline" Class="upcsg-fact__key">Submitted</MudText>
+                                <MudText Typo="Typo.body2">
+                                    @_order.Receipt.SubmittedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
+                                </MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.overline" Class="upcsg-fact__key">Amount due</MudText>
+                                <MudText Typo="Typo.body2">&#8369;@_order.Total.ToString("N2")</MudText>
+                            </div>
+                        </MudStack>
+
+                        @if (!string.IsNullOrWhiteSpace(_order.Receipt.ScreenshotUrl))
+                        {
+                            @* Guilder-supplied URL, so it may well be dead. onerror flips the
+                               panel to a visible failure rather than a blank gap. *@
+                            <a class="upcsg-receipt" href="@_order.Receipt.ScreenshotUrl" target="_blank" rel="noopener">
+                                <img src="@_order.Receipt.ScreenshotUrl"
+                                     alt="GCash receipt for order @_order.Id"
+                                     loading="lazy"
+                                     onerror="upcsgReceiptBroken(this)" />
+                                <span class="upcsg-receipt__zoom">Open full size &nearr;</span>
+                                <span class="upcsg-receipt__broken">
+                                    <strong>Screenshot didn't load.</strong>
+                                    The link may be dead or private — open it directly, or ask the
+                                    guilder to resend before confirming payment.
+                                </span>
+                            </a>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                                Reference number only — no screenshot was attached. Verify against the
+                                guild's GCash transaction log before confirming.
+                            </MudText>
+                        }
+                    }
+                </MudPaper>
+            </div>
+
+            <aside>
+                @* ---------- Status chain ---------- *@
+                <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                    <MudText Typo="Typo.overline" Class="upcsg-panel__title">Status</MudText>
+                    <OrderStatusChain Order="_order" />
+                </MudPaper>
+
+                @* ---------- Actions ---------- *@
+                <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
+                    <MudText Typo="Typo.overline" Class="upcsg-panel__title">Actions</MudText>
+
+                    @if (HasActions)
+                    {
+                        <MudStack Spacing="2">
+                            @* Only transitions the domain will accept are offered, so the UI
+                               can never invite a 409. *@
+                            @if (_order.Status == OrderStatusDto.Pending)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.Check" DropShadow="false"
+                                           Disabled="_busy" OnClick="() => TransitionAsync(OrderStatusDto.Acknowledged)">
+                                    Confirm payment
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Warning" FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.Undo"
+                                           Disabled="_busy" OnClick="RejectReceiptAsync">
+                                    Reject receipt
+                                </MudButton>
+                            }
+                            else if (_order.Status == OrderStatusDto.Acknowledged)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.LocalShipping" DropShadow="false"
+                                           Disabled="_busy" OnClick="() => TransitionAsync(OrderStatusDto.Released)">
+                                    Mark released
+                                </MudButton>
+                            }
+                            else if (_order.Status == OrderStatusDto.Released)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.DoneAll" DropShadow="false"
+                                           Disabled="_busy" OnClick="() => TransitionAsync(OrderStatusDto.Received)">
+                                    Mark received
+                                </MudButton>
+                            }
+
+                            @if (CanCancel)
+                            {
+                                <MudButton Variant="Variant.Text" Color="Color.Error" FullWidth="true"
+                                           Disabled="_busy" OnClick="CancelAsync">
+                                    Cancel order
+                                </MudButton>
+                            }
+                        </MudStack>
+                    }
+
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                        @OrderStatusDisplay.OfficerHint(_order.Status)
+                    </MudText>
+                </MudPaper>
+            </aside>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private OrderDto? _order;
+    private bool _loading = true;
+    private bool _busy;
+
+    private bool CanCancel => _order is not null
+        && _order.Status is OrderStatusDto.AwaitingPayment
+                         or OrderStatusDto.Pending
+                         or OrderStatusDto.Acknowledged;
+
+    private bool HasActions => _order is not null
+        && (CanCancel || _order.Status is OrderStatusDto.Pending
+                                       or OrderStatusDto.Acknowledged
+                                       or OrderStatusDto.Released);
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            _order = await OrderService.GetAsync(Id);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task TransitionAsync(OrderStatusDto next)
+    {
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.ChangeStatusAsync(Id, next, null);
+            Snackbar.Add($"Order #{Id} → {OrderStatusDisplay.Label(next)}", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            // A 409 means the domain refused the move — show its reason verbatim.
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RejectReceiptAsync()
+    {
+        var reason = await PromptAsync($"Reject receipt for #{Id}", "What's wrong with it?");
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.RejectReceiptAsync(Id, reason);
+            Snackbar.Add("Receipt sent back to the guilder.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CancelAsync()
+    {
+        var reason = await PromptAsync($"Cancel order #{Id}", "Reason (the guilder will see this)");
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.ChangeStatusAsync(Id, OrderStatusDto.Cancelled, reason);
+            Snackbar.Add($"Order #{Id} cancelled.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task<string?> PromptAsync(string title, string label)
+    {
+        var parameters = new DialogParameters<ReasonDialog> { { x => x.Label, label } };
+        var dialog = await DialogService.ShowAsync<ReasonDialog>(title, parameters);
+        var result = await dialog.Result;
+
+        return result is { Canceled: false, Data: string reason } ? reason : null;
+    }
+}

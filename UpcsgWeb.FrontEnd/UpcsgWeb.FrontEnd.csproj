@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+  </PropertyGroup>
+
+  <!--
+    GitHub Pages needs two things Blazor doesn't emit on its own:
+
+    .nojekyll  - without it Jekyll strips _framework/ (leading underscore) and the app
+                 404s on boot.
+    404.html   - Pages has no SPA rewrite, so deep links and the OIDC redirect
+                 (/authentication/login-callback) 404 before Blazor's router runs.
+                 Generated from index.html at publish time so the two cannot drift.
+  -->
+  <Target Name="AddGitHubPagesFallbacks" AfterTargets="Publish">
+    <WriteLinesToFile File="$(PublishDir)wwwroot\.nojekyll" Lines="" Overwrite="true" />
+    <Copy SourceFiles="$(PublishDir)wwwroot\index.html" DestinationFiles="$(PublishDir)wwwroot\404.html" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.*" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.*" PrivateAssets="all" />
+    <PackageReference Include="MudBlazor" Version="9.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UpcsgWeb.Shared\UpcsgWeb.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

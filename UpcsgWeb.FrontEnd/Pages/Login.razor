@@ -1,0 +1,153 @@
+@page "/login"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@inject IAuthService AuthService
+@inject UpcsgAuthenticationStateProvider AuthState
+@inject NavigationManager Navigation
+
+<PageTitle>Sign in - UPCSG</PageTitle>
+
+<section class="upcsg-banner">
+    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 36%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
+
+    <div class="upcsg-banner__inner">
+        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guilder access</p>
+        <h1 class="upcsg-banner__title">Sign In</h1>
+        <p class="upcsg-lede" style="margin-bottom: 0;">
+            Sign in with your Google account. We use it only to identify you &mdash; we never
+            see or store your password.
+        </p>
+    </div>
+</section>
+
+<div class="upcsg-page upcsg-page--after-hero">
+    <AuthorizeView>
+        <Authorized>
+            <section class="upcsg-section upcsg-band upcsg-cta-band">
+                <p class="upcsg-kicker">Already signed in</p>
+                <h2 class="upcsg-title-xl">Hello, @context.User.Identity?.Name</h2>
+                <p class="upcsg-lede">You're signed in and ready to go.</p>
+                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="">
+                    Back to Home
+                </MudButton>
+            </section>
+        </Authorized>
+
+        <NotAuthorized>
+            <section class="upcsg-section upcsg-auth">
+                <div class="upcsg-auth__panel upcsg-panel">
+                    <h2 class="upcsg-auth__title">Continue with Google</h2>
+                    <p class="upcsg-auth__text">
+                        Signing in creates a guilder account using your name, email address, and
+                        profile picture. Nothing else is collected.
+                    </p>
+
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
+                    }
+
+                    @if (AuthConfig.UseStubSignIn)
+                    {
+                        <MudAlert Severity="Severity.Info" Dense="true" Class="mb-4">
+                            Google sign-in isn't connected yet. These stand-ins let the signed-in
+                            UI be tested locally.
+                        </MudAlert>
+
+                        <div class="upcsg-auth__actions">
+                            <MudButton Variant="Variant.Filled"
+                                       Size="Size.Large"
+                                       FullWidth="true"
+                                       Class="upcsg-cta-button"
+                                       Disabled="_busy"
+                                       OnClick="() => StubSignInAsync(UpcsgRoles.Member)">
+                                Continue as guilder
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Size="Size.Large"
+                                       FullWidth="true"
+                                       Class="upcsg-ghost-button"
+                                       Disabled="_busy"
+                                       OnClick="() => StubSignInAsync(UpcsgRoles.Admin)">
+                                Continue as officer
+                            </MudButton>
+                        </div>
+                    }
+                    else
+                    {
+                        @* Google Identity Services renders its own button into this element.
+                           See the wiring notes in AuthConfig. *@
+                        <div id="upcsg-google-button" class="upcsg-auth__google"></div>
+                    }
+
+                    <p class="upcsg-auth__fineprint">
+                        Signing in identifies you to the guild. Editing the site is limited to
+                        executive committee accounts.
+                    </p>
+                </div>
+
+                <aside class="upcsg-auth__aside">
+                    <p class="upcsg-kicker">What you get</p>
+                    <ul class="upcsg-auth__list">
+                        <li>A guilder account tied to your Google identity</li>
+                        <li>Your name and photo on anything you post</li>
+                        <li>Officers additionally get access to edit site content</li>
+                    </ul>
+                </aside>
+            </section>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    private string? ReturnUrl { get; set; }
+
+    private bool _busy;
+    private string? _error;
+
+    private async Task StubSignInAsync(string role)
+    {
+        _busy = true;
+        _error = null;
+
+        try
+        {
+            var result = await AuthService.SignInAsStubAsync(role);
+            AuthState.NotifySignedIn(result.User);
+            Navigation.NavigateTo(SafeReturnUrl(), replace: true);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>
+    /// Only ever return to a path inside this app. An unchecked returnUrl is an open
+    /// redirect — an attacker could send a login link that bounces to their own site.
+    /// </summary>
+    private string SafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+        {
+            return "";
+        }
+
+        var decoded = Uri.UnescapeDataString(ReturnUrl);
+
+        if (decoded.StartsWith("//", StringComparison.Ordinal)
+            || decoded.Contains("://", StringComparison.Ordinal)
+            || decoded.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+        {
+            return "";
+        }
+
+        return decoded.TrimStart('/');
+    }
+}

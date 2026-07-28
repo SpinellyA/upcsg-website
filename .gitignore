@@ -1,0 +1,37 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Blazor WASM publish output
+publish/
+[Pp]ublish[Oo]utput/
+
+# Secrets — the Neon connection string and the JWT signing key live in
+# `dotnet user-secrets` (outside the repo) locally, and in environment
+# variables on Render. Nothing here should ever hold a real credential.
+appsettings.*.local.json
+*.pfx
+*.p12
+.env
+.env.*
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store

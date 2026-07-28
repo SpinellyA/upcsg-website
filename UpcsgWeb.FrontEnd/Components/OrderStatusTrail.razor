@@ -1,0 +1,46 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* Progress trail for an order. Cancelled orders get a single terminal marker rather
+   than a half-lit trail, since they never continue. *@
+@if (Status == OrderStatusDto.Cancelled)
+{
+    <div class="upcsg-trail upcsg-trail--cancelled">
+        <span class="upcsg-trail__step upcsg-trail__step--done">
+            <span class="upcsg-star"></span>
+            <span>Cancelled</span>
+        </span>
+    </div>
+}
+else
+{
+    <div class="upcsg-trail">
+        @foreach (var step in Steps)
+        {
+            var index = Array.IndexOf(Steps, step);
+            var reached = index <= CurrentIndex;
+
+            <span class="upcsg-trail__step @(reached ? "upcsg-trail__step--done" : null) @(index == CurrentIndex ? "upcsg-trail__step--current" : null)">
+                <span class="upcsg-star"></span>
+                <span>@OrderStatusDisplay.ShortLabel(step)</span>
+            </span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public OrderStatusDto Status { get; set; }
+
+    private static readonly OrderStatusDto[] Steps =
+    [
+        OrderStatusDto.AwaitingPayment,
+        OrderStatusDto.Pending,
+        OrderStatusDto.Acknowledged,
+        OrderStatusDto.Released,
+        OrderStatusDto.Received,
+    ];
+
+    private int CurrentIndex => Array.IndexOf(Steps, Status);
+
+    // Labels come from OrderStatusDisplay so the member trail and the admin views can
+    // never call the same stage by different names.
+}

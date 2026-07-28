@@ -1,0 +1,229 @@
+﻿@inherits LayoutComponentBase
+@using UpcsgWeb.Shared.Contracts
+@inject UpcsgAuthenticationStateProvider AuthState
+@inject NavigationManager Navigation
+
+<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Class="upcsg-appbar">
+        <a href="" class="upcsg-brand">
+            <img class="upcsg-brand__mark" src="img/upcsg-crest.png" alt="UPCSG crest" />
+            <span class="upcsg-brand__text">UPCSG</span>
+        </a>
+
+        <MudSpacer />
+
+        <nav class="upcsg-desktop-nav">
+            <NavLink class="upcsg-navlink" href="" Match="NavLinkMatch.All">Home</NavLink>
+            <NavLink class="upcsg-navlink" href="about">About</NavLink>
+            <NavLink class="upcsg-navlink" href="events">Events</NavLink>
+            <NavLink class="upcsg-navlink" href="merch">Merch</NavLink>
+            <NavLink class="upcsg-navlink" href="hall-of-fame">Hall of Fame</NavLink>
+            <NavLink class="upcsg-navlink" href="contact">Contact</NavLink>
+
+            <AuthorizeView>
+                <Authorized>
+                    <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart"
+                                   Color="Color.Inherit"
+                                   Title="Your cart"
+                                   Href="cart" />
+                    <NavLink class="upcsg-navlink" href="orders">Orders</NavLink>
+
+                    <AuthorizeView Policy="ExeCom" Context="admin">
+                        <NavLink class="upcsg-navlink" href="admin">Admin</NavLink>
+                    </AuthorizeView>
+
+                    <a class="upcsg-userchip ml-2" href="login">
+                        <span class="upcsg-userchip__avatar">@Initials(context.User.Identity?.Name)</span>
+                        <span>
+                            @FirstName(context.User.Identity?.Name)
+                            @if (context.User.IsInRole(UpcsgRoles.Admin))
+                            {
+                                <br /><span class="upcsg-userchip__role">Officer</span>
+                            }
+                        </span>
+                    </a>
+                    <MudIconButton Icon="@Icons.Material.Filled.Logout"
+                                   Color="Color.Inherit"
+                                   Title="Sign out"
+                                   OnClick="SignOutAsync" />
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink class="upcsg-navlink ml-2" href="login">Sign in</NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" Class="ml-2" />
+        </nav>
+
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.End" OnClick="@DrawerToggle" Class="upcsg-mobile-toggle" />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Elevation="2">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6" Class="upcsg-heading">UPCSG</MudText>
+        </MudDrawerHeader>
+        <NavMenu />
+        <MudDivider Class="my-2" />
+
+        <AuthorizeView>
+            <Authorized>
+                <MudListItem T="string" Href="cart" Icon="@Icons.Material.Filled.ShoppingCart">Cart</MudListItem>
+                <MudListItem T="string" Href="orders" Icon="@Icons.Material.Filled.Receipt">My Orders</MudListItem>
+
+                <AuthorizeView Policy="ExeCom" Context="admin">
+                    <MudListItem T="string" Href="admin" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin</MudListItem>
+                </AuthorizeView>
+
+                <MudListItem T="string" Href="login" Icon="@Icons.Material.Filled.AccountCircle">
+                    @context.User.Identity?.Name
+                </MudListItem>
+                <MudListItem T="string" OnClick="SignOutAsync" Icon="@Icons.Material.Filled.Logout">Sign out</MudListItem>
+            </Authorized>
+            <NotAuthorized>
+                <MudListItem T="string" Href="login" Icon="@Icons.Material.Filled.Login">Sign in</MudListItem>
+            </NotAuthorized>
+        </AuthorizeView>
+
+        <MudListItem T="string" OnClick="@DarkModeToggle" Icon="@(DarkLightModeButtonIcon)">Toggle theme</MudListItem>
+    </MudDrawer>
+
+    <MudMainContent Class="upcsg-main">
+        @* Pages wrap their own content in .upcsg-page; anything outside it can run full-bleed. *@
+        @Body
+
+        <div class="upcsg-container" style="padding-inline: 1.5rem;">
+            <footer class="upcsg-footer">
+                <span>&copy; @DateTime.Now.Year UP Computer Science Guild &middot; University of the Philippines Cebu</span>
+                <span>
+                    <a href="mailto:upcsg.upcebu@gmail.com">upcsg.upcebu@gmail.com</a>
+                </span>
+            </footer>
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = false;
+    private bool _isDarkMode = true;
+    private MudTheme? _theme;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        _theme = new()
+        {
+            PaletteLight = _lightPalette,
+            PaletteDark = _darkPalette,
+            LayoutProperties = new LayoutProperties(),
+            Typography = new Typography
+            {
+                Default = new DefaultTypography { FontFamily = ["Inter", "Helvetica Now", "Neue Montreal", "sans-serif"] },
+                H1 = new H1Typography { FontFamily = ["Playfair Display", "Noto Serif", "serif"] },
+                H2 = new H2Typography { FontFamily = ["Playfair Display", "Noto Serif", "serif"] },
+                H3 = new H3Typography { FontFamily = ["Playfair Display", "Noto Serif", "serif"] },
+                H4 = new H4Typography { FontFamily = ["Poppins", "Aileron", "sans-serif"] },
+                H5 = new H5Typography { FontFamily = ["Poppins", "Aileron", "sans-serif"] },
+                H6 = new H6Typography { FontFamily = ["Poppins", "Aileron", "sans-serif"] },
+                Subtitle1 = new Subtitle1Typography { FontFamily = ["Noto Serif", "serif"] },
+                Subtitle2 = new Subtitle2Typography { FontFamily = ["Noto Serif", "serif"] },
+            }
+        };
+    }
+
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void DarkModeToggle()
+    {
+        _isDarkMode = !_isDarkMode;
+    }
+
+    private async Task SignOutAsync()
+    {
+        await AuthState.SignOutAsync();
+        _drawerOpen = false;
+        Navigation.NavigateTo("", replace: true);
+    }
+
+    private static string Initials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "?";
+        }
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    }
+
+    private static string FirstName(string? name) =>
+        string.IsNullOrWhiteSpace(name)
+            ? "Account"
+            : name.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
+
+    // UPCSG brandbook (2026-2027, "Starry Night" cosmic-tech theme) â€” light mode kept close to the
+    // dark palette on purpose, the brand doesn't define a light variant so we lighten the surfaces only.
+    private readonly PaletteLight _lightPalette = new()
+    {
+        Black = "#16113A",
+        White = "#F6FFE9",
+        Primary = "#A253B8",
+        Secondary = "#F6C875",
+        Tertiary = "#E28D39",
+        AppbarText = "#16113A",
+        AppbarBackground = "rgba(246,255,233,0.9)",
+        DrawerBackground = "#FFFFFF",
+        DrawerText = "#16113A",
+        TextPrimary = "#16113A",
+        TextSecondary = "#53257E",
+        Background = "#F6FFE9",
+        Surface = "#FFFFFF",
+        GrayLight = "#e8e8e8",
+        GrayLighter = "#f9f9f9",
+    };
+
+    private readonly PaletteDark _darkPalette = new()
+    {
+        Primary = "#A253B8",
+        PrimaryDarken = "#53257E",
+        Secondary = "#F6C875",
+        SecondaryDarken = "#E28D39",
+        Tertiary = "#CCAEDE",
+        Surface = "#522657",
+        Background = "#16113A",
+        BackgroundGray = "#1F1750",
+        AppbarText = "#CAC5E5",
+        AppbarBackground = "rgba(22,17,58,0.85)",
+        DrawerBackground = "#16113A",
+        DrawerText = "#F6FFE9",
+        DrawerIcon = "#CAC5E5",
+        ActionDefault = "#CAC5E5",
+        ActionDisabled = "#9999994d",
+        ActionDisabledBackground = "#605f6d4d",
+        TextPrimary = "#F6FFE9",
+        TextSecondary = "#CAC5E5",
+        TextDisabled = "#ffffff33",
+        Info = "#4a86ff",
+        Success = "#3dcb6c",
+        Warning = "#F6C875",
+        Error = "#ff3f5f",
+        LinesDefault = "#3a2f6b",
+        TableLines = "#3a2f6b",
+        Divider = "#3a2f6b",
+        OverlayLight = "#1e1e2d80",
+    };
+
+    public string DarkLightModeButtonIcon => _isDarkMode switch
+    {
+        true => Icons.Material.Rounded.AutoMode,
+        false => Icons.Material.Outlined.DarkMode,
+    };
+}

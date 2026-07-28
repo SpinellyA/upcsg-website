@@ -1,0 +1,33 @@
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    @* Signed out entirely: send them to sign in. Signed in but lacking the
+                       role: say so plainly rather than bouncing them through a login loop. *@
+                    @if (context.User.Identity?.IsAuthenticated is not true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <div class="upcsg-page">
+                            <section class="upcsg-section upcsg-band upcsg-cta-band">
+                                <p class="upcsg-kicker">Access denied</p>
+                                <h1 class="upcsg-title-xl">Officers only</h1>
+                                <p class="upcsg-lede">
+                                    You're signed in as @context.User.Identity?.Name, but this page is
+                                    limited to the executive committee. If that looks wrong, get in touch.
+                                </p>
+                                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="">
+                                    Back to Home
+                                </MudButton>
+                            </section>
+                        </div>
+                    }
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingAuthenticationState>

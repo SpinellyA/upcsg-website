@@ -1,0 +1,175 @@
+@page "/admin/events"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Events - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <div class="upcsg-section-head">
+        <div>
+            <p class="upcsg-kicker">Guild CMS</p>
+            <h1 class="upcsg-title-xl">Events</h1>
+        </div>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   StartIcon="@Icons.Material.Filled.Add" OnClick="() => EditAsync(null)">
+            New Event
+        </MudButton>
+    </div>
+
+    <AdminNav />
+
+    @* Events are stored per month, so the editor browses by month too. *@
+    <div class="upcsg-monthnav mt-4">
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="() => ShiftMonthAsync(-1)" />
+        <span class="upcsg-monthnav__label">@(new DateTime(_year, _month, 1).ToString("MMMM yyyy"))</span>
+        <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="() => ShiftMonthAsync(1)" />
+        <MudButton Variant="Variant.Text" Class="ml-2" OnClick="GoToCurrentMonthAsync">Today</MudButton>
+    </div>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error">@_error</MudAlert>
+    }
+    else if (_events.Count == 0)
+    {
+        <p class="upcsg-lede mt-6">No events in this month yet.</p>
+    }
+    else
+    {
+        <MudTable Items="_events" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true">
+            <HeaderContent>
+                <MudTh>When</MudTh>
+                <MudTh>Title</MudTh>
+                <MudTh>Location</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="When">@context.StartDateTime.ToLocalTime().ToString("MMM d, h:mm tt")</MudTd>
+                <MudTd DataLabel="Title">@context.Title</MudTd>
+                <MudTd DataLabel="Location">@context.Location</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditAsync(context)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</div>
+
+@code {
+    private List<EventDto> _events = [];
+    private int _year = DateTime.Now.Year;
+    private int _month = DateTime.Now.Month;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _events = await Admin.GetEventsAsync(_year, _month);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ShiftMonthAsync(int delta)
+    {
+        var shifted = new DateTime(_year, _month, 1).AddMonths(delta);
+        _year = shifted.Year;
+        _month = shifted.Month;
+        await LoadAsync();
+    }
+
+    private async Task GoToCurrentMonthAsync()
+    {
+        _year = DateTime.Now.Year;
+        _month = DateTime.Now.Month;
+        await LoadAsync();
+    }
+
+    private async Task EditAsync(EventDto? existing)
+    {
+        var draft = existing is null
+            ? new EventDto
+            {
+                // Default into the month being browsed, not today, or adding an event
+                // while looking at next month would silently land in this one.
+                StartDateTime = new DateTime(_year, _month, 1, 18, 0, 0),
+            }
+            : new EventDto
+            {
+                Id = existing.Id,
+                Title = existing.Title,
+                Description = existing.Description,
+                StartDateTime = existing.StartDateTime.ToLocalTime(),
+                EndDateTime = existing.EndDateTime?.ToLocalTime(),
+                Location = existing.Location,
+                PosterUrl = existing.PosterUrl,
+            };
+
+        var parameters = new DialogParameters<EventEditDialog> { { x => x.Item, draft } };
+        var dialog = await DialogService.ShowAsync<EventEditDialog>(
+            existing is null ? "New event" : $"Edit {existing.Title}", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        try
+        {
+            await Admin.SaveEventAsync(draft);
+            Snackbar.Add("Saved.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(EventDto item)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete event", $"Delete \"{item.Title}\"?", yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Admin.DeleteEventAsync(item.Id);
+            Snackbar.Add("Deleted.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

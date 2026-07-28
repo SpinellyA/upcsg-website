@@ -1,0 +1,105 @@
+using UpcsgWeb.Domain.Content;
+using UpcsgWeb.Domain.Merch;
+using UpcsgWeb.Domain.Orders;
+using UpcsgWeb.Domain.Users;
+using UpcsgWeb.Shared.Contracts;
+
+// Domain and wire contract both define MemberCategory; alias keeps the mapping explicit
+// about which side of the boundary each value is on.
+using DomainMemberCategory = UpcsgWeb.Domain.Content.MemberCategory;
+using WireMemberCategory = UpcsgWeb.Shared.Contracts.MemberCategory;
+
+namespace UpcsgWeb.Api.Mapping;
+
+/// <summary>
+/// Domain to wire-contract projection, kept in one place so the API surface can't drift
+/// between endpoints. Mapping lives in the API because DTOs are a delivery concern —
+/// the domain doesn't know they exist.
+/// </summary>
+public static class DtoMapping
+{
+    public static EventDto ToDto(this GuildEvent e) => new()
+    {
+        Id = e.Id,
+        Title = e.Title,
+        Description = e.Description,
+        StartDateTime = e.StartDateTime,
+        EndDateTime = e.EndDateTime,
+        Location = e.Location,
+        PosterUrl = e.PosterUrl,
+    };
+
+    public static MerchItemDto ToDto(this MerchItem m) => new()
+    {
+        Id = m.Id,
+        Name = m.Name,
+        Description = m.Description,
+        Price = m.Price.Amount,
+        ImageUrl = m.ImageUrl,
+        Variants = [.. m.Variants],
+        InStock = m.InStock,
+    };
+
+    public static MemberDto ToDto(this Member m) => new()
+    {
+        Id = m.Id,
+        Name = m.Name,
+        Role = m.Role,
+        Category = m.Category == DomainMemberCategory.Faculty
+            ? WireMemberCategory.Faculty
+            : WireMemberCategory.ExeCom,
+        Committee = m.Committee,
+        PhotoUrl = m.PhotoUrl,
+        Quote = m.Quote,
+        Bio = m.Bio,
+        DisplayOrder = m.DisplayOrder,
+    };
+
+    public static AchievementDto ToDto(this Achievement a) => new()
+    {
+        Id = a.Id,
+        Title = a.Title,
+        Description = a.Description,
+        Year = a.Year,
+        ImageUrl = a.ImageUrl,
+        Category = a.Category,
+    };
+
+    public static AppUserDto ToDto(this AppUser u) => new()
+    {
+        Id = u.Id.ToString(),
+        Email = u.Email,
+        Name = u.Name,
+        PictureUrl = u.PictureUrl,
+        Role = u.Role,
+    };
+
+    public static OrderDto ToDto(this UpcsgWeb.Domain.Orders.Order o) => new()
+    {
+        Id = o.Id,
+        UserId = o.UserId,
+        Status = Enum.Parse<OrderStatusDto>(o.Status.ToString()),
+        PlacedAt = o.PlacedAt,
+        UpdatedAt = o.UpdatedAt,
+        Note = o.Note,
+        CancellationReason = o.CancellationReason,
+        ReceiptRejectionReason = o.ReceiptRejectionReason,
+        Receipt = o.Receipt is null ? null : new PaymentReceiptDto
+        {
+            ReferenceNumber = o.Receipt.ReferenceNumber,
+            ScreenshotUrl = o.Receipt.ScreenshotUrl,
+            SubmittedAt = o.Receipt.SubmittedAt,
+        },
+        Total = o.Total.Amount,
+        Currency = o.Total.Currency,
+        Lines = [.. o.Lines.Select(l => new OrderLineDto
+        {
+            MerchItemId = l.MerchItemId,
+            ItemName = l.ItemName,
+            Variant = l.Variant,
+            UnitPrice = l.UnitPrice.Amount,
+            Quantity = l.Quantity,
+            LineTotal = l.LineTotal.Amount,
+        })],
+    };
+}

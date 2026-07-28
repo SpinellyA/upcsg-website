@@ -1,0 +1,219 @@
+@page "/cart"
+@attribute [Authorize]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@inject ICartService CartService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Your Cart - UPCSG</PageTitle>
+
+<section class="upcsg-banner">
+    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+    <div class="upcsg-banner__inner">
+        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guild store</p>
+        <h1 class="upcsg-banner__title">Your Cart</h1>
+        <p class="upcsg-lede" style="margin-bottom: 0;">
+            Review your items, then check out and send your GCash receipt.
+        </p>
+    </div>
+</section>
+
+<div class="upcsg-page upcsg-page--after-hero">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-6">@_error</MudAlert>
+    }
+    else if (_cart.Lines.Count == 0)
+    {
+        <section class="upcsg-section upcsg-band upcsg-cta-band">
+            <p class="upcsg-kicker">Nothing here yet</p>
+            <h2 class="upcsg-title-xl">Your cart is empty</h2>
+            <p class="upcsg-lede">Browse the guild store and add something.</p>
+            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="merch">
+                Shop Merch
+            </MudButton>
+        </section>
+    }
+    else
+    {
+        <section class="upcsg-section upcsg-cartgrid">
+            <div>
+                @foreach (var line in _cart.Lines)
+                {
+                    <article class="upcsg-panel upcsg-cartline @(line.Available ? null : "upcsg-cartline--gone")">
+                        <span class="upcsg-cartline__thumb">
+                            @if (!string.IsNullOrWhiteSpace(line.ImageUrl))
+                            {
+                                <img src="@line.ImageUrl" alt="@line.ItemName" />
+                            }
+                            else
+                            {
+                                <img class="upcsg-merch-placeholder" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                            }
+                        </span>
+
+                        <div class="upcsg-cartline__body">
+                            <p class="upcsg-cartline__name">@line.ItemName</p>
+                            @if (!string.IsNullOrWhiteSpace(line.Variant))
+                            {
+                                <span class="upcsg-chip">@line.Variant</span>
+                            }
+                            @if (!line.Available)
+                            {
+                                <p class="upcsg-cartline__warn">No longer available &mdash; remove it to check out.</p>
+                            }
+                            else
+                            {
+                                <p class="upcsg-cartline__price">&#8369;@line.UnitPrice.ToString("0.00") each</p>
+                            }
+                        </div>
+
+                        <div class="upcsg-cartline__qty">
+                            <MudIconButton Icon="@Icons.Material.Filled.Remove"
+                                           Size="Size.Small"
+                                           Disabled="_busy"
+                                           OnClick="() => AdjustAsync(line, line.Quantity - 1)" />
+                            <span class="upcsg-cartline__count">@line.Quantity</span>
+                            <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                           Size="Size.Small"
+                                           Disabled="_busy || !line.Available"
+                                           OnClick="() => AdjustAsync(line, line.Quantity + 1)" />
+                        </div>
+
+                        <div class="upcsg-cartline__total">
+                            <p>&#8369;@line.LineTotal.ToString("0.00")</p>
+                            <MudButton Size="Size.Small"
+                                       Variant="Variant.Text"
+                                       Disabled="_busy"
+                                       OnClick="() => AdjustAsync(line, 0)">
+                                Remove
+                            </MudButton>
+                        </div>
+                    </article>
+                }
+            </div>
+
+            <aside class="upcsg-panel upcsg-checkout">
+                <h2 class="upcsg-checkout__title">Order summary</h2>
+
+                <div class="upcsg-checkout__row">
+                    <span>Items</span>
+                    <span>@_cart.TotalItems</span>
+                </div>
+                <div class="upcsg-checkout__row upcsg-checkout__row--total">
+                    <span>Total</span>
+                    <span class="upcsg-gradient-text">&#8369;@_cart.Total.ToString("0.00")</span>
+                </div>
+
+                <MudTextField @bind-Value="_note"
+                              Label="Note for the officers (optional)"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              Class="my-4" />
+
+                @if (!_cart.CanCheckout)
+                {
+                    <MudAlert Severity="Severity.Warning" Dense="true" Class="mb-3">
+                        Remove the unavailable items before checking out.
+                    </MudAlert>
+                }
+
+                <MudButton Variant="Variant.Filled"
+                           Size="Size.Large"
+                           FullWidth="true"
+                           Class="upcsg-cta-button"
+                           Disabled="_busy || !_cart.CanCheckout"
+                           OnClick="CheckoutAsync">
+                    Checkout
+                </MudButton>
+
+                <p class="upcsg-checkout__fineprint">
+                    Checking out reserves your items. You'll send your GCash receipt on the next
+                    step &mdash; the order only reaches the officers once that's in.
+                </p>
+            </aside>
+        </section>
+    }
+</div>
+
+@code {
+    private CartDto _cart = new();
+    private string? _note;
+    private bool _loading = true;
+    private bool _busy;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _cart = await CartService.GetAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task AdjustAsync(CartLineDto line, int quantity)
+    {
+        if (quantity < 0)
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            // Absolute quantity; zero removes the line.
+            _cart = await CartService.SetQuantityAsync(line.MerchItemId, line.Variant, quantity);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CheckoutAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            var order = await CartService.CheckoutAsync(_note);
+
+            // Straight to the receipt step — an order sitting in AwaitingPayment is
+            // invisible to officers, so leaving the guilder on the cart page would
+            // strand it there.
+            Navigation.NavigateTo($"orders/{order.Id}");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

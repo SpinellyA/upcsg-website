@@ -1,0 +1,188 @@
+﻿@page "/merch"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IMerchService MerchService
+
+<PageTitle>Merch - UPCSG</PageTitle>
+
+<section class="upcsg-banner">
+    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 36%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
+
+    <div class="upcsg-banner__inner">
+        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guild store</p>
+        <h1 class="upcsg-banner__title">Merch</h1>
+        <p class="upcsg-lede" style="margin-bottom: 0;">
+            Rep the guild. Orders are coordinated through our socials &mdash; no checkout here,
+            just message us and we'll sort it out.
+        </p>
+    </div>
+</section>
+
+<div class="upcsg-page upcsg-page--after-hero">
+
+    @* ---------- Featured drop ---------- *@
+    @if (_featured is not null)
+    {
+        <section class="upcsg-section upcsg-featured">
+            <div class="upcsg-featured__media">
+                @if (!string.IsNullOrWhiteSpace(_featured.ImageUrl))
+                {
+                    <img src="@_featured.ImageUrl" alt="@_featured.Name" />
+                }
+                else
+                {
+                    <img class="upcsg-merch-placeholder" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                }
+            </div>
+
+            <div>
+                <p class="upcsg-kicker">This season's drop</p>
+                <h2 class="upcsg-title-xl">@_featured.Name</h2>
+                <p class="upcsg-lede">@_featured.Description</p>
+                <p class="upcsg-featured__price upcsg-gradient-text">&#8369;@_featured.Price.ToString("0.00")</p>
+
+                @if (_featured.Variants.Count > 0)
+                {
+                    <div class="upcsg-chips mb-6">
+                        @foreach (var variant in _featured.Variants)
+                        {
+                            <span class="upcsg-chip">@variant</span>
+                        }
+                    </div>
+                }
+
+                <div style="max-width: 22rem;">
+                    <AddToCart Item="_featured" Primary="true" FullWidth="false" />
+                </div>
+            </div>
+        </section>
+    }
+
+    @* ---------- Catalog ---------- *@
+    <section class="upcsg-section">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">@_catalog.Count items available</p>
+                <h2 class="upcsg-title-xl">The Full Catalog</h2>
+            </div>
+        </div>
+
+        @if (_catalog.Count == 0)
+        {
+            <p class="upcsg-lede">Nothing else in the store right now &mdash; watch our socials for the next drop.</p>
+        }
+        else
+        {
+            <div class="upcsg-merch-grid">
+                @foreach (var item in _catalog)
+                {
+                    <article class="upcsg-merch-card @(item.InStock ? null : "upcsg-merch-card--out")">
+                        <div class="upcsg-merch-card__thumb">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" alt="@item.Name" loading="lazy" />
+                            }
+                            else
+                            {
+                                <img class="upcsg-merch-placeholder" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                            }
+
+                            @if (!item.InStock)
+                            {
+                                <span class="upcsg-merch-card__badge">Sold out</span>
+                            }
+                        </div>
+
+                        <div class="upcsg-merch-card__body">
+                            <h3 class="upcsg-merch-card__name">@item.Name</h3>
+                            <p class="upcsg-merch-card__desc">@item.Description</p>
+                            <p class="upcsg-merch-card__price">&#8369;@item.Price.ToString("0.00")</p>
+
+                            @if (item.Variants.Count > 0)
+                            {
+                                <div class="upcsg-chips">
+                                    @foreach (var variant in item.Variants)
+                                    {
+                                        <span class="upcsg-chip">@variant</span>
+                                    }
+                                </div>
+                            }
+
+                            <div class="upcsg-merch-card__foot">
+                                <AddToCart Item="item" />
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+
+    @* ---------- How ordering works ---------- *@
+    <section class="upcsg-section upcsg-band">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">No cart, no checkout</p>
+                <h2 class="upcsg-title-xl">How to Order</h2>
+            </div>
+        </div>
+
+        <div class="upcsg-steps">
+            <div class="upcsg-step">
+                <span class="upcsg-step__num upcsg-gradient-text">01</span>
+                <h3 class="upcsg-step__title">Pick your items</h3>
+                <p class="upcsg-step__text">
+                    Note the item and the size or variant you want. Sizing samples are usually
+                    on hand during merch drops.
+                </p>
+            </div>
+            <div class="upcsg-step">
+                <span class="upcsg-step__num upcsg-gradient-text">02</span>
+                <h3 class="upcsg-step__title">Message the guild</h3>
+                <p class="upcsg-step__text">
+                    Send us a message on Facebook or Instagram, or email the org. An officer will
+                    confirm availability and the current order window.
+                </p>
+            </div>
+            <div class="upcsg-step">
+                <span class="upcsg-step__num upcsg-gradient-text">03</span>
+                <h3 class="upcsg-step__title">Pay and claim</h3>
+                <p class="upcsg-step__text">
+                    Settle with the Treasurer in person or via the org's e-wallet, then claim your
+                    order at the CS building on the announced release date.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    @* ---------- Closing CTA ---------- *@
+    <section class="upcsg-section upcsg-band upcsg-cta-band">
+        <p class="upcsg-kicker">Ready to order?</p>
+        <h2 class="upcsg-title-xl">Message the guild</h2>
+        <p class="upcsg-lede">
+            Tell us what you want and your size, and we'll get back to you with the current
+            order window and payment details.
+        </p>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
+            Get in Touch
+        </MudButton>
+    </section>
+
+</div>
+
+@code {
+    private MerchItemDto? _featured;
+    private List<MerchItemDto> _catalog = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var merch = await MerchService.GetMerchAsync();
+
+        // The flagship drop leads the page; everything else fills the catalog. Once the
+        // CMS lands this is the spot to swap in an editor-controlled "featured" flag.
+        _featured = merch.FirstOrDefault(m => m.InStock) ?? merch.FirstOrDefault();
+        _catalog = merch.Where(m => m.Id != _featured?.Id).ToList();
+    }
+}

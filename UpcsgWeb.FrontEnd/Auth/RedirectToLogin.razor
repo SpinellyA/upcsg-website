@@ -1,0 +1,15 @@
+@inject NavigationManager Navigation
+
+@code {
+    /// <summary>
+    /// Sends an anonymous visitor to the login page, carrying where they were headed so
+    /// they land back there after signing in.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        var returnUrl = Uri.EscapeDataString(
+            Navigation.ToBaseRelativePath(Navigation.Uri));
+
+        Navigation.NavigateTo($"login?returnUrl={returnUrl}", replace: true);
+    }
+}

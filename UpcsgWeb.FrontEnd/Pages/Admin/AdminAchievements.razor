@@ -1,0 +1,144 @@
+@page "/admin/achievements"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Hall of Fame - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <div class="upcsg-section-head">
+        <div>
+            <p class="upcsg-kicker">Guild CMS</p>
+            <h1 class="upcsg-title-xl">Hall of Fame</h1>
+        </div>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   StartIcon="@Icons.Material.Filled.Add" OnClick="() => EditAsync(null)">
+            New Entry
+        </MudButton>
+    </div>
+
+    <AdminNav />
+
+    <MudAlert Severity="Severity.Info" Dense="true" Class="mt-4">
+        Only publish what the ExeCom can verify &mdash; the public page says so explicitly.
+    </MudAlert>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error">@_error</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="_items" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true">
+            <HeaderContent>
+                <MudTh>Year</MudTh>
+                <MudTh>Title</MudTh>
+                <MudTh>Category</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Year">@context.Year</MudTd>
+                <MudTd DataLabel="Title">@context.Title</MudTd>
+                <MudTd DataLabel="Category">@context.Category</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditAsync(context)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</div>
+
+@code {
+    private List<AchievementDto> _items = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _items = await Admin.GetAchievementsAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task EditAsync(AchievementDto? existing)
+    {
+        var draft = existing is null
+            ? new AchievementDto { Year = DateTime.Now.Year, Category = "Competition" }
+            : new AchievementDto
+            {
+                Id = existing.Id,
+                Title = existing.Title,
+                Description = existing.Description,
+                Year = existing.Year,
+                Category = existing.Category,
+                ImageUrl = existing.ImageUrl,
+            };
+
+        var parameters = new DialogParameters<AchievementEditDialog> { { x => x.Item, draft } };
+        var dialog = await DialogService.ShowAsync<AchievementEditDialog>(
+            existing is null ? "New entry" : $"Edit {existing.Title}", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        try
+        {
+            await Admin.SaveAchievementAsync(draft);
+            Snackbar.Add("Saved.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(AchievementDto item)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete entry", $"Delete \"{item.Title}\"?", yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Admin.DeleteAchievementAsync(item.Id);
+            Snackbar.Add("Deleted.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

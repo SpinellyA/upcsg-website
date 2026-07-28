@@ -1,0 +1,221 @@
+﻿@page "/"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@inject IEventService EventService
+@inject IMerchService MerchService
+@inject IMemberService MemberService
+@inject IAchievementService AchievementService
+
+<PageTitle>UPCSG</PageTitle>
+
+@* ---------- Hero: full-bleed, full viewport height ---------- *@
+<section class="upcsg-hero">
+    <div class="upcsg-flare upcsg-hero__flare--orchid"></div>
+    <img class="upcsg-hero__burst" src="img/starburst.png" alt="" aria-hidden="true" />
+
+    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 18%; right: 14%;"><span class="upcsg-star" style="width: 1.5rem; height: 1.5rem;"></span></span>
+    <span class="upcsg-sparkle upcsg-sparkle--delay-1" style="top: 38%; right: 28%;"><span class="upcsg-star" style="width: 0.7rem; height: 0.7rem;"></span></span>
+    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 26%; right: 20%;"><span class="upcsg-star" style="width: 1.1rem; height: 1.1rem;"></span></span>
+
+    <div class="upcsg-hero__inner">
+        <div class="upcsg-hero__content">
+            <p class="upcsg-eyebrow"><span class="upcsg-star"></span> A.Y. 2026&ndash;2027</p>
+            <h1 class="upcsg-hero__title">
+                UP Computer<br />Science <span class="upcsg-gradient-text">Guild</span>
+            </h1>
+            <p class="upcsg-hero__lede">
+                A diverse and dynamic community at UP Cebu nurturing the next generation of
+                trailblazing technology leaders.
+            </p>
+            <div class="upcsg-hero__actions">
+                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="about">
+                    Learn More
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Large" Class="upcsg-ghost-button px-8" Href="events">
+                    See Events
+                </MudButton>
+            </div>
+        </div>
+    </div>
+
+    <a class="upcsg-hero__scroll" href="#explore">
+        <span>Explore</span>
+        <span>&darr;</span>
+    </a>
+</section>
+
+<div class="upcsg-page upcsg-page--after-hero">
+
+    @* ---------- Upcoming events: list rows inside a tinted band ---------- *@
+    <section id="explore" class="upcsg-section upcsg-band">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">@DateTime.Now.ToString("MMMM yyyy")</p>
+                <h2 class="upcsg-title-xl">Upcoming Events</h2>
+            </div>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="events">View All Events</MudButton>
+        </div>
+
+        @if (_events.Count == 0)
+        {
+            <p class="upcsg-lede">This month's lineup hasn't been posted yet. Check back soon.</p>
+        }
+        else
+        {
+            <div class="upcsg-eventlist">
+                @foreach (var evt in _events.Take(3))
+                {
+                    <a class="upcsg-eventrow" href="@($"events/{evt.Id}")">
+                        <span class="upcsg-datechip">
+                            <span class="upcsg-datechip__month">@evt.StartDateTime.ToString("MMM")</span>
+                            <span class="upcsg-datechip__day">@evt.StartDateTime.Day</span>
+                        </span>
+                        <span>
+                            <p class="upcsg-eventrow__title">@evt.Title</p>
+                            <p class="upcsg-eventrow__meta">@evt.StartDateTime.ToString("h:mm tt") &middot; @evt.Location</p>
+                        </span>
+                        <span class="upcsg-eventrow__arrow">&rarr;</span>
+                    </a>
+                }
+            </div>
+        }
+    </section>
+
+    @* ---------- Split: who we are (text left / visual right) ---------- *@
+    <section class="upcsg-section upcsg-split">
+        <div class="upcsg-split__body">
+            <p class="upcsg-kicker">Who we are</p>
+            <h2 class="upcsg-title-xl">The Guild, in short</h2>
+            <p class="upcsg-lede">
+                The UP Computer Science Guild is the official student organization for Computer Science
+                majors at UP Cebu. We run academic support, competitions, socials, and industry nights &mdash;
+                all built and led by guilders themselves.
+            </p>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="about">Learn More</MudButton>
+        </div>
+        <div class="upcsg-split__visual">
+            <p class="upcsg-split__visual-label">Org photo &mdash; placeholder</p>
+        </div>
+    </section>
+
+    @* ---------- Split reversed: officers (visual left / text right) ---------- *@
+    <section class="upcsg-section upcsg-split upcsg-split--reverse">
+        <div class="upcsg-split__body">
+            <p class="upcsg-kicker">Know your officers</p>
+            <h2 class="upcsg-title-xl">The Executive Committee</h2>
+            <p class="upcsg-lede">
+                @_execCount elected guilders lead the org this year, alongside our faculty advisers from
+                the Department of Computer Science. They represent the membership, run the committees,
+                and keep the guild's programs moving.
+            </p>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="about">Know More</MudButton>
+        </div>
+        <div class="upcsg-split__visual">
+            <p class="upcsg-split__visual-label">ExeCom photo &mdash; placeholder</p>
+        </div>
+    </section>
+
+    @* ---------- Merch teaser: square tiles ---------- *@
+    <section class="upcsg-section">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Guild store</p>
+                <h2 class="upcsg-title-xl">Merch</h2>
+            </div>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="merch">Shop All Merch</MudButton>
+        </div>
+
+        <div class="upcsg-merchrow">
+            @foreach (var item in _merch.Take(4))
+            {
+                <a class="upcsg-merchtile" href="merch">
+                    <span class="upcsg-merchtile__thumb">
+                        <span class="upcsg-star" style="width: 2.2rem; height: 2.2rem;"></span>
+                    </span>
+                    <p class="upcsg-merchtile__name">@item.Name</p>
+                    <p class="upcsg-merchtile__price">
+                        @if (item.InStock)
+                        {
+                            <text>&#8369;@item.Price.ToString("0.00")</text>
+                        }
+                        else
+                        {
+                            <text>Out of stock</text>
+                        }
+                    </p>
+                </a>
+            }
+        </div>
+    </section>
+
+    @* ---------- Hall of fame: stats band ---------- *@
+    <section class="upcsg-section upcsg-band">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Hall of fame</p>
+                <h2 class="upcsg-title-xl">What we've won</h2>
+            </div>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="hall-of-fame">View Hall of Fame</MudButton>
+        </div>
+
+        <div class="upcsg-stats">
+            <div>
+                <p class="upcsg-stat__value upcsg-gradient-text">@_achievements.Count</p>
+                <p class="upcsg-stat__label">Awards logged</p>
+            </div>
+            <div>
+                <p class="upcsg-stat__value upcsg-gradient-text">@_execCount</p>
+                <p class="upcsg-stat__label">Officers serving</p>
+            </div>
+            <div>
+                <p class="upcsg-stat__value upcsg-gradient-text">@_events.Count</p>
+                <p class="upcsg-stat__label">Events this month</p>
+            </div>
+        </div>
+
+        @if (_latestAchievement is not null)
+        {
+            <div class="upcsg-divider"><span class="upcsg-star"></span></div>
+            <p class="upcsg-kicker">Most recent &middot; @_latestAchievement.Year</p>
+            <h3 class="upcsg-card__title" style="font-size: 1.35rem;">@_latestAchievement.Title</h3>
+            <p class="upcsg-lede" style="margin-bottom: 0;">@_latestAchievement.Description</p>
+        }
+    </section>
+
+    @* ---------- Closing CTA ---------- *@
+    <section class="upcsg-section upcsg-band upcsg-cta-band">
+        <p class="upcsg-kicker">Got questions?</p>
+        <h2 class="upcsg-title-xl">Join the guild</h2>
+        <p class="upcsg-lede">
+            Open to all Computer Science majors at UP Cebu. Membership drives run at the start of each
+            semester &mdash; reach out and we'll point you to the sign-up.
+        </p>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
+            Get in Touch
+        </MudButton>
+    </section>
+
+</div>
+
+@code {
+    private List<EventDto> _events = [];
+    private List<MerchItemDto> _merch = [];
+    private List<AchievementDto> _achievements = [];
+    private AchievementDto? _latestAchievement;
+    private int _execCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _events = (await EventService.GetThisMonthEventsAsync())
+            .OrderBy(e => e.StartDateTime)
+            .ToList();
+
+        _merch = await MerchService.GetMerchAsync();
+
+        _achievements = await AchievementService.GetAchievementsAsync();
+        _latestAchievement = _achievements.OrderByDescending(a => a.Year).FirstOrDefault();
+
+        var members = await MemberService.GetMembersAsync();
+        _execCount = members.Count(m => m.Category == MemberCategory.ExeCom);
+    }
+}

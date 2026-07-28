@@ -1,0 +1,145 @@
+﻿@page "/about"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IMemberService MemberService
+
+<PageTitle>About - UPCSG</PageTitle>
+
+@* ---------- Compact banner: shorter than the landing hero by design ---------- *@
+<section class="upcsg-banner">
+    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 34%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
+    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 30%; right: 44%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
+
+    <div class="upcsg-banner__inner">
+        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> About</p>
+        <h1 class="upcsg-banner__title">The Guild</h1>
+        <p class="upcsg-lede" style="margin-bottom: 0;">
+            The official student organization for Computer Science majors at the
+            University of the Philippines Cebu.
+        </p>
+    </div>
+</section>
+
+<div class="upcsg-page upcsg-page--after-hero">
+
+    @* ---------- Identity: asymmetric quote + prose ---------- *@
+    <section class="upcsg-section upcsg-narrative">
+        <blockquote class="upcsg-pullquote">
+            Computer science is not just an industry of machines, but a canvas of
+            endless creative expression.
+        </blockquote>
+        <div class="upcsg-narrative__body">
+            <p class="upcsg-kicker">Our identity</p>
+            <p>
+                UPCSG exists to support guilders through their degree and beyond &mdash; academic
+                support, competitions, industry nights, and the socials that hold it all together.
+                Everything here is built and run by students.
+            </p>
+            <p>
+                This academic year we're building on our minimalist visual identity rather than
+                replacing it, expanding our tech-futuristic edge toward the intersection of
+                technology and artistry. Our theme takes its cue from Van Gogh's
+                <em>Starry Night</em> &mdash; layered over a clean, functional structure, its high
+                contrast stands for the truth that engineering solutions is its own form of modern art.
+            </p>
+        </div>
+    </section>
+
+    @* ---------- Faculty ---------- *@
+    <section class="upcsg-section">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Your guiding light</p>
+                <h2 class="upcsg-title-xl">Faculty</h2>
+            </div>
+        </div>
+
+        @foreach (var row in _facultyRows)
+        {
+            <PersonProfile Member="row.Member" Flip="row.Flip" />
+        }
+    </section>
+
+    @* ---------- Executive committee ---------- *@
+    <section class="upcsg-section">
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Know your officers</p>
+                <h2 class="upcsg-title-xl">Executive Committee</h2>
+            </div>
+            <span class="upcsg-subheading">@_execCount serving this year</span>
+        </div>
+
+        @foreach (var committee in _committees)
+        {
+            <div class="upcsg-committee-head"><span>@committee.Name</span></div>
+
+            @foreach (var row in committee.Rows)
+            {
+                <PersonProfile Member="row.Member" Flip="row.Flip" />
+            }
+        }
+    </section>
+
+    @* ---------- Closing CTA ---------- *@
+    <section class="upcsg-section upcsg-band upcsg-cta-band">
+        <p class="upcsg-kicker">Want in?</p>
+        <h2 class="upcsg-title-xl">Become a guilder</h2>
+        <p class="upcsg-lede">
+            Membership is open to all Computer Science majors at UP Cebu, with drives at the
+            start of each semester.
+        </p>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
+            Get in Touch
+        </MudButton>
+    </section>
+
+</div>
+
+@code {
+    private sealed record ProfileRow(MemberDto Member, bool Flip);
+    private sealed record CommitteeGroup(string Name, List<ProfileRow> Rows);
+
+    private List<ProfileRow> _facultyRows = [];
+    private List<CommitteeGroup> _committees = [];
+    private int _execCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var members = await MemberService.GetMembersAsync();
+
+        // One running flag across the whole roster, so the alternation never breaks
+        // at a section or committee boundary.
+        var flip = false;
+
+        foreach (var member in members
+            .Where(m => m.Category == MemberCategory.Faculty)
+            .OrderBy(m => m.DisplayOrder))
+        {
+            _facultyRows.Add(new ProfileRow(member, flip));
+            flip = !flip;
+        }
+
+        var exeCom = members
+            .Where(m => m.Category == MemberCategory.ExeCom)
+            .OrderBy(m => m.DisplayOrder)
+            .ToList();
+
+        _execCount = exeCom.Count;
+
+        // GroupBy keeps first-seen key order, so committees follow DisplayOrder.
+        foreach (var group in exeCom.GroupBy(m => m.Committee ?? "Other"))
+        {
+            var rows = new List<ProfileRow>();
+            foreach (var member in group)
+            {
+                rows.Add(new ProfileRow(member, flip));
+                flip = !flip;
+            }
+
+            _committees.Add(new CommitteeGroup(group.Key, rows));
+        }
+    }
+}

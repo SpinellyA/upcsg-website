@@ -1,0 +1,150 @@
+@page "/admin/merch"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<PageTitle>Merch - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <div class="upcsg-section-head">
+        <div>
+            <p class="upcsg-kicker">Guild CMS</p>
+            <h1 class="upcsg-title-xl">Merch</h1>
+        </div>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   StartIcon="@Icons.Material.Filled.Add" OnClick="() => EditAsync(null)">
+            New Item
+        </MudButton>
+    </div>
+
+    <AdminNav />
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error">@_error</MudAlert>
+    }
+    else
+    {
+        <MudTable Items="_items" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true">
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh>Price</MudTh>
+                <MudTh>Variants</MudTh>
+                <MudTh>Stock</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Name">@context.Name</MudTd>
+                <MudTd DataLabel="Price">&#8369;@context.Price.ToString("0.00")</MudTd>
+                <MudTd DataLabel="Variants">@string.Join(", ", context.Variants)</MudTd>
+                <MudTd DataLabel="Stock">
+                    <MudChip T="string" Size="Size.Small" Color="@(context.InStock ? Color.Success : Color.Default)">
+                        @(context.InStock ? "In stock" : "Sold out")
+                    </MudChip>
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditAsync(context)" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
+</div>
+
+@code {
+    private List<MerchItemDto> _items = [];
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _items = await Admin.GetMerchAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task EditAsync(MerchItemDto? existing)
+    {
+        // Edit a copy: a cancelled dialog must not leave the grid showing edits.
+        var draft = existing is null
+            ? new MerchItemDto { InStock = true }
+            : new MerchItemDto
+            {
+                Id = existing.Id,
+                Name = existing.Name,
+                Description = existing.Description,
+                Price = existing.Price,
+                ImageUrl = existing.ImageUrl,
+                Variants = [.. existing.Variants],
+                InStock = existing.InStock,
+            };
+
+        var parameters = new DialogParameters<MerchEditDialog> { { x => x.Item, draft } };
+        var dialog = await DialogService.ShowAsync<MerchEditDialog>(
+            existing is null ? "New merch item" : $"Edit {existing.Name}", parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+
+        var result = await dialog.Result;
+        if (result is null || result.Canceled)
+        {
+            return;
+        }
+
+        try
+        {
+            await Admin.SaveMerchAsync(draft);
+            Snackbar.Add("Saved.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(MerchItemDto item)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Delete item",
+            $"Delete \"{item.Name}\"? Past orders keep their own copy of the name and price, so history is unaffected.",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            await Admin.DeleteMerchAsync(item.Id);
+            Snackbar.Add("Deleted.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+}

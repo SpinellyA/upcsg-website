@@ -1,0 +1,49 @@
+﻿@using UpcsgWeb.Shared.Contracts
+
+@* One person, one full-width section. Flip mirrors the portrait to the right column. *@
+<article class="upcsg-profile-row @(Flip ? "upcsg-profile-row--flip" : null)">
+    <div class="upcsg-profile-row__portrait">
+        @if (!string.IsNullOrWhiteSpace(Member.PhotoUrl))
+        {
+            <img src="@Member.PhotoUrl" alt="@Member.Name" loading="lazy" />
+        }
+        else
+        {
+            <div class="upcsg-person__fallback">@Initials(Member.Name)</div>
+        }
+    </div>
+
+    <div class="upcsg-profile-row__body">
+        <p class="upcsg-profile-row__role">@Member.Role</p>
+        <h3 class="upcsg-profile-row__name">@Member.Name</h3>
+
+        @if (!string.IsNullOrWhiteSpace(Member.Quote))
+        {
+            <blockquote class="upcsg-profile-row__quote">&ldquo;@Member.Quote&rdquo;</blockquote>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Member.Bio))
+        {
+            <p class="upcsg-profile-row__bio">@Member.Bio</p>
+        }
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;
+
+    /// <summary>Mirrors the row so consecutive profiles alternate sides.</summary>
+    [Parameter] public bool Flip { get; set; }
+
+    // Skips honorifics so "Dr. Juana Dela Cruz" reads JD rather than DJ.
+    private static string Initials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(p => char.IsLetter(p[0]) && !p.EndsWith('.'))
+            .ToArray();
+
+        return parts.Length == 0
+            ? "?"
+            : string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    }
+}

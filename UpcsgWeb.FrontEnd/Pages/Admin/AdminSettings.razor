@@ -1,0 +1,131 @@
+﻿@page "/admin/settings"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+
+<PageTitle>Settings - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <div class="upcsg-section-head">
+        <div>
+            <p class="upcsg-kicker">Guild CMS</p>
+            <h1 class="upcsg-title-xl">Settings</h1>
+        </div>
+    </div>
+
+    <AdminNav />
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Error">@_error</MudAlert>
+    }
+    else
+    {
+        <section class="upcsg-section upcsg-band mt-4" style="max-width: 40rem;">
+            <p class="upcsg-kicker">Events page</p>
+            <h2 class="upcsg-title-xl" style="font-size: 1.5rem;">Calendar month</h2>
+            <p class="upcsg-lede">
+                The public events page shows one month at a time. Normally that's the real
+                current month, but you can pin it ahead to publish next month's lineup early.
+            </p>
+
+            <MudSwitch T="bool" @bind-Value="_followCurrent" Color="Color.Success"
+                       Label="Follow the current month automatically" Class="mb-4" />
+
+            @if (!_followCurrent)
+            {
+                <div class="upcsg-monthnav mb-4">
+                    <MudSelect T="int" @bind-Value="_month" Label="Month" Variant="Variant.Outlined" Dense="true">
+                        @for (var m = 1; m <= 12; m++)
+                        {
+                            var value = m;
+                            <MudSelectItem T="int" Value="@value">@(new DateTime(2000, value, 1).ToString("MMMM"))</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudNumericField T="int" @bind-Value="_year" Label="Year" Variant="Variant.Outlined"
+                                     Min="2020" Max="@(DateTime.Now.Year + 5)" Class="ml-3" />
+                </div>
+            }
+
+            <MudAlert Severity="Severity.Info" Dense="true" Class="mb-4">
+                Visitors currently see <strong>@ResolvedLabel</strong>.
+            </MudAlert>
+
+            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-8"
+                       Disabled="_busy" OnClick="SaveAsync">
+                Save
+            </MudButton>
+        </section>
+    }
+</div>
+
+@code {
+    private SiteSettingsDto _settings = new();
+    private bool _followCurrent = true;
+    private int _year = DateTime.Now.Year;
+    private int _month = DateTime.Now.Month;
+    private bool _loading = true;
+    private bool _busy;
+    private string? _error;
+
+    private string ResolvedLabel =>
+        new DateTime(_settings.ResolvedYear == 0 ? DateTime.Now.Year : _settings.ResolvedYear,
+                     _settings.ResolvedMonth == 0 ? DateTime.Now.Month : _settings.ResolvedMonth, 1)
+            .ToString("MMMM yyyy");
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _settings = await Admin.GetSettingsAsync();
+            _followCurrent = _settings.FollowsCurrentMonth;
+            _year = _settings.EventsYear ?? DateTime.Now.Year;
+            _month = _settings.EventsMonth ?? DateTime.Now.Month;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            _settings = await Admin.SaveSettingsAsync(new UpdateSiteSettingsRequest
+            {
+                FollowCurrentMonth = _followCurrent,
+                EventsYear = _followCurrent ? null : _year,
+                EventsMonth = _followCurrent ? null : _month,
+            });
+
+            Snackbar.Add("Settings saved.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

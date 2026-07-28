@@ -1,0 +1,48 @@
+@using UpcsgWeb.Shared.Contracts
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Item.Name" Label="Name" Variant="Variant.Outlined" Required="true" Class="mb-3" />
+        <MudTextField @bind-Value="Item.Description" Label="Description" Variant="Variant.Outlined" Lines="3" Class="mb-3" />
+        <MudNumericField @bind-Value="Item.Price" Label="Price (PHP)" Variant="Variant.Outlined" Min="0" Format="0.00" Class="mb-3" />
+        <MudTextField @bind-Value="Item.ImageUrl" Label="Image URL" Variant="Variant.Outlined" Class="mb-3" />
+
+        @* Comma-separated is the fastest thing to type for a handful of sizes; the
+           list is the real model and gets rebuilt on each edit. *@
+        <MudTextField @bind-Value="_variantText"
+                      Label="Variants (comma separated)"
+                      HelperText="e.g. S, M, L, XL — or 'One size'"
+                      Variant="Variant.Outlined"
+                      Class="mb-3" />
+
+        <MudSwitch @bind-Value="Item.InStock" Color="Color.Success" Label="In stock" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   Disabled="string.IsNullOrWhiteSpace(Item.Name)" OnClick="Save">
+            Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public MerchItemDto Item { get; set; } = default!;
+
+    private string _variantText = string.Empty;
+
+    protected override void OnInitialized() =>
+        _variantText = string.Join(", ", Item.Variants);
+
+    private void Save()
+    {
+        Item.Variants = [.. _variantText
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)];
+
+        MudDialog.Close(DialogResult.Ok(Item));
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

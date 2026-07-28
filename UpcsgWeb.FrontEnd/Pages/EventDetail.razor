@@ -1,0 +1,45 @@
+@page "/events/{Id:int}"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@inject IEventService EventService
+
+<PageTitle>@(_event?.Title ?? "Event") - UPCSG</PageTitle>
+
+<div class="upcsg-page">
+
+@if (_event is null)
+{
+    @if (_loaded)
+    {
+        <MudAlert Severity="Severity.Warning">Event not found — it may not be part of this month's lineup.</MudAlert>
+        <MudLink Href="events" Class="mt-4 d-inline-block">&larr; Back to Events</MudLink>
+    }
+}
+else
+{
+    <MudLink Href="events" Class="mb-4 d-inline-block">&larr; Back to Events</MudLink>
+    <MudPaper Class="upcsg-panel" Square="true" Elevation="0">
+        <MudText Typo="Typo.overline" Style="color: var(--upcsg-highlight);">@_event.StartDateTime.ToString("dddd, MMMM d, yyyy")</MudText>
+        <MudText Typo="Typo.h3" Class="upcsg-display mb-2">@_event.Title</MudText>
+        <MudText Typo="Typo.subtitle1" Class="upcsg-subheading mb-4">
+            @_event.StartDateTime.ToString("h:mm tt")@(_event.EndDateTime is not null ? $" - {_event.EndDateTime:h:mm tt}" : "") &middot; @_event.Location
+        </MudText>
+        <MudText>@_event.Description</MudText>
+    </MudPaper>
+}
+
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private EventDto? _event;
+    private bool _loaded;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var events = await EventService.GetThisMonthEventsAsync();
+        _event = events.FirstOrDefault(e => e.Id == Id);
+        _loaded = true;
+    }
+}

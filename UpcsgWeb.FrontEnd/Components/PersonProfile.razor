@@ -1,12 +1,7 @@
 ﻿@using UpcsgWeb.Shared.Contracts
 
 @* One person, one full-width section. Flip mirrors the portrait to the right column. *@
-<article class="upcsg-profile-row upcsg-editable @(Flip ? "upcsg-profile-row--flip" : null)">
-    @if (OnEdit.HasDelegate)
-    {
-        <EditPencil Label="@($"Edit {Member.Name}")" OnEdit="OnEdit" />
-    }
-
+<article class="upcsg-profile-row @(Flip ? "upcsg-profile-row--flip" : null)">
     <div class="upcsg-profile-row__portrait">
         @if (!string.IsNullOrWhiteSpace(Member.PhotoUrl))
         {
@@ -39,12 +34,6 @@
 
     /// <summary>Mirrors the row so consecutive profiles alternate sides.</summary>
     [Parameter] public bool Flip { get; set; }
-
-    /// <summary>
-    /// Supplied only by pages that can edit. Left unset, no pencil renders at all — the
-    /// component stays usable anywhere a read-only profile is wanted.
-    /// </summary>
-    [Parameter] public EventCallback OnEdit { get; set; }
 
     // Skips honorifics so "Dr. Juana Dela Cruz" reads JD rather than DJ.
     private static string Initials(string name)

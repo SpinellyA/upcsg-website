@@ -45,14 +45,6 @@
             img.closest('.upcsg-receipt')?.classList.add('upcsg-receipt--broken');
         };
 
-        // Grows an inline textarea to fit its content. Height must be cleared first or the
-        // box can only ever get taller — scrollHeight includes the height already set.
-        window.upcsgAutosize = el => {
-            if (!el) return;
-            el.style.height = 'auto';
-            el.style.height = el.scrollHeight + 'px';
-        };
-
         // Hands a generated file (an .ics, today) to the browser as a download. The object
         // URL is revoked immediately so nothing accumulates as a guilder opens more events.
         window.upcsgDownloadFile = (filename, mime, content) => {

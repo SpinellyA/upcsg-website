@@ -673,6 +673,150 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
+   Event detail
+ * ------------------------------------------------------------------ */
+
+.upcsg-eventhero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem 1.25rem;
+    margin-top: 1.25rem;
+}
+
+.upcsg-eventhero__where {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.92rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-eventdetail {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 20rem);
+    gap: clamp(1.25rem, 3vw, 2.25rem);
+    align-items: start;
+}
+
+.upcsg-eventposter {
+    display: block;
+    margin-bottom: 1.5rem;
+}
+
+.upcsg-eventposter img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 30rem;
+    object-fit: contain;
+}
+
+.upcsg-eventposter__broken {
+    display: none;
+    margin: 0;
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-eventposter--broken img {
+    display: none;
+}
+
+.upcsg-eventposter--broken .upcsg-eventposter__broken {
+    display: block;
+}
+
+.upcsg-eventbody {
+    padding: clamp(1.4rem, 3vw, 2.25rem);
+}
+
+.upcsg-eventbody__para {
+    margin: 1rem 0 0;
+    font-size: 1rem;
+    line-height: 1.8;
+    color: var(--upcsg-text-muted);
+    max-width: 68ch;
+}
+
+/* --- Facts rail --- */
+
+.upcsg-eventaside {
+    position: sticky;
+    top: 6rem;
+}
+
+.upcsg-eventfacts {
+    padding: 1.5rem;
+}
+
+.upcsg-eventfacts__date {
+    display: grid;
+    justify-items: center;
+    padding: 0.85rem 0 1.1rem;
+    margin-bottom: 1.25rem;
+    border-bottom: var(--upcsg-hairline);
+}
+
+.upcsg-eventfacts__month {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-eventfacts__day {
+    font-family: var(--upcsg-font-display);
+    font-size: 3.4rem;
+    line-height: 1.05;
+}
+
+.upcsg-eventfacts__weekday {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-eventfacts__list {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0 0 1.4rem;
+}
+
+.upcsg-eventfacts__list dt {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+    margin-bottom: 0.2rem;
+}
+
+.upcsg-eventfacts__list dd {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.upcsg-eventfacts__unknown {
+    color: var(--upcsg-text-muted);
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.upcsg-eventfacts__actions {
+    display: grid;
+    gap: 0.6rem;
+}
+
+/* ------------------------------------------------------------------ *
    Contact
 
    The channel cards reuse .upcsg-cards / .upcsg-card / .upcsg-lift wholesale —
@@ -2381,6 +2525,16 @@ h4, h5, h6, .upcsg-heading {
 
     .upcsg-adminorder {
         grid-template-columns: 1fr;
+    }
+
+    .upcsg-eventdetail {
+        grid-template-columns: 1fr;
+    }
+
+    /* Sticky is pointless once the rail is stacked under the copy, and it makes the
+       column fight the page scroll on the way past. */
+    .upcsg-eventaside {
+        position: static;
     }
 
     .upcsg-adminorder__actions {

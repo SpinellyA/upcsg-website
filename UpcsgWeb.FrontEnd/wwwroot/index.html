@@ -45,6 +45,39 @@
             img.closest('.upcsg-receipt')?.classList.add('upcsg-receipt--broken');
         };
 
+        // Hands a generated file (an .ics, today) to the browser as a download. The object
+        // URL is revoked immediately so nothing accumulates as a guilder opens more events.
+        window.upcsgDownloadFile = (filename, mime, content) => {
+            const url = URL.createObjectURL(new Blob([content], { type: mime }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        };
+
+        // navigator.clipboard needs a secure context. Pages is HTTPS, but the local dev
+        // server is plain http, so fall back rather than throwing there.
+        window.upcsgCopyText = async text => {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch {
+                const el = document.createElement('textarea');
+                el.value = text;
+                el.setAttribute('readonly', '');
+                el.style.position = 'fixed';
+                el.style.opacity = '0';
+                document.body.appendChild(el);
+                el.select();
+                const ok = document.execCommand('copy');
+                el.remove();
+                return ok;
+            }
+        };
+
         // Session persistence. localStorage is readable by any script on the origin, so the
         // value here must stay a short-lived API token — never a Google refresh token.
         window.upcsgStorage = {

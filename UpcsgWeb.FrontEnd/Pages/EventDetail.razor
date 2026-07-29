@@ -1,45 +1,308 @@
 @page "/events/{Id:int}"
+@using System.Text
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 
 <PageTitle>@(_event?.Title ?? "Event") - UPCSG</PageTitle>
 
-<div class="upcsg-page">
-
-@if (_event is null)
+@if (_loading)
 {
-    @if (_loaded)
-    {
-        <MudAlert Severity="Severity.Warning">Event not found — it may not be part of this month's lineup.</MudAlert>
-        <MudLink Href="events" Class="mt-4 d-inline-block">&larr; Back to Events</MudLink>
-    }
+    <div class="upcsg-page">
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    </div>
+}
+else if (_event is null)
+{
+    <div class="upcsg-page">
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that event. It may have been removed, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="events">
+            Back to Events
+        </MudButton>
+    </div>
 }
 else
 {
-    <MudLink Href="events" Class="mb-4 d-inline-block">&larr; Back to Events</MudLink>
-    <MudPaper Class="upcsg-surface pa-8" Elevation="0">
-        <MudText Typo="Typo.overline" Style="color: var(--upcsg-highlight);">@_event.StartDateTime.ToString("dddd, MMMM d, yyyy")</MudText>
-        <MudText Typo="Typo.h3" Class="upcsg-display mb-2">@_event.Title</MudText>
-        <MudText Typo="Typo.subtitle1" Class="upcsg-subheading mb-4">
-            @_event.StartDateTime.ToString("h:mm tt")@(_event.EndDateTime is not null ? $" - {_event.EndDateTime:h:mm tt}" : "") &middot; @_event.Location
-        </MudText>
-        <MudText>@_event.Description</MudText>
-    </MudPaper>
-}
+    <section class="upcsg-banner upcsg-eventhero">
+        <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+        <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 24%; right: 30%;">
+            <span class="upcsg-star" style="width: 1rem; height: 1rem;"></span>
+        </span>
 
-</div>
+        <div class="upcsg-banner__inner">
+            <p class="upcsg-eyebrow">
+                <span class="upcsg-star"></span>
+                @Starts.ToString("dddd, MMMM d, yyyy")
+            </p>
+            <h1 class="upcsg-banner__title">@_event.Title</h1>
+
+            <div class="upcsg-eventhero__meta">
+                <span class="upcsg-statuspill upcsg-statuspill--@StatusSlug">@StatusLabel</span>
+                <span class="upcsg-eventhero__where">
+                    <MudIcon Icon="@Icons.Material.Outlined.Place" Size="Size.Small" />
+                    @_event.Location
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <div class="upcsg-page upcsg-page--after-hero">
+        <MudLink Href="events" Class="mb-4 d-inline-block">&larr; All events this month</MudLink>
+
+        <section class="upcsg-section upcsg-eventdetail">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(_event.PosterUrl))
+                {
+                    @* Poster URLs come from the CMS, so treat a dead one the same way the
+                       receipt panel does: say so rather than leaving a blank frame. *@
+                    <div class="upcsg-surface upcsg-eventposter">
+                        <img src="@_event.PosterUrl" alt="Poster for @_event.Title"
+                             onerror="this.closest('.upcsg-eventposter').classList.add('upcsg-eventposter--broken')" />
+                        <p class="upcsg-eventposter__broken">Poster image couldn't be loaded.</p>
+                    </div>
+                }
+
+                <div class="upcsg-surface upcsg-eventbody">
+                    <p class="upcsg-kicker">About this event</p>
+
+                    @foreach (var paragraph in Paragraphs)
+                    {
+                        <p class="upcsg-eventbody__para">@paragraph</p>
+                    }
+                </div>
+            </div>
+
+            <aside class="upcsg-eventaside">
+                <div class="upcsg-surface upcsg-eventfacts">
+                    <div class="upcsg-eventfacts__date">
+                        <span class="upcsg-eventfacts__month">@Starts.ToString("MMM")</span>
+                        <span class="upcsg-eventfacts__day">@Starts.Day</span>
+                        <span class="upcsg-eventfacts__weekday">@Starts.ToString("ddd")</span>
+                    </div>
+
+                    <dl class="upcsg-eventfacts__list">
+                        <div>
+                            <dt>Starts</dt>
+                            <dd>@Starts.ToString("h:mm tt")</dd>
+                        </div>
+
+                        @if (Ends is { } ends)
+                        {
+                            <div>
+                                <dt>Ends</dt>
+                                <dd>@ends.ToString("h:mm tt")</dd>
+                            </div>
+                            <div>
+                                <dt>Runs for</dt>
+                                <dd>@DurationLabel(ends - Starts)</dd>
+                            </div>
+                        }
+                        else
+                        {
+                            @* No end time on the record — say that, rather than guessing one. *@
+                            <div>
+                                <dt>Ends</dt>
+                                <dd class="upcsg-eventfacts__unknown">Not announced</dd>
+                            </div>
+                        }
+
+                        <div>
+                            <dt>Where</dt>
+                            <dd>@_event.Location</dd>
+                        </div>
+                    </dl>
+
+                    <div class="upcsg-eventfacts__actions">
+                        <MudButton Variant="Variant.Filled" FullWidth="true" Class="upcsg-cta-button"
+                                   StartIcon="@Icons.Material.Outlined.CalendarMonth"
+                                   OnClick="DownloadIcsAsync">
+                            Add to calendar
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="upcsg-ghost-button"
+                                   StartIcon="@Icons.Material.Outlined.Link"
+                                   OnClick="CopyLinkAsync">
+                            Copy link
+                        </MudButton>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        @if (_others.Count > 0)
+        {
+            <section class="upcsg-section">
+                <div class="upcsg-section-head">
+                    <div>
+                        <p class="upcsg-kicker">Also on this month</p>
+                        <h2 class="upcsg-title-xl">More events</h2>
+                    </div>
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="events">
+                        View calendar
+                    </MudButton>
+                </div>
+
+                <div class="upcsg-agenda">
+                    @foreach (var other in _others)
+                    {
+                        <a class="upcsg-agenda__item" href="@($"events/{other.Id}")">
+                            <span class="upcsg-agenda__head" style="cursor: pointer;">
+                                <span class="upcsg-datechip">
+                                    <span class="upcsg-datechip__month">@other.StartDateTime.ToLocalTime().ToString("MMM")</span>
+                                    <span class="upcsg-datechip__day">@other.StartDateTime.ToLocalTime().Day</span>
+                                </span>
+                                <span>
+                                    <p class="upcsg-agenda__title">@other.Title</p>
+                                    <p class="upcsg-agenda__meta">
+                                        @other.StartDateTime.ToLocalTime().ToString("h:mm tt") &middot; @other.Location
+                                    </p>
+                                </span>
+                                <span class="upcsg-agenda__chevron">&rarr;</span>
+                            </span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+}
 
 @code {
     [Parameter] public int Id { get; set; }
 
     private EventDto? _event;
-    private bool _loaded;
+    private List<EventDto> _others = [];
+    private bool _loading = true;
 
-    protected override async Task OnInitializedAsync()
+    // The API hands back UTC; every other page renders event times with ToLocalTime, so
+    // these convert once here rather than sprinkling it through the markup.
+    private DateTime Starts => (_event?.StartDateTime ?? default).ToLocalTime();
+
+    private DateTime? Ends => _event?.EndDateTime?.ToLocalTime();
+
+    /// <summary>Blank-line-separated paragraphs, so long copy doesn't render as one wall.</summary>
+    private IEnumerable<string> Paragraphs =>
+        (_event?.Description ?? string.Empty)
+            .Replace("\r\n", "\n")
+            .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(p => p.Replace('\n', ' '));
+
+    private bool HasEnded => _event is not null
+        && (Ends ?? Starts) < DateTime.Now;
+
+    private bool IsUnderway => _event is not null
+        && Starts <= DateTime.Now
+        && !HasEnded;
+
+    private string StatusLabel => IsUnderway ? "Happening now" : HasEnded ? "Finished" : "Upcoming";
+
+    // Reuses the order status pill colours: gold for "needs your attention now",
+    // muted for done, lavender for pending.
+    private string StatusSlug => IsUnderway ? "pending" : HasEnded ? "received" : "confirmed";
+
+    protected override async Task OnParametersSetAsync()
     {
-        var events = await EventService.GetThisMonthEventsAsync();
-        _event = events.FirstOrDefault(e => e.Id == Id);
-        _loaded = true;
+        _loading = true;
+        _event = null;
+        _others = [];
+
+        try
+        {
+            _event = await EventService.GetEventAsync(Id);
+
+            if (_event is not null)
+            {
+                var month = await EventService.GetThisMonthEventsAsync();
+                _others = month
+                    .Where(e => e.Id != Id)
+                    .OrderBy(e => e.StartDateTime)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
+
+    private static string DurationLabel(TimeSpan span)
+    {
+        var hours = (int)span.TotalHours;
+        var minutes = span.Minutes;
+
+        if (hours == 0)
+        {
+            return $"{minutes} min";
+        }
+
+        return minutes == 0 ? $"{hours} hr" : $"{hours} hr {minutes} min";
+    }
+
+    private async Task CopyLinkAsync()
+    {
+        var url = Navigation.Uri;
+        var copied = await JS.InvokeAsync<bool>("upcsgCopyText", url);
+
+        Snackbar.Add(
+            copied ? "Link copied." : "Couldn't copy — you can copy it from the address bar.",
+            copied ? Severity.Success : Severity.Warning);
+    }
+
+    private async Task DownloadIcsAsync()
+    {
+        if (_event is null)
+        {
+            return;
+        }
+
+        var name = $"upcsg-event-{_event.Id}.ics";
+        await JS.InvokeVoidAsync("upcsgDownloadFile", name, "text/calendar", BuildIcs(_event));
+    }
+
+    /// <summary>
+    /// Minimal RFC 5545 VEVENT. Times are written as local wall-clock without a TZID:
+    /// the record carries no timezone, and stamping one we don't know would be worse
+    /// than letting the calendar app assume the reader's own.
+    /// </summary>
+    private static string BuildIcs(EventDto evt)
+    {
+        var starts = evt.StartDateTime.ToLocalTime();
+        var ends = evt.EndDateTime?.ToLocalTime() ?? starts.AddHours(1);
+
+        var ics = new StringBuilder();
+        ics.Append("BEGIN:VCALENDAR\r\n");
+        ics.Append("VERSION:2.0\r\n");
+        ics.Append("PRODID:-//UPCSG//Guild Website//EN\r\n");
+        ics.Append("BEGIN:VEVENT\r\n");
+        ics.Append($"UID:upcsg-event-{evt.Id}@upcsg\r\n");
+        ics.Append($"DTSTAMP:{DateTime.UtcNow:yyyyMMdd'T'HHmmss'Z'}\r\n");
+        ics.Append($"DTSTART:{starts:yyyyMMdd'T'HHmmss}\r\n");
+        ics.Append($"DTEND:{ends:yyyyMMdd'T'HHmmss}\r\n");
+        ics.Append($"SUMMARY:{IcsEscape(evt.Title)}\r\n");
+        ics.Append($"LOCATION:{IcsEscape(evt.Location)}\r\n");
+        ics.Append($"DESCRIPTION:{IcsEscape(evt.Description)}\r\n");
+        ics.Append("END:VEVENT\r\n");
+        ics.Append("END:VCALENDAR\r\n");
+
+        return ics.ToString();
+    }
+
+    /// <summary>
+    /// Backslash, semicolon and comma are field separators in iCalendar, and a raw newline
+    /// ends the property. Unescaped, a description with a comma silently truncates the entry.
+    /// </summary>
+    private static string IcsEscape(string value) => value
+        .Replace("\\", "\\\\")
+        .Replace(";", "\\;")
+        .Replace(",", "\\,")
+        .Replace("\r\n", "\\n")
+        .Replace("\n", "\\n");
 }

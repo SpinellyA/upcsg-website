@@ -672,6 +672,124 @@ h4, h5, h6, .upcsg-heading {
     color: var(--upcsg-highlight);
 }
 
+/* ------------------------------------------------------------------ *
+   Contact
+
+   The channel cards reuse .upcsg-cards / .upcsg-card / .upcsg-lift wholesale —
+   only the icon badge and the mail-safe title are new here.
+ * ------------------------------------------------------------------ */
+
+.upcsg-channel__icon {
+    display: grid;
+    place-items: center;
+    width: 2.85rem;
+    height: 2.85rem;
+    margin-bottom: 1.1rem;
+    border-radius: 14px;
+    border: 1px solid rgba(252, 230, 138, 0.28);
+    background: rgba(252, 230, 138, 0.1);
+    color: var(--upcsg-highlight);
+}
+
+/* An address is one long unbreakable token; at the display size the other card
+   titles use it would overflow the card. */
+.upcsg-card__title--mail {
+    font-size: 0.98rem;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+}
+
+.upcsg-contact__facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1.15rem 1.5rem;
+    margin: 2rem 0 0;
+}
+
+.upcsg-contact__facts dt {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+    margin-bottom: 0.3rem;
+}
+
+.upcsg-contact__facts dd {
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+/* --- FAQ: MudExpansionPanels, dropped onto the content surface --- */
+
+.upcsg-faq.mud-expansion-panels {
+    background: transparent;
+}
+
+.upcsg-faq .mud-expand-panel {
+    background:
+        linear-gradient(158deg, rgba(82, 38, 87, 0.92) 0%, rgba(83, 37, 126, 0.72) 55%, rgba(22, 17, 58, 0.9) 100%);
+    border: var(--upcsg-hairline);
+    border-radius: var(--upcsg-radius);
+    margin-bottom: 0.85rem;
+    overflow: hidden;
+    color: var(--upcsg-text);
+}
+
+/* MudBlazor collapses the gap between adjacent open panels; we want the stack
+   to keep reading as separate cards. */
+.upcsg-faq .mud-expand-panel.mud-panel-expanded {
+    margin-bottom: 0.85rem;
+}
+
+.upcsg-faq .mud-expand-panel::before {
+    display: none;
+}
+
+/* MudBlazor's own gutter class sets 24px horizontally and outranks a plain
+   padding shorthand here, so both header and body are pinned to it — otherwise
+   the answer sits 2px left of the question it belongs to. */
+.upcsg-faq .mud-expand-panel-header,
+.upcsg-faq .mud-expand-panel-header.mud-expand-panel-header-gutters {
+    padding: 1.1rem 1.5rem;
+}
+
+.upcsg-faq .mud-expand-panel-text {
+    font-family: var(--upcsg-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.upcsg-faq .mud-expand-panel-content {
+    padding: 0 1.5rem 1.3rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-faq .mud-expand-panel-icon .mud-icon-root {
+    color: var(--upcsg-cosmic-lavender);
+}
+
+/* MudLink defaults to the theme primary (galactic orchid), which measures 2.6:1
+   against this panel — under AA. Lavender is 6.3:1 here. Underlined too, so the
+   link isn't signalled by colour alone.
+
+   !important is needed because MudBlazor's own .mud-primary-text declares the
+   colour !important; a plain declaration loses to it at any specificity. */
+.upcsg-faq .mud-expand-panel-content a {
+    color: var(--upcsg-cosmic-lavender) !important;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.upcsg-faq .mud-expand-panel-content a:hover,
+.upcsg-faq .mud-expand-panel-content a:focus-visible {
+    color: var(--upcsg-highlight) !important;
+}
+
 /* Divider with a 4-pointed star at its centre. */
 .upcsg-divider {
     display: flex;

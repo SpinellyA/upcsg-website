@@ -749,6 +749,128 @@ h4, h5, h6, .upcsg-heading {
     right: 1rem;
 }
 
+/* --- Inline text fields ---
+
+   The control must be invisible as a control: it inherits type from whatever it replaced,
+   and its padding is cancelled by an equal negative margin so nothing on the page moves
+   when it appears. The dashed outline is the only thing that says "this is editable". */
+
+.upcsg-inline {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    line-height: inherit;
+    width: 100%;
+    max-width: 100%;
+    display: block;
+    padding: 0.12em 0.3em;
+    margin: -0.12em -0.3em;
+    background: rgba(246, 255, 233, 0.06);
+    border: 1px dashed rgba(204, 174, 222, 0.5);
+    border-radius: 3px;
+    outline: none;
+    box-sizing: content-box;
+}
+
+.upcsg-inline:hover {
+    background: rgba(246, 255, 233, 0.09);
+}
+
+.upcsg-inline:focus {
+    border-style: solid;
+    border-color: var(--upcsg-highlight);
+    background: rgba(246, 255, 233, 0.1);
+}
+
+.upcsg-inline--multiline {
+    resize: none;
+    overflow: hidden;
+    min-height: 2em;
+    white-space: pre-wrap;
+}
+
+.upcsg-inline__empty {
+    opacity: 0.45;
+    font-style: italic;
+}
+
+/* --- Save bar --- */
+
+.upcsg-savebar {
+    position: fixed;
+    left: 50%;
+    bottom: 1.25rem;
+    transform: translateX(-50%);
+    z-index: 1400;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: calc(100vw - 2rem);
+    padding: 0.6rem 0.7rem 0.6rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--upcsg-ink-rule);
+    background: var(--upcsg-ink-head);
+    box-shadow: var(--upcsg-shadow-lg);
+}
+
+.upcsg-savebar__what {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.upcsg-savebar__label {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-savebar__name {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.upcsg-savebar__dirty,
+.upcsg-savebar__hint,
+.upcsg-savebar__error {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+}
+
+.upcsg-savebar__dirty {
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-savebar__hint {
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-savebar__error {
+    color: #ff8fa3;
+    max-width: 22rem;
+}
+
+@media (max-width: 767.98px) {
+    /* The hint is the first thing to go: on a phone the bar has room for the name and
+       the buttons, and nothing else. */
+    .upcsg-savebar__hint {
+        display: none;
+    }
+
+    .upcsg-savebar__name {
+        max-width: 8rem;
+    }
+}
+
 /* --- Drawer --- */
 
 /* Width goes through MudBlazor's own custom property rather than a `width` declaration:

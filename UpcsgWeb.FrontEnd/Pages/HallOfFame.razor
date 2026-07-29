@@ -74,7 +74,7 @@
             <section class="upcsg-section upcsg-editable">
                 <EditPencil Large="true" Label="@($"Edit {lead.Title}")" OnEdit="() => OpenEditor(lead)" />
 
-                <a class="upcsg-lead" href="@($"hall-of-fame/{lead.Id}")">
+                <a class="upcsg-lead" href="@($"hall-of-fame/{lead.Id}")" @onclick:preventDefault="IsEditing(lead)" @onclick="() => {}">
                     <span class="upcsg-lead__media">
                         <AchievementImage Entry="lead" />
                     </span>
@@ -89,8 +89,12 @@
                             }
                             <text> &middot; @lead.Year</text>
                         </span>
-                        <h2 class="upcsg-lead__title">@lead.Title</h2>
-                        <p class="upcsg-lead__standfirst">@Prose.Standfirst(lead.Description)</p>
+                        <h2 class="upcsg-lead__title">
+                            <InlineText Active="IsEditing(lead)" Value="@lead.Title" ValueChanged="v => lead.Title = v ?? string.Empty" OnRevert="RevertField" Placeholder="Title" />
+                        </h2>
+                        <p class="upcsg-lead__standfirst">
+                            <InlineText Active="IsEditing(lead)" Multiline="true" Value="@Prose.Standfirst(lead.Description)" ValueChanged="v => ReplaceStandfirst(lead, v)" OnRevert="RevertField" Placeholder="Summary" />
+                        </p>
                         <span class="upcsg-card__cue">Read the story <span aria-hidden="true">&rarr;</span></span>
                     </span>
                 </a>
@@ -166,7 +170,7 @@
                             <div class="upcsg-editable">
                                 <EditPencil Label="@($"Edit {entry.Title}")" OnEdit="() => OpenEditor(entry)" />
 
-                                <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{entry.Id}")">
+                                <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{entry.Id}")" @onclick:preventDefault="IsEditing(entry)" @onclick="() => {}">
                                     <span class="upcsg-story__media">
                                         <AchievementImage Entry="entry" />
                                     </span>
@@ -176,8 +180,26 @@
                                         {
                                             <span class="upcsg-card__tag">@entry.Category</span>
                                         }
-                                        <h4 class="upcsg-story__title">@entry.Title</h4>
-                                        <p class="upcsg-story__standfirst">@Prose.Standfirst(entry.Description)</p>
+
+                                        <h4 class="upcsg-story__title">
+                                            <InlineText Active="IsEditing(entry)"
+                                                        Value="@entry.Title"
+                                                        ValueChanged="v => entry.Title = v ?? string.Empty"
+                                                        OnRevert="RevertField"
+                                                        Placeholder="Title" />
+                                        </h4>
+
+                                        @* Only the standfirst is inline here — the rest of the story is long-form
+                                           and belongs on the article, where there's room for it. *@
+                                        <p class="upcsg-story__standfirst">
+                                            <InlineText Active="IsEditing(entry)"
+                                                        Multiline="true"
+                                                        Value="@Prose.Standfirst(entry.Description)"
+                                                        ValueChanged="v => ReplaceStandfirst(entry, v)"
+                                                        OnRevert="RevertField"
+                                                        Placeholder="Summary shown on this card" />
+                                        </p>
+
                                         <span class="upcsg-card__cue">Read <span aria-hidden="true">&rarr;</span></span>
                                     </span>
                                 </a>
@@ -204,19 +226,32 @@
 
 </div>
 
-@* ---------- In-place editor ----------
-   The fields bind straight to the draft with Immediate, so every keystroke re-renders the
-   cards behind the drawer. That IS the preview — there is no second renderer to drift. *@
-@if (_draft.Value is { } draft)
+@* ---------- In-place editing ----------
+   The text on the card IS the input, so there is nothing to preview. The bar collects the
+   edit and the drawer holds the fields that aren't text on the page. *@
+@if (_draft.Value is { } bar && !_showDrawer)
+{
+    <EditSaveBar Name="@bar.Title"
+                 Dirty="_draft.IsDirty"
+                 Saving="_draft.IsSaving"
+                 CanSave="!string.IsNullOrWhiteSpace(bar.Title)"
+                 Error="@_editError"
+                 OnSave="SaveEditAsync"
+                 OnCancel="CancelEdit"
+                 OnMore="() => _showDrawer = true" />
+}
+
+@if (_draft.Value is { } draft && _showDrawer)
 {
     <EditDrawer Open="true"
                 Title="@(_draft.EditingId == 0 ? "New entry" : draft.Title)"
                 Dirty="_draft.IsDirty"
                 Saving="_draft.IsSaving"
                 CanSave="!string.IsNullOrWhiteSpace(draft.Title)"
-                Error="_editError"
+                Error="@_editError"
+                Guard="false"
                 OnSave="SaveEditAsync"
-                OnCancel="CancelEdit">
+                OnCancel="() => _showDrawer = false">
 
         <MudTextField @bind-Value="draft.Title" Immediate="true"
                       Label="Title" Variant="Variant.Outlined" Required="true" Class="mb-4" />
@@ -314,6 +349,40 @@
 
     private readonly ContentDraft<AchievementDto> _draft = new();
     private string? _editError;
+    private bool _showDrawer;
+
+    private bool IsEditing(AchievementDto entry) => _draft.IsOpen && _draft.EditingId == entry.Id;
+
+    /// <summary>
+    /// Escape in a field puts the whole entry back to how it was opened. Per-field undo
+    /// would need a snapshot per control for very little gain — the officer is one Esc
+    /// away from a clean slate either way.
+    /// </summary>
+    private void RevertField()
+    {
+        if (_draft.IsOpen)
+        {
+            var original = _all.FirstOrDefault(a => a.Id == _draft.EditingId);
+
+            if (original is not null)
+            {
+                _draft.Open(original, original.Id);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Swaps the opening paragraph, leaving the rest of the story untouched. The card only
+    /// ever shows the standfirst, so editing it there must not silently drop the body.
+    /// </summary>
+    private static void ReplaceStandfirst(AchievementDto entry, string? standfirst)
+    {
+        var rest = Prose.Rest(entry.Description).ToList();
+
+        entry.Description = rest.Count == 0
+            ? standfirst ?? string.Empty
+            : string.Join("\n\n", new[] { standfirst ?? string.Empty }.Concat(rest));
+    }
 
     private static readonly string[] SuggestedCategories =
         ["Competition", "Recognition", "Community", "Milestone", "Research"];
@@ -326,12 +395,14 @@
     private void OpenEditor(AchievementDto entry)
     {
         _editError = null;
+        _showDrawer = false;
         _draft.Open(entry, entry.Id);
     }
 
     private void CancelEdit()
     {
         _editError = null;
+        _showDrawer = false;
         _draft.Close();
     }
 
@@ -363,6 +434,7 @@
             }
 
             RebuildCategories();
+            _showDrawer = false;
             _draft.Close();
             Snackbar.Add("Saved.", Severity.Success);
         }

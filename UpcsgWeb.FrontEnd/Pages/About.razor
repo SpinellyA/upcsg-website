@@ -108,7 +108,7 @@
                 Dirty="_draft.IsDirty"
                 Saving="_draft.IsSaving"
                 CanSave="!string.IsNullOrWhiteSpace(draft.Name)"
-                Error="_editError"
+                Error="@_editError"
                 OnSave="SaveEditAsync"
                 OnCancel="CancelEdit">
 

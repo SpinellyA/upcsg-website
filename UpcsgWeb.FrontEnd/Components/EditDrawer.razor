@@ -62,6 +62,13 @@
     [Parameter] public bool CanSave { get; set; } = true;
 
     [Parameter] public string? Error { get; set; }
+
+    /// <summary>
+    /// Whether closing discards the edit. False when the drawer is a secondary panel over
+    /// an edit that continues elsewhere — closing it there loses nothing, so prompting
+    /// would train officers to click through a warning that never meant anything.
+    /// </summary>
+    [Parameter] public bool Guard { get; set; } = true;
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback OnSave { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
@@ -75,7 +82,7 @@
     /// </summary>
     private async Task RequestCloseAsync()
     {
-        if (Dirty)
+        if (Dirty && Guard)
         {
             var ok = await Dialogs.ShowMessageBoxAsync(
                 "Discard changes?",

@@ -1,0 +1,51 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* The variant form: the same shape as the item form, minus the variant list — a variant
+   can't have variants of its own. *@
+
+<MudDialog>
+    <DialogContent>
+        <div class="upcsg-variantform">
+            <div>
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Photos</MudText>
+                <PhotoStrip Photos="Model.PhotoUrls" />
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    Leave empty to use the item's photos. Add photos here when this variant
+                    looks different — a colourway, say.
+                </MudText>
+            </div>
+
+            <div>
+                <MudTextField @bind-Value="Model.Name" Immediate="true"
+                              Label="Variant name" Variant="Variant.Outlined" Required="true"
+                              HelperText="What the guilder picks: S, M, Red, Bundle of 3."
+                              Class="mb-4" />
+
+                <MudNumericField @bind-Value="Model.Price" Immediate="true"
+                                 Label="Price (PHP)" Variant="Variant.Outlined"
+                                 Min="0" Format="0.00"
+                                 HelperText="What this variant costs. The store lists the cheapest one."
+                                 Class="mb-4" />
+
+                <MudTextField @bind-Value="Model.Description" Immediate="true"
+                              Label="Description" Variant="Variant.Outlined" Lines="5"
+                              HelperText="Optional. Shown in place of the item's summary when this variant is selected."
+                              Class="mb-2" />
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   Disabled="string.IsNullOrWhiteSpace(Model.Name)"
+                   OnClick="() => MudDialog.Close(DialogResult.Ok(Model))">
+            Done
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public MerchVariantDto Model { get; set; } = default!;
+}

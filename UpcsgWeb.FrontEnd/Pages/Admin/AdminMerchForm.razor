@@ -1,0 +1,308 @@
+@page "/admin/merch/new"
+@page "/admin/merch/{Id:int}"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IMerchService MerchService
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsNew ? "New item" : _item.Name) - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <MudLink Href="admin/merch" Class="mb-3 d-inline-block">&larr; All merch</MudLink>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Warning">That item no longer exists.</MudAlert>
+    }
+    else
+    {
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Guild CMS</p>
+                <h1 class="upcsg-title-xl">@(IsNew ? "New item" : _item.Name)</h1>
+            </div>
+            <MudSwitch T="bool" @bind-Value="_item.InStock" Color="Color.Success" Label="In stock" />
+        </div>
+
+        <AdminNav />
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
+        }
+
+        @* The form is laid out like the page it produces: photos on the left where the
+           gallery sits, the writing on the right where the buy panel sits. *@
+        <div class="upcsg-merchform mt-4">
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Photos</MudText>
+                <PhotoStrip Photos="_item.PhotoUrls" PhotosChanged="_ => Touch()" />
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    The first photo is what the store listing and the cart row show.
+                </MudText>
+            </MudPaper>
+
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Item</MudText>
+
+                <MudTextField @bind-Value="_item.Name" Immediate="true"
+                              Label="Name" Variant="Variant.Outlined" Required="true" Class="mb-4" />
+
+                <MudNumericField @bind-Value="_item.Price" Immediate="true"
+                                 Label="Base price (PHP)" Variant="Variant.Outlined"
+                                 Min="0" Format="0.00" Class="mb-2" />
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-4">
+                    @if (_item.Variants.Count == 0)
+                    {
+                        <text>With no variants, this is what guilders pay.</text>
+                    }
+                    else
+                    {
+                        <text>
+                            Variants price themselves, so this is only a fallback. The store shows
+                            &#8369;@CheapestVariant.ToString("N2") &mdash; the cheapest variant.
+                        </text>
+                    }
+                </MudText>
+
+                <MudTextField @bind-Value="_item.Description" Immediate="true"
+                              Label="Description" Variant="Variant.Outlined" Lines="8"
+                              HelperText="Leave a blank line between paragraphs. The first is the summary shown on cards."
+                              Class="mb-2" />
+            </MudPaper>
+        </div>
+
+        @* ---------- Variants ---------- *@
+        <section class="upcsg-section mt-4">
+            <div class="upcsg-section-head">
+                <div>
+                    <p class="upcsg-kicker">@_item.Variants.Count variant(s)</p>
+                    <h2 class="upcsg-title-xl">Variants</h2>
+                </div>
+                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
+                           StartIcon="@Icons.Material.Filled.Add" OnClick="AddVariantAsync">
+                    Add variant
+                </MudButton>
+            </div>
+
+            @if (_item.Variants.Count == 0)
+            {
+                <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                        No variants. The item sells at its base price with nothing to choose.
+                        Add variants for sizes, colourways or bundles that price differently.
+                    </MudText>
+                </MudPaper>
+            }
+            else
+            {
+                <MudTable Items="_item.Variants" T="MerchVariantDto" Hover="true" Elevation="0" Dense="true"
+                          Class="upcsg-datatable" OnRowClick="OpenVariant" RowClass="upcsg-datatable__row">
+                    <HeaderContent>
+                        <MudTh>Variant</MudTh>
+                        <MudTh Class="upcsg-num">Price</MudTh>
+                        <MudTh Class="upcsg-num">Photos</MudTh>
+                        <MudTh Style="width:6rem"></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Variant"><strong>@context.Name</strong></MudTd>
+                        <MudTd DataLabel="Price" Class="upcsg-num">&#8369;@context.Price.ToString("N2")</MudTd>
+                        <MudTd DataLabel="Photos" Class="upcsg-num">
+                            @(context.PhotoUrls.Count == 0 ? "item's" : context.PhotoUrls.Count.ToString())
+                        </MudTd>
+                        <MudTd Class="upcsg-num">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error"
+                                           OnClick="@(() => RemoveVariant(context))" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint mt-2">
+                    Click a variant to edit its own name, price, description and photos.
+                </MudText>
+            }
+        </section>
+
+        <div class="upcsg-formbar">
+            @if (_dirty)
+            {
+                <span class="upcsg-savebar__dirty">Unsaved changes</span>
+            }
+            <MudButton Variant="Variant.Text" Disabled="_saving" OnClick="Leave">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                       Disabled="_saving || string.IsNullOrWhiteSpace(_item.Name)"
+                       OnClick="SaveAsync">
+                @(_saving ? "Saving…" : "Save item")
+            </MudButton>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private MerchItemDto _item = new() { InStock = true };
+    private bool _loading = true;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+    private string? _error;
+
+    private bool IsNew => Id is null;
+
+    private decimal CheapestVariant =>
+        _item.Variants.Count == 0 ? _item.Price : _item.Variants.Min(v => v.Price);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _notFound = false;
+        _error = null;
+        _dirty = false;
+
+        try
+        {
+            if (Id is { } id)
+            {
+                var found = await MerchService.GetMerchItemAsync(id);
+
+                if (found is null)
+                {
+                    _notFound = true;
+                }
+                else
+                {
+                    _item = found;
+                }
+            }
+            else
+            {
+                _item = new MerchItemDto { InStock = true };
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Touch() => _dirty = true;
+
+    private async Task AddVariantAsync()
+    {
+        // A new variant starts at the item's price: most variants cost the same, and
+        // typing the number again for every size is busywork.
+        var draft = new MerchVariantDto { Price = _item.Price };
+
+        if (await ShowVariantAsync(draft, "New variant"))
+        {
+            _item.Variants.Add(draft);
+            _dirty = true;
+        }
+    }
+
+    private async Task OpenVariant(TableRowClickEventArgs<MerchVariantDto> args)
+    {
+        if (args.Item is not { } variant)
+        {
+            return;
+        }
+
+        // Edit a copy so cancelling really cancels.
+        var draft = new MerchVariantDto
+        {
+            Id = variant.Id,
+            Name = variant.Name,
+            Description = variant.Description,
+            Price = variant.Price,
+            PhotoUrls = [.. variant.PhotoUrls],
+        };
+
+        if (await ShowVariantAsync(draft, $"Edit {variant.Name}"))
+        {
+            var index = _item.Variants.IndexOf(variant);
+            _item.Variants[index] = draft;
+            _dirty = true;
+        }
+    }
+
+    private async Task<bool> ShowVariantAsync(MerchVariantDto draft, string title)
+    {
+        var parameters = new DialogParameters<VariantFormDialog> { { x => x.Model, draft } };
+
+        var dialog = await Dialogs.ShowAsync<VariantFormDialog>(title, parameters,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
+
+        var result = await dialog.Result;
+        return result is { Canceled: false };
+    }
+
+    private void RemoveVariant(MerchVariantDto variant)
+    {
+        _item.Variants.Remove(variant);
+        _dirty = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+
+        try
+        {
+            var saved = await Admin.SaveMerchAsync(_item);
+            Snackbar.Add("Saved.", Severity.Success);
+
+            // A new item now has an id; land on its own URL so a reload doesn't create a
+            // second copy.
+            if (IsNew)
+            {
+                Navigation.NavigateTo($"admin/merch/{saved.Id}", replace: true);
+                return;
+            }
+
+            _item = saved;
+            _dirty = false;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task Leave()
+    {
+        if (_dirty)
+        {
+            var ok = await Dialogs.ShowMessageBoxAsync(
+                "Discard changes?",
+                "This item has edits that haven't been saved.",
+                yesText: "Discard", cancelText: "Keep editing");
+
+            if (ok != true)
+            {
+                return;
+            }
+        }
+
+        Navigation.NavigateTo("admin/merch");
+    }
+}

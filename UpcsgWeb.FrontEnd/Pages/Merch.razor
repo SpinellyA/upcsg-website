@@ -40,21 +40,30 @@
             <div>
                 <p class="upcsg-kicker">This season's drop</p>
                 <h2 class="upcsg-title-xl">@_featured.Name</h2>
-                <p class="upcsg-lede">@_featured.Description</p>
-                <p class="upcsg-featured__price upcsg-gradient-text">&#8369;@_featured.Price.ToString("0.00")</p>
+                <p class="upcsg-lede">@Prose.Standfirst(_featured.Description)</p>
+                <p class="upcsg-featured__price upcsg-gradient-text">
+                    @if (_featured.HasPriceRange)
+                    {
+                        <span class="upcsg-merch-card__from">from</span>
+                    }
+                    &#8369;@_featured.PriceFrom.ToString("N2")
+                </p>
 
                 @if (_featured.Variants.Count > 0)
                 {
                     <div class="upcsg-chips mb-6">
                         @foreach (var variant in _featured.Variants)
                         {
-                            <span class="upcsg-chip">@variant</span>
+                            <span class="upcsg-chip">@variant.Name</span>
                         }
                     </div>
                 }
 
                 <div style="max-width: 22rem;">
-                    <AddToCart Item="_featured" Primary="true" FullWidth="false" />
+                    <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true"
+                               Class="upcsg-cta-button" Href="@($"merch/{_featured.Id}")">
+                        View item
+                    </MudButton>
                 </div>
             </div>
         </section>
@@ -76,9 +85,12 @@
         else
         {
             <div class="upcsg-merch-grid">
+                @* The whole card is a link now: variants price separately, so picking one
+                   belongs on the detail page rather than inside a listing tile. *@
                 @foreach (var item in _catalog)
                 {
-                    <article class="upcsg-merch-card @(item.InStock ? null : "upcsg-merch-card--out")">
+                    <a class="upcsg-merch-card upcsg-merch-card--link @(item.InStock ? null : "upcsg-merch-card--out")"
+                       href="@($"merch/{item.Id}")">
                         <div class="upcsg-merch-card__thumb">
                             @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
                             {
@@ -97,24 +109,35 @@
 
                         <div class="upcsg-merch-card__body">
                             <h3 class="upcsg-merch-card__name">@item.Name</h3>
-                            <p class="upcsg-merch-card__desc">@item.Description</p>
-                            <p class="upcsg-merch-card__price">&#8369;@item.Price.ToString("0.00")</p>
+                            <p class="upcsg-merch-card__desc">@Prose.Standfirst(item.Description)</p>
+
+                            @* Cheapest variant, not the base price: with variants priced
+                               separately the base is a number nobody can actually pay. *@
+                            <p class="upcsg-merch-card__price">
+                                @if (item.HasPriceRange)
+                                {
+                                    <span class="upcsg-merch-card__from">from</span>
+                                }
+                                &#8369;@item.PriceFrom.ToString("N2")
+                            </p>
 
                             @if (item.Variants.Count > 0)
                             {
                                 <div class="upcsg-chips">
                                     @foreach (var variant in item.Variants)
                                     {
-                                        <span class="upcsg-chip">@variant</span>
+                                        <span class="upcsg-chip">@variant.Name</span>
                                     }
                                 </div>
                             }
 
                             <div class="upcsg-merch-card__foot">
-                                <AddToCart Item="item" />
+                                <span class="upcsg-card__cue">
+                                    @(item.InStock ? "View item" : "See details") <span aria-hidden="true">&rarr;</span>
+                                </span>
                             </div>
                         </div>
-                    </article>
+                    </a>
                 }
             </div>
         }

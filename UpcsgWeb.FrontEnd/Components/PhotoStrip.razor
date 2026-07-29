@@ -1,0 +1,112 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* Horizontally scrollable photo strip with an "Add" slot at the end.
+   Shared by the item form and the variant form so both behave identically.
+
+   Photos are URLs for now. When the file server lands, only the Add slot changes:
+   it prompts instead of uploading, and everything downstream already stores a URL. *@
+
+<div class="upcsg-photostrip">
+    @if (Photos.Count == 0)
+    {
+        <p class="upcsg-photostrip__empty">
+            No photos yet. The listing falls back to the guild crest.
+        </p>
+    }
+
+    <div class="upcsg-photostrip__rail">
+        @for (var i = 0; i < Photos.Count; i++)
+        {
+            var index = i;
+
+            <div class="upcsg-photoslot">
+                <img src="@Photos[index]" alt="@($"Photo {index + 1}")"
+                     onerror="this.closest('.upcsg-photoslot').classList.add('upcsg-photoslot--broken'); this.remove();" />
+                <span class="upcsg-photoslot__broken">Bad link</span>
+
+                @if (index == 0)
+                {
+                    @* Order is not decoration: listings use the first photo. *@
+                    <span class="upcsg-photoslot__cover">Cover</span>
+                }
+
+                <div class="upcsg-photoslot__tools">
+                    <button type="button" class="upcsg-photoslot__btn" title="Move left"
+                            disabled="@(index == 0)" @onclick="() => MoveAsync(index, -1)">&lsaquo;</button>
+                    <button type="button" class="upcsg-photoslot__btn" title="Replace"
+                            @onclick="() => EditAsync(index)">&#9998;</button>
+                    <button type="button" class="upcsg-photoslot__btn upcsg-photoslot__btn--del" title="Remove"
+                            @onclick="() => RemoveAsync(index)">&times;</button>
+                    <button type="button" class="upcsg-photoslot__btn" title="Move right"
+                            disabled="@(index == Photos.Count - 1)" @onclick="() => MoveAsync(index, 1)">&rsaquo;</button>
+                </div>
+            </div>
+        }
+
+        <button type="button" class="upcsg-photoslot upcsg-photoslot--add" @onclick="AddAsync">
+            <span class="upcsg-photoslot__plus">+</span>
+            <span>Add photo</span>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public List<string> Photos { get; set; } = [];
+    [Parameter] public EventCallback<List<string>> PhotosChanged { get; set; }
+
+    [Inject] private IDialogService Dialogs { get; set; } = default!;
+
+    private async Task AddAsync()
+    {
+        var url = await PromptAsync("Add photo", null);
+
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            Photos.Add(url.Trim());
+            await PhotosChanged.InvokeAsync(Photos);
+        }
+    }
+
+    private async Task EditAsync(int index)
+    {
+        var url = await PromptAsync("Replace photo", Photos[index]);
+
+        if (!string.IsNullOrWhiteSpace(url))
+        {
+            Photos[index] = url.Trim();
+            await PhotosChanged.InvokeAsync(Photos);
+        }
+    }
+
+    private async Task RemoveAsync(int index)
+    {
+        Photos.RemoveAt(index);
+        await PhotosChanged.InvokeAsync(Photos);
+    }
+
+    private async Task MoveAsync(int index, int delta)
+    {
+        var target = index + delta;
+
+        if (target < 0 || target >= Photos.Count)
+        {
+            return;
+        }
+
+        (Photos[index], Photos[target]) = (Photos[target], Photos[index]);
+        await PhotosChanged.InvokeAsync(Photos);
+    }
+
+    private async Task<string?> PromptAsync(string title, string? current)
+    {
+        var parameters = new DialogParameters<PhotoUrlDialog>
+        {
+            { x => x.Url, current ?? string.Empty },
+        };
+
+        var dialog = await Dialogs.ShowAsync<PhotoUrlDialog>(title, parameters);
+        var result = await dialog.Result;
+
+        return result is { Canceled: false, Data: string url } ? url : null;
+    }
+}

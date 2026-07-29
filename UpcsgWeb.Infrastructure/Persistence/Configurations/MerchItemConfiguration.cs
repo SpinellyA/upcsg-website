@@ -14,7 +14,6 @@ public class MerchItemConfiguration : IEntityTypeConfiguration<MerchItem>
 
         builder.Property(m => m.Name).HasMaxLength(200).IsRequired();
         builder.Property(m => m.Description).HasMaxLength(2000);
-        builder.Property(m => m.ImageUrl).HasMaxLength(500);
 
         builder.OwnsOne(m => m.Price, price =>
         {
@@ -29,13 +28,29 @@ public class MerchItemConfiguration : IEntityTypeConfiguration<MerchItem>
                 .IsRequired();
         });
 
-        // Postgres stores string[] natively, so variants need no join table.
-        builder.Property<List<string>>("_variants")
-            .HasColumnName("Variants")
+        // Postgres stores string[] natively, so an ordered photo list needs no join table.
+        // Order is meaningful — the first entry is what listings show.
+        builder.Property<List<string>>("_photoUrls")
+            .HasColumnName("PhotoUrls")
             .HasColumnType("text[]")
+            .HasField("_photoUrls")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.Ignore(m => m.PhotoUrls);
+
+        // Variants were a text[] of names. They are entities now: each has its own price
+        // and photos, which an array column cannot carry.
+        builder.HasMany<MerchVariant>("_variants")
+            .WithOne()
+            .HasForeignKey(v => v.MerchItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Navigation("_variants")
             .HasField("_variants")
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Ignore(m => m.Variants);
+        builder.Ignore(m => m.PriceFrom);
+        builder.Ignore(m => m.HasPriceRange);
     }
 }

@@ -25,7 +25,9 @@ public static class CartMapping
                 && item.InStock
                 && (line.Variant is null || item.HasVariant(line.Variant));
 
-            var unitPrice = item?.Price.Amount ?? 0m;
+            // PriceFor, so a cart line for the dearest size shows and charges that size's
+            // price rather than the item's base.
+            var unitPrice = item?.PriceFor(line.Variant).Amount ?? 0m;
 
             lines.Add(new CartLineDto
             {
@@ -35,7 +37,10 @@ public static class CartMapping
                 Quantity = line.Quantity,
                 UnitPrice = unitPrice,
                 LineTotal = unitPrice * line.Quantity,
-                ImageUrl = item?.ImageUrl,
+
+                // The variant's photo when it has one, so the cart row matches what was
+                // chosen on the detail page.
+                ImageUrl = item?.PhotosFor(line.Variant).FirstOrDefault(),
                 Available = available,
             });
         }

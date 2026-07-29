@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
@@ -128,7 +128,7 @@
         <div class="upcsg-merchrow">
             @foreach (var item in _merch.Take(4))
             {
-                <a class="upcsg-merchtile" href="merch">
+                <a class="upcsg-merchtile" href="@($"merch/{item.Id}")">
                     <span class="upcsg-merchtile__thumb">
                         <span class="upcsg-star" style="width: 2.2rem; height: 2.2rem;"></span>
                     </span>
@@ -136,7 +136,7 @@
                     <p class="upcsg-merchtile__price">
                         @if (item.InStock)
                         {
-                            <text>&#8369;@item.Price.ToString("0.00")</text>
+                            <text>&#8369;@item.PriceFrom.ToString("N2")</text>
                         }
                         else
                         {

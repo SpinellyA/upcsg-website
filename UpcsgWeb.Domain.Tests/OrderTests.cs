@@ -237,7 +237,7 @@ public class OrderLifecycleTests
         var order = AwaitingPaymentOrder(out var item);
         Assert.Equal(750m, order.Total.Amount);
 
-        item.UpdateDetails(item.Name, item.Description, Money.Of(1200m), item.ImageUrl);
+        item.UpdateDetails(item.Name, item.Description, Money.Of(1200m));
 
         Assert.Equal(750m, order.Total.Amount);
         Assert.Equal(750m, order.Lines[0].UnitPrice.Amount);
@@ -251,6 +251,96 @@ public class OrderLifecycleTests
         order.AddLine(Tote(), "One size", 1);  //  250
 
         Assert.Equal(1750m, order.Total.Amount);
+    }
+
+    // --- Variant pricing -------------------------------------------------------------
+
+    [Fact]
+    public void LineTakesTheVariantsPriceNotTheItemBase()
+    {
+        var order = Order.Place(UserId);
+        order.AddLine(HoodieWithPricedSizes(), "XL", 1);
+
+        // Base is 750; XL is 820. Charging the base here would sell the biggest size at
+        // the smallest one's price.
+        Assert.Equal(820m, order.Lines[0].UnitPrice.Amount);
+    }
+
+    [Fact]
+    public void EachVariantIsPricedIndependentlyOnTheSameOrder()
+    {
+        var item = HoodieWithPricedSizes();
+        var order = Order.Place(UserId);
+
+        order.AddLine(item, "S", 1);   // 750
+        order.AddLine(item, "XL", 1);  // 820
+
+        Assert.Equal(1570m, order.Total.Amount);
+    }
+
+    [Fact]
+    public void ItemWithNoVariantsFallsBackToItsBasePrice()
+    {
+        var item = MerchItem.Create("Sticker pack", "Vinyl", Money.Of(90m));
+        AssignId(item, 99);
+
+        var order = Order.Place(UserId);
+        order.AddLine(item, null, 2);
+
+        Assert.Equal(180m, order.Total.Amount);
+    }
+}
+
+public class MerchPricingTests
+{
+    [Fact]
+    public void PriceFromIsTheCheapestVariant()
+    {
+        Assert.Equal(750m, HoodieWithPricedSizes().PriceFrom.Amount);
+    }
+
+    [Fact]
+    public void PriceFromFallsBackToBaseWhenThereAreNoVariants()
+    {
+        var item = MerchItem.Create("Lanyard", "Woven", Money.Of(120m));
+        Assert.Equal(120m, item.PriceFrom.Amount);
+    }
+
+    [Fact]
+    public void HasPriceRangeOnlyWhenVariantsActuallyDiffer()
+    {
+        Assert.True(HoodieWithPricedSizes().HasPriceRange);
+
+        // Hoodie() gives every size the same price, so there is no range to advertise.
+        Assert.False(Hoodie().HasPriceRange);
+    }
+
+    [Fact]
+    public void DuplicateVariantNamesAreRejected()
+    {
+        var item = MerchItem.Create("Tee", "Cotton", Money.Of(450m));
+        item.AddVariant("M", string.Empty, Money.Of(450m));
+
+        // Cart and order lines match variants by name, so a duplicate would make an
+        // existing line ambiguous about which variant it meant.
+        var ex = Assert.Throws<DomainException>(
+            () => item.AddVariant("m", string.Empty, Money.Of(500m)));
+
+        Assert.Contains("already has a variant", ex.Message);
+    }
+
+    [Fact]
+    public void PhotosFallBackToTheItemWhenAVariantHasNone()
+    {
+        var item = MerchItem.Create("Tee", "Cotton", Money.Of(450m));
+        item.ReplacePhotos(["item-front.jpg", "item-back.jpg"]);
+        item.AddVariant("Red", string.Empty, Money.Of(450m), ["red.jpg"]);
+        item.AddVariant("Blue", string.Empty, Money.Of(450m));
+
+        Assert.Equal(["red.jpg"], item.PhotosFor("Red"));
+
+        // A variant without its own photos should look like the item, not blank.
+        Assert.Equal(["item-front.jpg", "item-back.jpg"], item.PhotosFor("Blue"));
     }
 }
 

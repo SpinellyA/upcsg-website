@@ -673,6 +673,495 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
+   Merch detail — gallery, buy panel, variants, quantity
+ * ------------------------------------------------------------------ */
+
+.upcsg-page--tight {
+    padding-top: 7rem;
+}
+
+.upcsg-product {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: start;
+    margin-bottom: clamp(3rem, 7vw, 5rem);
+}
+
+.upcsg-gallery__main {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    border: var(--upcsg-hairline);
+    display: grid;
+    place-items: center;
+    background:
+        radial-gradient(65% 60% at 35% 30%, rgba(204, 174, 222, 0.4) 0%, transparent 68%),
+        linear-gradient(150deg, rgba(82, 38, 87, 0.8), rgba(22, 17, 58, 0.92));
+}
+
+.upcsg-gallery__main img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upcsg-gallery__main .upcsg-merch-placeholder {
+    width: 45%;
+    height: auto;
+    object-fit: contain;
+    opacity: 0.4;
+}
+
+.upcsg-gallery__broken {
+    display: none;
+    margin: 0;
+    padding: 1rem;
+    font-size: 0.82rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-gallery__main--broken .upcsg-gallery__broken {
+    display: block;
+}
+
+.upcsg-gallery__soldout {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(9, 6, 32, 0.85);
+    border: 1px solid rgba(255, 63, 95, 0.5);
+    color: #ff8fa3;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+/* Scrolls rather than wraps: a long strip should not push the buy panel down. */
+.upcsg-gallery__strip {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+}
+
+.upcsg-gallery__thumb {
+    flex: none;
+    width: 4.5rem;
+    height: 4.5rem;
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(204, 174, 222, 0.25);
+    background: rgba(9, 6, 32, 0.5);
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.upcsg-gallery__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upcsg-gallery__thumb:hover {
+    transform: translateY(-2px);
+}
+
+.upcsg-gallery__thumb--on {
+    border-color: var(--upcsg-highlight);
+    border-width: 2px;
+}
+
+.upcsg-buy {
+    position: sticky;
+    top: 6rem;
+}
+
+.upcsg-buy__name {
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    line-height: 1.2;
+    margin: 0 0 0.6rem;
+}
+
+.upcsg-buy__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+    margin: 0 0 1rem;
+}
+
+.upcsg-buy__from,
+.upcsg-merch-card__from {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-buy__desc {
+    margin: 0 0 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-buy__block {
+    margin-bottom: 1.5rem;
+}
+
+.upcsg-buy__label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 0 0.6rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-buy__required {
+    color: var(--upcsg-highlight);
+    letter-spacing: 0.06em;
+    text-transform: none;
+}
+
+.upcsg-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.upcsg-variant {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 10px;
+    border: 1px solid rgba(204, 174, 222, 0.32);
+    background: rgba(246, 255, 233, 0.04);
+    color: var(--upcsg-text);
+    font-family: var(--upcsg-font-heading);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.upcsg-variant:hover {
+    border-color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-variant--on {
+    border-color: var(--upcsg-highlight);
+    border-width: 2px;
+    background: rgba(252, 230, 138, 0.12);
+}
+
+.upcsg-variant__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.upcsg-variant__price {
+    font-size: 0.72rem;
+    color: var(--upcsg-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.upcsg-variant--on .upcsg-variant__price {
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-qty {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.upcsg-qty__step {
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 10px;
+    border: 1px solid rgba(204, 174, 222, 0.32);
+    background: rgba(246, 255, 233, 0.04);
+    color: var(--upcsg-text);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.upcsg-qty__step:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* Spinners duplicate the buttons either side of the field. */
+.upcsg-qty__value {
+    width: 4rem;
+    height: 2.4rem;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid rgba(204, 174, 222, 0.32);
+    background: rgba(9, 6, 32, 0.4);
+    color: var(--upcsg-text);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.upcsg-qty__value::-webkit-outer-spin-button,
+.upcsg-qty__value::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.upcsg-qty__cap {
+    font-size: 0.72rem;
+    color: var(--upcsg-text-muted);
+    opacity: 0.75;
+}
+
+.upcsg-buy__total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0.9rem 0;
+    margin-bottom: 1.15rem;
+    border-top: var(--upcsg-hairline);
+    border-bottom: var(--upcsg-hairline);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.95rem;
+}
+
+.upcsg-buy__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+.upcsg-buy__note {
+    margin: 0.85rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-product__about {
+    padding: clamp(1.4rem, 3vw, 2rem);
+}
+
+.upcsg-product__para {
+    margin: 0.9rem 0 0;
+    line-height: 1.8;
+    color: var(--upcsg-text-muted);
+    max-width: 68ch;
+}
+
+/* The listing card became a link; it must not pick up link underlines or colour. */
+.upcsg-merch-card--link {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ------------------------------------------------------------------ *
+   Merch CMS — item form, photo strip, variant form
+ * ------------------------------------------------------------------ */
+
+.upcsg-merchform {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+}
+
+.upcsg-photostrip__empty {
+    margin: 0 0 0.75rem;
+    font-size: 0.8rem;
+    color: var(--upcsg-text-muted);
+    opacity: 0.85;
+}
+
+/* Horizontal scroll, not wrap: the Add slot stays reachable at the end of the row
+   however many photos there are. */
+.upcsg-photostrip__rail {
+    display: flex;
+    gap: 0.6rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+}
+
+.upcsg-photoslot {
+    position: relative;
+    flex: none;
+    width: 8.5rem;
+    aspect-ratio: 1;
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid var(--upcsg-ink-rule);
+    background: rgba(9, 6, 32, 0.45);
+}
+
+.upcsg-photoslot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upcsg-photoslot__broken {
+    display: none;
+    position: absolute;
+    inset: 0;
+    place-items: center;
+    font-size: 0.75rem;
+    color: #ff8fa3;
+}
+
+.upcsg-photoslot--broken .upcsg-photoslot__broken {
+    display: grid;
+}
+
+.upcsg-photoslot__cover {
+    position: absolute;
+    top: 0.35rem;
+    left: 0.35rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 2px;
+    background: var(--upcsg-highlight);
+    color: #221A57;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.upcsg-photoslot__tools {
+    position: absolute;
+    inset: auto 0 0 0;
+    display: flex;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.3rem;
+    background: rgba(9, 6, 32, 0.85);
+}
+
+.upcsg-photoslot__btn {
+    width: 1.7rem;
+    height: 1.7rem;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--upcsg-text);
+    cursor: pointer;
+    line-height: 1;
+}
+
+.upcsg-photoslot__btn:hover {
+    background: rgba(246, 255, 233, 0.12);
+}
+
+.upcsg-photoslot__btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.upcsg-photoslot__btn--del:hover {
+    background: rgba(255, 63, 95, 0.3);
+}
+
+.upcsg-photoslot--add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    border-style: dashed;
+    border-color: rgba(204, 174, 222, 0.4);
+    color: var(--upcsg-text-muted);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.upcsg-photoslot--add:hover {
+    border-color: var(--upcsg-highlight);
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-photoslot__plus {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.upcsg-photopreview {
+    border: 1px solid var(--upcsg-ink-rule);
+    border-radius: 3px;
+    overflow: hidden;
+    max-height: 16rem;
+}
+
+.upcsg-photopreview img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 16rem;
+    object-fit: contain;
+}
+
+.upcsg-photopreview__broken {
+    display: none;
+    margin: 0;
+    padding: 1rem;
+    font-size: 0.8rem;
+    color: #ff8fa3;
+}
+
+.upcsg-photopreview--broken .upcsg-photopreview__broken {
+    display: block;
+}
+
+.upcsg-variantform {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* In flow at the foot rather than floating: the form is the whole page, so there is
+   nothing behind it worth keeping visible. */
+.upcsg-formbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--upcsg-ink-rule);
+}
+
+.upcsg-formbar .upcsg-savebar__dirty {
+    margin-right: auto;
+}
+
+/* ------------------------------------------------------------------ *
    Hall of Fame — showcase and article
 
    Most entries have no photo, so the crest plate is the ordinary case and is

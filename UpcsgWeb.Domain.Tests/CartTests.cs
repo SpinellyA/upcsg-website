@@ -154,7 +154,7 @@ public class CheckoutServiceTests
         cart.AddItem(hoodie, "M", 1);
 
         var order = CheckoutService.Checkout(cart, Catalog(hoodie));
-        hoodie.UpdateDetails(hoodie.Name, hoodie.Description, Money.Of(1200m), null);
+        hoodie.UpdateDetails(hoodie.Name, hoodie.Description, Money.Of(1200m));
 
         Assert.Equal(750m, order.Total.Amount);
     }

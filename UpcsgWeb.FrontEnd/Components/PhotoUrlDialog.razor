@@ -1,0 +1,38 @@
+@* Stands in for the upload control until the file server exists. Everything downstream
+   already stores a URL, so swapping this out later touches nothing else. *@
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField @bind-Value="Url"
+                      Label="Photo URL"
+                      Variant="Variant.Outlined"
+                      Immediate="true"
+                      Placeholder="https://…"
+                      HelperText="Direct link to an image. Uploads arrive with the file server." />
+
+        @if (!string.IsNullOrWhiteSpace(Url))
+        {
+            <div class="upcsg-photopreview mt-4">
+                <img src="@Url" alt="Preview"
+                     onerror="this.closest('.upcsg-photopreview').classList.add('upcsg-photopreview--broken'); this.remove();" />
+                <p class="upcsg-photopreview__broken">
+                    Nothing loads from that link. Check it points straight at an image.
+                </p>
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">Cancel</MudButton>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                   Disabled="string.IsNullOrWhiteSpace(Url)"
+                   OnClick="() => MudDialog.Close(DialogResult.Ok(Url))">
+            Use photo
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public string Url { get; set; } = string.Empty;
+}

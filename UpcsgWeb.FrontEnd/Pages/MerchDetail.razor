@@ -1,0 +1,301 @@
+@page "/merch/{Id:int}"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IMerchService MerchService
+@inject ICartService CartService
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@(_item?.Name ?? "Merch") - UPCSG</PageTitle>
+
+@if (_loading)
+{
+    <div class="upcsg-page">
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    </div>
+}
+else if (_item is null)
+{
+    <div class="upcsg-page">
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that item. It may have been taken down, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="merch">
+            Back to the store
+        </MudButton>
+    </div>
+}
+else
+{
+    <div class="upcsg-page upcsg-page--tight">
+        <MudLink Href="merch" Class="mb-4 d-inline-block">&larr; Guild store</MudLink>
+
+        <section class="upcsg-product">
+
+            @* ---------- Gallery ---------- *@
+            <div class="upcsg-gallery">
+                <div class="upcsg-gallery__main">
+                    @if (Photos.Count > 0)
+                    {
+                        <img src="@Photos[_photoIndex]" alt="@_item.Name"
+                             onerror="this.closest('.upcsg-gallery__main').classList.add('upcsg-gallery__main--broken'); this.remove();" />
+                    }
+                    else
+                    {
+                        <img class="upcsg-merch-placeholder" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    }
+
+                    <p class="upcsg-gallery__broken">Photo couldn't be loaded.</p>
+
+                    @if (!_item.InStock)
+                    {
+                        <span class="upcsg-gallery__soldout">Sold out</span>
+                    }
+                </div>
+
+                @* Thumbnails only earn their space once there's more than one photo. *@
+                @if (Photos.Count > 1)
+                {
+                    <div class="upcsg-gallery__strip" role="group" aria-label="Photos">
+                        @for (var i = 0; i < Photos.Count; i++)
+                        {
+                            var index = i;
+                            <button type="button"
+                                    class="upcsg-gallery__thumb @(index == _photoIndex ? "upcsg-gallery__thumb--on" : null)"
+                                    aria-label="@($"Photo {index + 1} of {Photos.Count}")"
+                                    aria-pressed="@(index == _photoIndex ? "true" : "false")"
+                                    @onclick="() => _photoIndex = index">
+                                <img src="@Photos[index]" alt="" loading="lazy" />
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+
+            @* ---------- Buy panel ---------- *@
+            <div class="upcsg-buy">
+                <h1 class="upcsg-buy__name">@_item.Name</h1>
+
+                <p class="upcsg-buy__price">
+                    @if (_selected is null && _item.HasPriceRange)
+                    {
+                        <span class="upcsg-buy__from">from</span>
+                    }
+                    <span class="upcsg-gradient-text">&#8369;@UnitPrice.ToString("N2")</span>
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(Blurb))
+                {
+                    <p class="upcsg-buy__desc">@Blurb</p>
+                }
+
+                @if (_item.Variants.Count > 0)
+                {
+                    <div class="upcsg-buy__block">
+                        <p class="upcsg-buy__label">
+                            Variant
+                            @if (_selected is null)
+                            {
+                                <span class="upcsg-buy__required">Pick one</span>
+                            }
+                        </p>
+
+                        <div class="upcsg-variants" role="group" aria-label="Variant">
+                            @foreach (var variant in _item.Variants)
+                            {
+                                var v = variant;
+                                <button type="button"
+                                        class="upcsg-variant @(_selected?.Id == v.Id ? "upcsg-variant--on" : null)"
+                                        aria-pressed="@(_selected?.Id == v.Id ? "true" : "false")"
+                                        @onclick="() => SelectVariant(v)">
+                                    <span class="upcsg-variant__name">@v.Name</span>
+
+                                    @* Only show a per-variant price when they actually differ,
+                                       otherwise every chip repeats the same number. *@
+                                    @if (_item.HasPriceRange)
+                                    {
+                                        <span class="upcsg-variant__price">&#8369;@v.Price.ToString("N2")</span>
+                                    }
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="upcsg-buy__block">
+                    <p class="upcsg-buy__label">Quantity</p>
+                    <div class="upcsg-qty">
+                        <button type="button" class="upcsg-qty__step" aria-label="Fewer"
+                                disabled="@(_quantity <= 1)" @onclick="() => SetQuantity(_quantity - 1)">&minus;</button>
+                        <input class="upcsg-qty__value" type="number" inputmode="numeric"
+                               min="1" max="@MaxPerLine" aria-label="Quantity"
+                               value="@_quantity" @onchange="OnQuantityTyped" />
+                        <button type="button" class="upcsg-qty__step" aria-label="More"
+                                disabled="@(_quantity >= MaxPerLine)" @onclick="() => SetQuantity(_quantity + 1)">+</button>
+                        <span class="upcsg-qty__cap">max @MaxPerLine</span>
+                    </div>
+                </div>
+
+                <div class="upcsg-buy__total">
+                    <span>Subtotal</span>
+                    <strong>&#8369;@(( UnitPrice * _quantity ).ToString("N2"))</strong>
+                </div>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="upcsg-buy__actions">
+                            <MudButton Variant="Variant.Outlined" Size="Size.Large" FullWidth="true"
+                                       Class="upcsg-ghost-button"
+                                       Disabled="!CanBuy || _busy"
+                                       OnClick="() => AddAsync(false)">
+                                Add to cart
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true"
+                                       Class="upcsg-cta-button"
+                                       Disabled="!CanBuy || _busy"
+                                       OnClick="() => AddAsync(true)">
+                                Buy now
+                            </MudButton>
+                        </div>
+
+                        @if (!_item.InStock)
+                        {
+                            <p class="upcsg-buy__note">This item is sold out right now.</p>
+                        }
+                        else if (_selected is null && _item.Variants.Count > 0)
+                        {
+                            <p class="upcsg-buy__note">Choose a variant to continue.</p>
+                        }
+                    </Authorized>
+                    <NotAuthorized>
+                        <MudButton Variant="Variant.Filled" Size="Size.Large" FullWidth="true"
+                                   Class="upcsg-cta-button"
+                                   Href="@($"login?returnUrl=merch/{Id}")">
+                            Sign in to order
+                        </MudButton>
+                        <p class="upcsg-buy__note">
+                            Ordering needs a guilder account so officers know whose order it is.
+                        </p>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+        </section>
+
+        @if (!string.IsNullOrWhiteSpace(_item.Description))
+        {
+            <section class="upcsg-section">
+                <div class="upcsg-surface upcsg-product__about">
+                    <p class="upcsg-kicker">Details</p>
+                    @foreach (var paragraph in Prose.Paragraphs(_item.Description))
+                    {
+                        <p class="upcsg-product__para">@paragraph</p>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    /// <summary>Mirrors Cart.MaxQuantityPerLine; the domain rejects anything above it.</summary>
+    private const int MaxPerLine = 25;
+
+    private MerchItemDto? _item;
+    private MerchVariantDto? _selected;
+    private int _quantity = 1;
+    private int _photoIndex;
+    private bool _loading = true;
+    private bool _busy;
+
+    private List<string> Photos => _item?.PhotosOf(_selected?.Name) ?? [];
+
+    private decimal UnitPrice => _selected?.Price ?? _item?.PriceFrom ?? 0m;
+
+    /// <summary>The variant's own blurb when it has one, else the item's opening line.</summary>
+    private string Blurb => !string.IsNullOrWhiteSpace(_selected?.Description)
+        ? _selected!.Description
+        : Prose.Standfirst(_item?.Description);
+
+    private bool CanBuy => _item is { InStock: true }
+        && (_item.Variants.Count == 0 || _selected is not null);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _item = null;
+        _selected = null;
+        _quantity = 1;
+        _photoIndex = 0;
+
+        try
+        {
+            _item = await MerchService.GetMerchItemAsync(Id);
+
+            // Preselect when there's only one way to buy it — making someone click "One
+            // size" before they can order is a pointless gate.
+            if (_item is { Variants.Count: 1 })
+            {
+                _selected = _item.Variants[0];
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SelectVariant(MerchVariantDto variant)
+    {
+        _selected = variant;
+
+        // The gallery may now be showing a different set, so an index carried over from
+        // the previous variant could point past the end.
+        _photoIndex = 0;
+    }
+
+    private void SetQuantity(int value) => _quantity = Math.Clamp(value, 1, MaxPerLine);
+
+    private void OnQuantityTyped(ChangeEventArgs e) =>
+        SetQuantity(int.TryParse(e.Value?.ToString(), out var typed) ? typed : 1);
+
+    private async Task AddAsync(bool thenCheckout)
+    {
+        if (_item is null || !CanBuy)
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            await CartService.AddAsync(_item.Id, _selected?.Name, _quantity);
+
+            if (thenCheckout)
+            {
+                // "Buy now" still goes through the cart: it is where the total, the note and
+                // the GCash step live, and duplicating that flow would mean two checkouts
+                // to keep correct.
+                Navigation.NavigateTo("cart");
+                return;
+            }
+
+            Snackbar.Add($"Added {_quantity} × {_item.Name} to your cart.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

@@ -120,7 +120,9 @@ public class Order : AggregateRoot
         }
         else
         {
-            _lines.Add(new OrderLine(item.Id, item.Name, variant, item.Price, quantity));
+            // PriceFor, not item.Price: variants carry their own price now, and snapshotting
+            // the base price here would sell the dearest size at the cheapest one's cost.
+            _lines.Add(new OrderLine(item.Id, item.Name, variant, item.PriceFor(variant), quantity));
         }
 
         Touch();

@@ -35,9 +35,22 @@ public static class DtoMapping
         Name = m.Name,
         Description = m.Description,
         Price = m.Price.Amount,
-        ImageUrl = m.ImageUrl,
-        Variants = [.. m.Variants],
+        PhotoUrls = [.. m.PhotoUrls],
+        Variants = [.. m.Variants.Select(v => v.ToDto())],
         InStock = m.InStock,
+
+        // Computed server-side so every client agrees on the headline number.
+        PriceFrom = m.PriceFrom.Amount,
+        HasPriceRange = m.HasPriceRange,
+    };
+
+    public static MerchVariantDto ToDto(this MerchVariant v) => new()
+    {
+        Id = v.Id,
+        Name = v.Name,
+        Description = v.Description,
+        Price = v.Price.Amount,
+        PhotoUrls = [.. v.PhotoUrls],
     };
 
     public static MemberDto ToDto(this Member m) => new()

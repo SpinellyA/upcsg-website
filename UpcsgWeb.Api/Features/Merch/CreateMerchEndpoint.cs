@@ -23,10 +23,8 @@ public class CreateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
         DomainMerchItem item;
         try
         {
-            item = DomainMerchItem.Create(
-                req.Name, req.Description, Money.Of(req.Price), req.Variants, req.ImageUrl);
-
-            item.SetStock(req.InStock);
+            item = DomainMerchItem.Create(req.Name, req.Description, Money.Of(req.Price));
+            MerchWrites.Apply(item, req);
         }
         catch (DomainException ex)
         {

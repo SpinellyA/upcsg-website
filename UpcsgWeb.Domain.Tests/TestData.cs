@@ -18,12 +18,20 @@ internal static class TestData
         typeof(Entity).GetProperty(nameof(Entity.Id))!
             .SetValue(entity, id, BindingFlags.NonPublic | BindingFlags.Instance, null, null, null);
 
+    /// <summary>
+    /// All three sizes at the same price, so tests that don't care about variant pricing
+    /// keep reading the way they did. <see cref="HoodieWithPricedSizes"/> covers the case
+    /// where they differ.
+    /// </summary>
     public static MerchItem Hoodie(int id = 1, decimal price = 750m, bool inStock = true)
     {
-        var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover",
-            Money.Of(price), ["S", "M", "L"]);
-
+        var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover", Money.Of(price));
         AssignId(item, id);
+
+        foreach (var (size, index) in new[] { "S", "M", "L" }.Select((s, i) => (s, i)))
+        {
+            AssignId(item.AddVariant(size, string.Empty, Money.Of(price)), index + 1);
+        }
 
         if (!inStock)
         {
@@ -33,10 +41,24 @@ internal static class TestData
         return item;
     }
 
+    /// <summary>Sizes that cost different amounts — the case PriceFor has to get right.</summary>
+    public static MerchItem HoodieWithPricedSizes(int id = 1)
+    {
+        var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover", Money.Of(750m));
+        AssignId(item, id);
+
+        AssignId(item.AddVariant("S", string.Empty, Money.Of(750m)), 1);
+        AssignId(item.AddVariant("L", string.Empty, Money.Of(780m)), 2);
+        AssignId(item.AddVariant("XL", string.Empty, Money.Of(820m)), 3);
+
+        return item;
+    }
+
     public static MerchItem Tote(int id = 2, decimal price = 250m)
     {
-        var item = MerchItem.Create("Starlight Tote", "Canvas", Money.Of(price), ["One size"]);
+        var item = MerchItem.Create("Starlight Tote", "Canvas", Money.Of(price));
         AssignId(item, id);
+        AssignId(item.AddVariant("One size", string.Empty, Money.Of(price)), 10);
         return item;
     }
 

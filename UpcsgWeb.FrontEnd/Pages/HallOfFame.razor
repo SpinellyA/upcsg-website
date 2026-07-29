@@ -1,6 +1,7 @@
 @page "/hall-of-fame"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
 @inject IAchievementService AchievementService
 
 <PageTitle>Hall of Fame - UPCSG</PageTitle>
@@ -14,7 +15,8 @@
         <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Hall of fame</p>
         <h1 class="upcsg-banner__title">What We've Won</h1>
         <p class="upcsg-lede" style="margin-bottom: 0;">
-            The wins, awards, and milestones our members and the guild have collected over the years.
+            The wins, awards, and milestones our members and the guild have collected over the years
+            &mdash; each one written up properly, not just listed.
         </p>
     </div>
 </section>
@@ -44,93 +46,136 @@
         </section>
     }
 
-    @* ---------- Filterable timeline ---------- *@
-    <section class="upcsg-section">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">
-                    @if (_activeCategory is null)
-                    {
-                        <text>All categories</text>
-                    }
-                    else
-                    {
-                        <text>Filtered by @_activeCategory</text>
-                    }
-                </p>
-                <h2 class="upcsg-title-xl">The Record</h2>
-            </div>
-        </div>
-
-        @* Explains a short list, so it reads as a standard being upheld rather than a gap. *@
-        <p class="upcsg-lede">
-            We only list achievements the ExeCom can verify. Wins from earlier years are being
-            confirmed and added as we go &mdash; if one is missing, tell us and we'll chase the record down.
-        </p>
-
-        @if (_categories.Count > 1)
-        {
-            <div class="upcsg-filter" role="group" aria-label="Filter achievements by category">
-                <button type="button"
-                        class="upcsg-filter__btn"
-                        aria-pressed="@(_activeCategory is null ? "true" : "false")"
-                        @onclick="() => SetCategory(null)">
-                    All (@_all.Count)
-                </button>
-
-                @foreach (var category in _categories)
-                {
-                    var c = category;
-                    <button type="button"
-                            class="upcsg-filter__btn"
-                            aria-pressed="@(_activeCategory == c ? "true" : "false")"
-                            @onclick="() => SetCategory(c)">
-                        @c (@_all.Count(a => a.Category == c))
-                    </button>
-                }
-            </div>
-        }
-
-        @if (_all.Count == 0)
-        {
-            <p class="upcsg-lede">
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_all.Count == 0)
+    {
+        <section class="upcsg-section upcsg-band">
+            <p class="upcsg-kicker">Nothing yet</p>
+            <h2 class="upcsg-title-xl">The record is empty</h2>
+            <p class="upcsg-lede" style="margin-bottom: 0;">
                 Nothing has been verified for the record yet. Check back soon.
             </p>
-        }
-        else if (Visible.Count == 0)
+        </section>
+    }
+    else
+    {
+        @* ---------- Lead story ----------
+           The most recent entry gets the full-width treatment. With a thin record this is
+           the difference between a page that looks curated and a page that looks unfinished. *@
+        @if (Lead is not null)
         {
-            <p class="upcsg-lede">Nothing recorded under this category yet.</p>
+            <section class="upcsg-section">
+                <a class="upcsg-lead" href="@($"hall-of-fame/{Lead.Id}")">
+                    <span class="upcsg-lead__media">
+                        <AchievementImage Entry="Lead" />
+                    </span>
+
+                    <span class="upcsg-lead__body">
+                        <span class="upcsg-lead__kicker">
+                            <span class="upcsg-star"></span>
+                            Most recent
+                            @if (!string.IsNullOrWhiteSpace(Lead.Category))
+                            {
+                                <text> &middot; @Lead.Category</text>
+                            }
+                            <text> &middot; @Lead.Year</text>
+                        </span>
+                        <h2 class="upcsg-lead__title">@Lead.Title</h2>
+                        <p class="upcsg-lead__standfirst">@Prose.Standfirst(Lead.Description)</p>
+                        <span class="upcsg-card__cue">Read the story <span aria-hidden="true">&rarr;</span></span>
+                    </span>
+                </a>
+            </section>
         }
-        else
-        {
-            <div class="upcsg-timeline">
+
+        @* ---------- The rest of the record ---------- *@
+        <section class="upcsg-section">
+            <div class="upcsg-section-head">
+                <div>
+                    <p class="upcsg-kicker">
+                        @if (_activeCategory is null)
+                        {
+                            <text>All categories</text>
+                        }
+                        else
+                        {
+                            <text>Filtered by @_activeCategory</text>
+                        }
+                    </p>
+                    <h2 class="upcsg-title-xl">The Record</h2>
+                </div>
+            </div>
+
+            @* Explains a short list, so it reads as a standard being upheld rather than a gap. *@
+            <p class="upcsg-lede">
+                We only list achievements the ExeCom can verify. Wins from earlier years are being
+                confirmed and added as we go &mdash; if one is missing, tell us and we'll chase the record down.
+            </p>
+
+            @if (_categories.Count > 1)
+            {
+                <div class="upcsg-filter" role="group" aria-label="Filter achievements by category">
+                    <button type="button"
+                            class="upcsg-filter__btn"
+                            aria-pressed="@(_activeCategory is null ? "true" : "false")"
+                            @onclick="() => SetCategory(null)">
+                        All (@_all.Count)
+                    </button>
+
+                    @foreach (var category in _categories)
+                    {
+                        var c = category;
+                        <button type="button"
+                                class="upcsg-filter__btn"
+                                aria-pressed="@(_activeCategory == c ? "true" : "false")"
+                                @onclick="() => SetCategory(c)">
+                            @c (@_all.Count(a => a.Category == c))
+                        </button>
+                    }
+                </div>
+            }
+
+            @if (Visible.Count == 0)
+            {
+                <p class="upcsg-lede">Nothing recorded under this category yet.</p>
+            }
+            else
+            {
                 @foreach (var group in Visible.GroupBy(a => a.Year).OrderByDescending(g => g.Key))
                 {
-                    <div class="upcsg-timeline__row upcsg-timeline__row--year">
-                        <span class="upcsg-timeline__node"><span class="upcsg-star"></span></span>
-                        <h3 class="upcsg-timeline__year">@group.Key</h3>
+                    <div class="upcsg-yearrule">
+                        <h3 class="upcsg-yearrule__year">@group.Key</h3>
+                        <span class="upcsg-yearrule__line"></span>
+                        <span class="upcsg-yearrule__count">@group.Count() entr@(group.Count() == 1 ? "y" : "ies")</span>
                     </div>
 
-                    @foreach (var entry in group.OrderBy(a => a.Title))
-                    {
-                        <div class="upcsg-timeline__row">
-                            <span class="upcsg-timeline__node"><span class="upcsg-star"></span></span>
-                            <div class="upcsg-surface upcsg-hof__card">
-                                <div class="upcsg-hof__head">
-                                    <h4 class="upcsg-hof__title">@entry.Title</h4>
+                    <div class="upcsg-storygrid">
+                        @foreach (var entry in group.OrderBy(a => a.Title))
+                        {
+                            <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{entry.Id}")">
+                                <span class="upcsg-story__media">
+                                    <AchievementImage Entry="entry" />
+                                </span>
+
+                                <span class="upcsg-story__body">
                                     @if (!string.IsNullOrWhiteSpace(entry.Category))
                                     {
-                                        <span class="upcsg-chip">@entry.Category</span>
+                                        <span class="upcsg-card__tag">@entry.Category</span>
                                     }
-                                </div>
-                                <p class="upcsg-hof__desc">@entry.Description</p>
-                            </div>
-                        </div>
-                    }
+                                    <h4 class="upcsg-story__title">@entry.Title</h4>
+                                    <p class="upcsg-story__standfirst">@Prose.Standfirst(entry.Description)</p>
+                                    <span class="upcsg-card__cue">Read <span aria-hidden="true">&rarr;</span></span>
+                                </span>
+                            </a>
+                        }
+                    </div>
                 }
-            </div>
-        }
-    </section>
+            }
+        </section>
+    }
 
     @* ---------- Closing CTA ---------- *@
     <section class="upcsg-section upcsg-band upcsg-cta-band">
@@ -154,11 +199,23 @@
     private List<AchievementDto> _all = [];
     private List<string> _categories = [];
     private string? _activeCategory;
+    private bool _loading = true;
+
+    /// <summary>
+    /// Newest entry, and the only one shown large. Deliberately not filtered: the lead is
+    /// "the latest thing the guild did", not "the latest thing in this category".
+    /// </summary>
+    private AchievementDto? Lead => _all
+        .OrderByDescending(a => a.Year)
+        .ThenByDescending(a => a.Id)
+        .FirstOrDefault();
 
     private List<AchievementDto> Visible =>
-        _activeCategory is null
+        (_activeCategory is null
             ? _all
-            : _all.Where(a => a.Category == _activeCategory).ToList();
+            : _all.Where(a => a.Category == _activeCategory))
+        .Where(a => a.Id != Lead?.Id)
+        .ToList();
 
     private string YearSpan
     {
@@ -177,15 +234,22 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _all = await AchievementService.GetAchievementsAsync();
+        try
+        {
+            _all = await AchievementService.GetAchievementsAsync();
 
-        _categories = _all
-            .Select(a => a.Category)
-            .Where(c => !string.IsNullOrWhiteSpace(c))
-            .Select(c => c!)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToList();
+            _categories = _all
+                .Select(a => a.Category)
+                .Where(c => !string.IsNullOrWhiteSpace(c))
+                .Select(c => c!)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private void SetCategory(string? category) => _activeCategory = category;

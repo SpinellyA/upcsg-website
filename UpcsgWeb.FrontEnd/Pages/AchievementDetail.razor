@@ -1,0 +1,211 @@
+@page "/hall-of-fame/{Id:int}"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IAchievementService AchievementService
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@(_entry?.Title ?? "Hall of Fame") - UPCSG</PageTitle>
+
+@if (_loading)
+{
+    <div class="upcsg-page">
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    </div>
+}
+else if (_entry is null)
+{
+    <div class="upcsg-page">
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that entry. It may have been removed, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="hall-of-fame">
+            Back to the Hall of Fame
+        </MudButton>
+    </div>
+}
+else
+{
+    <article class="upcsg-article">
+
+        @* ---------- Masthead ---------- *@
+        <header class="upcsg-article__head">
+            <div class="upcsg-article__headinner">
+                <p class="upcsg-eyebrow">
+                    <span class="upcsg-star"></span>
+                    @if (!string.IsNullOrWhiteSpace(_entry.Category))
+                    {
+                        <text>@_entry.Category &middot; </text>
+                    }
+                    @_entry.Year
+                </p>
+
+                <h1 class="upcsg-article__title">@_entry.Title</h1>
+
+                @if (Standfirst.Length > 0)
+                {
+                    <p class="upcsg-article__standfirst">@Standfirst</p>
+                }
+
+                <div class="upcsg-article__byline">
+                    <span class="upcsg-article__source">UP Computer Science Guild</span>
+                    <span class="upcsg-article__dot" aria-hidden="true">&middot;</span>
+                    <span>Verified by the ExeCom</span>
+                    <span class="upcsg-article__dot" aria-hidden="true">&middot;</span>
+                    <span>@ReadingTime min read</span>
+                </div>
+            </div>
+        </header>
+
+        @* ---------- Lead image ---------- *@
+        <figure class="upcsg-article__figure">
+            <span class="upcsg-achimg-frame">
+                <AchievementImage Entry="_entry" />
+            </span>
+            @if (string.IsNullOrWhiteSpace(_entry.ImageUrl))
+            {
+                <figcaption>No photo on file for this entry yet.</figcaption>
+            }
+        </figure>
+
+        @* ---------- Body ---------- *@
+        <div class="upcsg-article__body">
+            @if (Body.Count == 0)
+            {
+                <p class="upcsg-article__para upcsg-article__para--thin">
+                    This entry hasn't been written up yet &mdash; only the headline is on record.
+                    If you were part of it and can fill in the story,
+                    <MudLink Href="contact">get in touch</MudLink>.
+                </p>
+            }
+            else
+            {
+                @foreach (var paragraph in Body)
+                {
+                    <p class="upcsg-article__para">@paragraph</p>
+                }
+            }
+
+            <div class="upcsg-article__actions">
+                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
+                           StartIcon="@Icons.Material.Outlined.Link" OnClick="CopyLinkAsync">
+                    Copy link
+                </MudButton>
+                <MudButton Variant="Variant.Text" Href="hall-of-fame">
+                    &larr; Back to the record
+                </MudButton>
+            </div>
+        </div>
+    </article>
+
+    <div class="upcsg-page">
+        @if (_more.Count > 0)
+        {
+            <section class="upcsg-section">
+                <div class="upcsg-section-head">
+                    <div>
+                        <p class="upcsg-kicker">Elsewhere on the record</p>
+                        <h2 class="upcsg-title-xl">More wins</h2>
+                    </div>
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="hall-of-fame">
+                        View all
+                    </MudButton>
+                </div>
+
+                <div class="upcsg-storygrid">
+                    @foreach (var other in _more)
+                    {
+                        <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{other.Id}")">
+                            <span class="upcsg-story__media">
+                                <AchievementImage Entry="other" />
+                            </span>
+                            <span class="upcsg-story__body">
+                                @if (!string.IsNullOrWhiteSpace(other.Category))
+                                {
+                                    <span class="upcsg-card__tag">@other.Category</span>
+                                }
+                                <h4 class="upcsg-story__title">@other.Title</h4>
+                                <p class="upcsg-story__standfirst">@Prose.Standfirst(other.Description)</p>
+                                <span class="upcsg-card__cue">Read <span aria-hidden="true">&rarr;</span></span>
+                            </span>
+                        </a>
+                    }
+                </div>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private AchievementDto? _entry;
+    private List<AchievementDto> _more = [];
+    private bool _loading = true;
+
+    private string Standfirst => Prose.Standfirst(_entry?.Description);
+
+    /// <summary>
+    /// Body is everything after the standfirst — the opening paragraph is already shown
+    /// large in the masthead, and repeating it reads like a mistake.
+    /// </summary>
+    private IReadOnlyList<string> Body => [.. Prose.Rest(_entry?.Description)];
+
+    /// <summary>
+    /// 200 wpm, rounded up, floored at 1. Covers the whole entry including the standfirst,
+    /// since that's what the reader actually reads.
+    /// </summary>
+    private int ReadingTime
+    {
+        get
+        {
+            var words = (_entry?.Description ?? string.Empty)
+                .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+                .Length;
+
+            return Math.Max(1, (int)Math.Ceiling(words / 200.0));
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _entry = null;
+        _more = [];
+
+        try
+        {
+            _entry = await AchievementService.GetAchievementAsync(Id);
+
+            if (_entry is not null)
+            {
+                var all = await AchievementService.GetAchievementsAsync();
+                _more = all
+                    .Where(a => a.Id != Id)
+                    .OrderByDescending(a => a.Year)
+                    .ThenByDescending(a => a.Id)
+                    .Take(3)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CopyLinkAsync()
+    {
+        var copied = await JS.InvokeAsync<bool>("upcsgCopyText", Navigation.Uri);
+
+        Snackbar.Add(
+            copied ? "Link copied." : "Couldn't copy — you can copy it from the address bar.",
+            copied ? Severity.Success : Severity.Warning);
+    }
+}

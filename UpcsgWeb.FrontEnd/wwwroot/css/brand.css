@@ -673,6 +673,323 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
+   Hall of Fame — showcase and article
+
+   Most entries have no photo, so the crest plate is the ordinary case and is
+   designed as such rather than treated as a missing-image error.
+ * ------------------------------------------------------------------ */
+
+.upcsg-achimg {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background:
+        radial-gradient(65% 60% at 35% 30%, rgba(204, 174, 222, 0.4) 0%, transparent 68%),
+        linear-gradient(150deg, rgba(82, 38, 87, 0.85), rgba(22, 17, 58, 0.95));
+}
+
+.upcsg-achimg img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* The crest is a mark, not a photo: contain it and hold it back so the title
+   above stays the loudest thing in the card. */
+.upcsg-achimg--placeholder img {
+    object-fit: contain;
+    padding: 12%;
+    opacity: 0.4;
+}
+
+.upcsg-achimg__year {
+    position: absolute;
+    left: 0.85rem;
+    bottom: 0.85rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(9, 6, 32, 0.72);
+    border: 1px solid rgba(246, 255, 233, 0.18);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--upcsg-highlight);
+    backdrop-filter: blur(4px);
+}
+
+/* --- Lead story --- */
+
+.upcsg-lead {
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    align-items: stretch;
+    gap: 0;
+    overflow: hidden;
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    background:
+        linear-gradient(158deg, rgba(82, 38, 87, 0.92) 0%, rgba(83, 37, 126, 0.72) 55%, rgba(22, 17, 58, 0.9) 100%);
+    box-shadow: var(--upcsg-shadow-md);
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.upcsg-lead:hover,
+.upcsg-lead:focus-visible {
+    transform: translateY(-5px);
+    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+    border-color: rgba(204, 174, 222, 0.42);
+}
+
+.upcsg-lead__media {
+    display: block;
+    min-height: 20rem;
+}
+
+.upcsg-lead__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.85rem;
+    padding: clamp(1.5rem, 3.5vw, 3rem);
+}
+
+.upcsg-lead__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-lead__title {
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.75rem, 3.4vw, 2.75rem);
+    line-height: 1.15;
+    margin: 0;
+}
+
+.upcsg-lead__standfirst {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--upcsg-text-muted);
+    max-width: 46ch;
+}
+
+/* --- Year rule --- */
+
+.upcsg-yearrule {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 2.75rem 0 1.5rem;
+}
+
+.upcsg-yearrule__year {
+    margin: 0;
+    font-family: var(--upcsg-font-display);
+    font-size: 1.75rem;
+    line-height: 1;
+}
+
+.upcsg-yearrule__line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(204, 174, 222, 0.4), transparent);
+}
+
+.upcsg-yearrule__count {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+/* --- Story cards --- */
+
+/* auto-FILL, not auto-fit. auto-fit collapses the empty tracks and hands their space
+   to the survivors, so a year with a single entry rendered one card the full width of
+   the page — and its 16:10 media then stood over 700px tall. auto-fill keeps the empty
+   tracks, so a lone card stays card-sized. */
+.upcsg-storygrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    gap: 1.5rem;
+}
+
+.upcsg-story {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+}
+
+.upcsg-story__media {
+    display: block;
+    aspect-ratio: 16 / 10;
+    flex: none;
+}
+
+.upcsg-story__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: 1.35rem 1.5rem 1.5rem;
+    flex-grow: 1;
+}
+
+.upcsg-story__title {
+    margin: 0;
+    font-family: var(--upcsg-font-heading);
+    font-size: 1.12rem;
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.upcsg-story__standfirst {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--upcsg-text-muted);
+    flex-grow: 1;
+
+    /* Cards in a row must agree on height; the full story is one click away. */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* --- Article --- */
+
+.upcsg-article {
+    padding-top: 7rem;
+}
+
+.upcsg-article__head,
+.upcsg-article__body,
+.upcsg-article__figure {
+    width: min(100% - 2.5rem, 46rem);
+    margin-inline: auto;
+}
+
+.upcsg-article__title {
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    margin: 0.75rem 0 0;
+}
+
+/* Larger and lighter than body copy — it's the summary, not the first paragraph. */
+.upcsg-article__standfirst {
+    margin: 1.25rem 0 0;
+    font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+    line-height: 1.65;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-article__byline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: var(--upcsg-hairline);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-article__source {
+    color: var(--upcsg-text);
+    font-weight: 600;
+}
+
+.upcsg-article__dot {
+    opacity: 0.5;
+}
+
+.upcsg-article__figure {
+    margin: 2.5rem auto;
+}
+
+.upcsg-achimg-frame {
+    display: block;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--upcsg-radius);
+    overflow: hidden;
+    border: var(--upcsg-hairline);
+    box-shadow: var(--upcsg-shadow-md);
+}
+
+.upcsg-article__figure figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.78rem;
+    text-align: center;
+    color: var(--upcsg-text-muted);
+    opacity: 0.8;
+}
+
+.upcsg-article__para {
+    margin: 1.35rem 0 0;
+    font-size: 1.06rem;
+    line-height: 1.85;
+    color: var(--upcsg-text-muted);
+}
+
+/* Opening paragraph gets a raised cap, the one flourish the layout allows itself. */
+.upcsg-article__para:first-of-type::first-letter {
+    float: left;
+    margin: 0.34rem 0.55rem 0 0;
+    font-family: var(--upcsg-font-display);
+    font-size: 3.6rem;
+    line-height: 0.82;
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-article__para--thin {
+    color: var(--upcsg-text-muted);
+    font-style: italic;
+}
+
+/* Must carry :first-of-type too. The drop-cap rule above is (0,2,0) thanks to its
+   pseudo-class, so a plain .upcsg-article__para--thin::first-letter loses and the
+   apology line gets a 3.6rem gold capital. */
+.upcsg-article__para--thin:first-of-type::first-letter {
+    float: none;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+}
+
+.upcsg-article__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+    padding-top: 1.75rem;
+    border-top: var(--upcsg-hairline);
+}
+
+/* ------------------------------------------------------------------ *
    Event detail
  * ------------------------------------------------------------------ */
 
@@ -917,21 +1234,38 @@ h4, h5, h6, .upcsg-heading {
     color: var(--upcsg-cosmic-lavender);
 }
 
-/* MudLink defaults to the theme primary (galactic orchid), which measures 2.6:1
-   against this panel — under AA. Lavender is 6.3:1 here. Underlined too, so the
-   link isn't signalled by colour alone.
+/* Inline links in body copy.
 
-   !important is needed because MudBlazor's own .mud-primary-text declares the
-   colour !important; a plain declaration loses to it at any specificity. */
-.upcsg-faq .mud-expand-panel-content a {
+   MudLink defaults to the theme primary (galactic orchid), which measures 2.6:1 on the
+   FAQ panel and 3.8:1 on the page background — both under AA's 4.5:1. Lavender clears
+   6.3:1 on the panel and 7.4:1 on the page. Underlined as well, so the link is never
+   signalled by colour alone.
+
+   !important is required for the colour: MudBlazor's own .mud-primary-text declares it
+   !important, so a plain declaration loses at any specificity.
+
+   The a.mud-link form is needed for the underline: .mud-link.mud-link-underline-hover
+   is (0,2,0), and a bare `.upcsg-article__body a` is only (0,1,1) — one class plus a
+   type selector — so it loses. */
+.upcsg-faq .mud-expand-panel-content a,
+.upcsg-article__body a,
+.upcsg-article__body a.mud-link {
     color: var(--upcsg-cosmic-lavender) !important;
     text-decoration: underline;
     text-underline-offset: 0.2em;
 }
 
 .upcsg-faq .mud-expand-panel-content a:hover,
-.upcsg-faq .mud-expand-panel-content a:focus-visible {
+.upcsg-faq .mud-expand-panel-content a:focus-visible,
+.upcsg-article__body a:hover,
+.upcsg-article__body a:focus-visible {
     color: var(--upcsg-highlight) !important;
+}
+
+/* The action row at the foot of an article holds MudButtons, not prose links; they
+   carry their own styling and must not pick up the underline. */
+.upcsg-article__actions a {
+    text-decoration: none;
 }
 
 /* Divider with a 4-pointed star at its centre. */
@@ -2529,6 +2863,17 @@ h4, h5, h6, .upcsg-heading {
 
     .upcsg-eventdetail {
         grid-template-columns: 1fr;
+    }
+
+    /* Lead stacks image over copy; the media needs an explicit ratio once it no
+       longer inherits height from a side-by-side grid row. */
+    .upcsg-lead {
+        grid-template-columns: 1fr;
+    }
+
+    .upcsg-lead__media {
+        min-height: 0;
+        aspect-ratio: 16 / 9;
     }
 
     /* Sticky is pointless once the rail is stacked under the copy, and it makes the

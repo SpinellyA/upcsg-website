@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Features.Dev;
+using UpcsgWeb.Api.Features.Media;
 using UpcsgWeb.Infrastructure;
 using UpcsgWeb.Infrastructure.Persistence;
 using UpcsgWeb.Shared.Contracts;
@@ -33,6 +34,14 @@ if (Encoding.UTF8.GetByteCount(signingKey) < 32)
 // Persistence is composed behind one call; the API references no EF Core types itself
 // and talks only to the repository interfaces the Domain owns.
 builder.Services.AddInfrastructure(connectionString);
+
+// Image storage: R2 when configured, local disk otherwise. The chosen provider is
+// reported at startup — writing to Render's ephemeral disk without noticing is exactly
+// the failure this announcement exists to prevent.
+var mediaProvider = builder.Services.AddMediaStorage(
+    builder.Configuration,
+    builder.Environment.ContentRootPath,
+    builder.Configuration["Api:SelfUrl"] ?? "http://localhost:5027");
 
 builder.Services.AddScoped<JwtIssuer>();
 builder.Services.AddScoped<IGoogleTokenVerifier, GoogleTokenVerifier>();
@@ -78,16 +87,29 @@ builder.Services.AddFastEndpoints(o =>
     //
     // Matched by type, not by namespace string: the previous version matched a namespace
     // that a refactor renamed, which silently disabled the guard.
-    if (!builder.Environment.IsDevelopment())
-    {
-        o.Filter = endpointType => !typeof(IDevelopmentOnlyEndpoint).IsAssignableFrom(endpointType);
-    }
+    var isDevelopment = builder.Environment.IsDevelopment();
+
+    // The local upload receiver only exists when there is no bucket to presign against.
+    // With R2 configured it must not be registered at all, or it would stand as a second,
+    // unsigned way to put bytes on the server.
+    var usingBucket = mediaProvider.StartsWith("Cloudflare", StringComparison.Ordinal);
+
+    // Composed once: EndpointDiscoveryOptions.Filter is set-only, so it cannot be layered.
+    o.Filter = endpointType =>
+        (isDevelopment || !typeof(IDevelopmentOnlyEndpoint).IsAssignableFrom(endpointType))
+        && (!usingBucket || endpointType != typeof(LocalUploadEndpoint));
 });
 builder.Services.SwaggerDocument(o => o.DocumentSettings = s => s.Title = "UPCSG API");
 
 var app = builder.Build();
 
+app.Logger.LogInformation("Media storage: {Provider}", mediaProvider);
+
 // --- Pipeline -----------------------------------------------------------------------
+// Serves wwwroot/media for the local store. Harmless with R2 configured — nothing is
+// written there — and it is what makes uploads viewable in development.
+app.UseStaticFiles();
+
 // CORS goes before auth so preflight OPTIONS requests aren't rejected as unauthorised.
 app.UseCors(CorsPolicies.Frontend);
 app.UseAuthentication();

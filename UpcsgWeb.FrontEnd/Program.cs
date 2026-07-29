@@ -66,4 +66,7 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAdminContentService, AdminContentService>();
 
+// Image uploads: signs, sends and confirms. Needs HttpClient and JS interop only.
+builder.Services.AddScoped<IMediaUploadService, MediaUploadService>();
+
 await builder.Build().RunAsync();

@@ -1,10 +1,8 @@
 @using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
 
 @* Horizontally scrollable photo strip with an "Add" slot at the end.
-   Shared by the item form and the variant form so both behave identically.
-
-   Photos are URLs for now. When the file server lands, only the Add slot changes:
-   it prompts instead of uploading, and everything downstream already stores a URL. *@
+   Shared by the item form and the variant form so both behave identically. *@
 
 <div class="upcsg-photostrip">
     @if (Photos.Count == 0)
@@ -43,22 +41,79 @@
             </div>
         }
 
-        <button type="button" class="upcsg-photoslot upcsg-photoslot--add" @onclick="AddAsync">
-            <span class="upcsg-photoslot__plus">+</span>
-            <span>Add photo</span>
+        <button type="button" class="upcsg-photoslot upcsg-photoslot--add"
+                disabled="@_busy" @onclick="AddAsync">
+            <span class="upcsg-photoslot__plus">@(_busy ? "…" : "+")</span>
+            <span>@(_busy ? "Uploading" : "Add photo")</span>
         </button>
     </div>
+
+    @if (_status is not null)
+    {
+        <p class="upcsg-photostrip__status">@_status</p>
+    }
+
+    @* Kept as an escape hatch: a poster already hosted elsewhere shouldn't have to be
+       downloaded and re-uploaded just to be referenced. *@
+    <MudLink Component="button" Class="upcsg-photostrip__link" @onclick="AddByUrlAsync">
+        or paste a link
+    </MudLink>
 </div>
 
 @code {
     [Parameter, EditorRequired] public List<string> Photos { get; set; } = [];
     [Parameter] public EventCallback<List<string>> PhotosChanged { get; set; }
 
+    /// <summary>Which storage folder these belong to: merch, events, members, achievements.</summary>
+    [Parameter, EditorRequired] public string Folder { get; set; } = "merch";
+
     [Inject] private IDialogService Dialogs { get; set; } = default!;
+    [Inject] private IMediaUploadService Uploads { get; set; } = default!;
+
+    private bool _busy;
+    private string? _status;
 
     private async Task AddAsync()
     {
-        var url = await PromptAsync("Add photo", null);
+        _busy = true;
+        _status = null;
+
+        try
+        {
+            var result = await Uploads.PickAndUploadAsync(Folder);
+
+            if (result is null)
+            {
+                return; // Picker cancelled.
+            }
+
+            if (result.Error is not null)
+            {
+                _status = result.Error;
+                return;
+            }
+
+            Photos.Add(result.Url!);
+            await PhotosChanged.InvokeAsync(Photos);
+
+            // Worth showing: it's the difference between a 4 MB phone photo and what
+            // actually got stored, and it tells the officer the downscale is working.
+            _status = result.OriginalBytes > result.SizeBytes
+                ? $"Uploaded — {Kb(result.OriginalBytes)} shrunk to {Kb(result.SizeBytes)}."
+                : $"Uploaded — {Kb(result.SizeBytes)}.";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string Kb(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024} KB";
+
+    private async Task AddByUrlAsync()
+    {
+        var url = await PromptAsync("Add photo by link", null);
 
         if (!string.IsNullOrWhiteSpace(url))
         {

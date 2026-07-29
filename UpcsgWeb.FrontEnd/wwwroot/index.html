@@ -45,6 +45,83 @@
             img.closest('.upcsg-receipt')?.classList.add('upcsg-receipt--broken');
         };
 
+        // Picks an image file and downscales it before upload.
+        //
+        // Officers upload straight off a phone: 4000px, 4 MB. Sending that is slow on
+        // campus wifi, and at that size a couple of hundred uploads would make a real dent
+        // in the free storage tier. Capping the long edge and re-encoding to WebP cuts it
+        // by roughly 10x with no visible loss at the sizes this site renders.
+        window.upcsgPickImage = (maxEdge, quality) => new Promise(resolve => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+
+            input.onchange = async () => {
+                const file = input.files?.[0];
+                if (!file) { resolve(null); return; }
+
+                try {
+                    const bitmap = await createImageBitmap(file);
+                    const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+                    const w = Math.round(bitmap.width * scale);
+                    const h = Math.round(bitmap.height * scale);
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+                    bitmap.close();
+
+                    const blob = await new Promise(r => canvas.toBlob(r, 'image/webp', quality));
+
+                    // Keep whichever is smaller. Re-encoding a small PNG screenshot can
+                    // make it bigger, and there is no reason to upload the worse one.
+                    const useOriginal = !blob || blob.size >= file.size;
+                    const chosen = useOriginal ? file : blob;
+
+                    window.__upcsgPendingUpload = chosen;
+                    resolve({
+                        fileName: file.name,
+                        contentType: chosen.type || file.type,
+                        size: chosen.size,
+                        originalSize: file.size
+                    });
+                } catch {
+                    // Not decodable as an image; hand back the raw file and let the server
+                    // reject it rather than guessing here.
+                    window.__upcsgPendingUpload = file;
+                    resolve({ fileName: file.name, contentType: file.type, size: file.size, originalSize: file.size });
+                }
+            };
+
+            // Firing this from a Blazor click handler keeps the user-gesture requirement.
+            input.click();
+        });
+
+        // Sends the file staged by upcsgPickImage. Returns "" on success, else a message.
+        window.upcsgUpload = async (url, method, contentType, bearer) => {
+            const body = window.__upcsgPendingUpload;
+            if (!body) return 'Nothing staged to upload.';
+
+            const headers = { 'Content-Type': contentType };
+
+            // The local dev receiver is our own authenticated endpoint; a presigned bucket
+            // URL carries its own signature and must NOT be sent an Authorization header,
+            // which would invalidate the signature.
+            if (method === 'POST' && bearer) {
+                headers['Authorization'] = 'Bearer ' + bearer;
+            }
+
+            try {
+                const res = await fetch(url, { method, headers, body });
+                window.__upcsgPendingUpload = null;
+                return res.ok ? '' : `Upload failed (${res.status}).`;
+            } catch (e) {
+                window.__upcsgPendingUpload = null;
+                return 'Upload failed: ' + e.message;
+            }
+        };
+
         // Hands a generated file (an .ics, today) to the browser as a download. The object
         // URL is revoked immediately so nothing accumulates as a guilder opens more events.
         window.upcsgDownloadFile = (filename, mime, content) => {

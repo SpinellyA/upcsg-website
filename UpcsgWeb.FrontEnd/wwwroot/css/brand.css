@@ -991,6 +991,19 @@ h4, h5, h6, .upcsg-heading {
     align-items: start;
 }
 
+.upcsg-photostrip__status {
+    margin: 0.6rem 0 0;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.75rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-photostrip__link {
+    display: inline-block;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+}
+
 .upcsg-photostrip__empty {
     margin: 0 0 0.75rem;
     font-size: 0.8rem;

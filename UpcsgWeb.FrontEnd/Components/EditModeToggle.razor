@@ -1,0 +1,24 @@
+@using UpcsgWeb.FrontEnd.Services
+@implements IDisposable
+@inject EditModeState EditMode
+
+@* Officers only. Everyone else — including signed-in guilders — never sees this exists. *@
+<AuthorizeView Policy="ExeCom">
+    <MudTooltip Text="@(EditMode.IsEditing ? "Leave edit mode" : "Edit this page in place")">
+        <button type="button"
+                class="upcsg-editmode @(EditMode.IsEditing ? "upcsg-editmode--on" : null)"
+                aria-pressed="@(EditMode.IsEditing ? "true" : "false")"
+                @onclick="EditMode.Toggle">
+            <MudIcon Icon="@Icons.Material.Filled.Edit" Size="Size.Small" />
+            <span>@(EditMode.IsEditing ? "Editing" : "Edit")</span>
+        </button>
+    </MudTooltip>
+</AuthorizeView>
+
+@code {
+    protected override void OnInitialized() => EditMode.Changed += Refresh;
+
+    public void Dispose() => EditMode.Changed -= Refresh;
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+}

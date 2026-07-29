@@ -66,4 +66,8 @@ builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAdminContentService, AdminContentService>();
 
+// Drives the in-place editing affordances. Scoped, so it resets on reload — edit mode is
+// deliberately not sticky.
+builder.Services.AddScoped<EditModeState>();
+
 await builder.Build().RunAsync();

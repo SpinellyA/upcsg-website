@@ -1,7 +1,9 @@
-﻿@page "/events"
+@page "/events"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
 @inject IJSRuntime JS
 
 <PageTitle>Events - UPCSG</PageTitle>
@@ -120,13 +122,16 @@
         else
         {
             <div class="upcsg-agenda">
-                @foreach (var evt in _events)
+                @foreach (var source in _events)
                 {
+                    var evt = _draft.Display(source, e => e.Id);
                     var isOpen = _expanded.Contains(evt.Id);
                     var isTarget = _selectedDate?.Date == evt.StartDateTime.Date;
 
                     <div id="@($"event-{evt.Id}")"
-                         class="upcsg-agenda__item @(isOpen ? "upcsg-agenda__item--open" : null) @(isTarget ? "upcsg-agenda__item--target" : null)">
+                         class="upcsg-agenda__item upcsg-editable @(isOpen ? "upcsg-agenda__item--open" : null) @(isTarget ? "upcsg-agenda__item--target" : null)">
+                        <EditPencil Label="@($"Edit {evt.Title}")" OnEdit="() => OpenEditor(evt)" />
+
                         @* aria-expanded must be a literal "true"/"false": Blazor renders a bool as a
                            present/absent HTML boolean attribute, which ARIA cannot read. *@
                         <button type="button"
@@ -174,6 +179,42 @@
 
 </div>
 
+@* ---------- In-place editor ---------- *@
+@if (_draft.Value is { } draft)
+{
+    <EditDrawer Open="true"
+                Title="@draft.Title"
+                Dirty="_draft.IsDirty"
+                Saving="_draft.IsSaving"
+                CanSave="!string.IsNullOrWhiteSpace(draft.Title)"
+                Error="_editError"
+                OnSave="SaveEditAsync"
+                OnCancel="CancelEdit">
+
+        <MudTextField @bind-Value="draft.Title" Immediate="true"
+                      Label="Title" Variant="Variant.Outlined" Required="true" Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.Location" Immediate="true"
+                      Label="Location" Variant="Variant.Outlined" Class="mb-4" />
+
+        @* Date and time are edited as the officer sees them on the page. The DTO stores a
+           single DateTime, so the two pickers are recombined on save. *@
+        <MudDatePicker @bind-Date="_editDate" Label="Date" Variant="Variant.Outlined" Class="mb-4" />
+        <MudTimePicker @bind-Time="_editStart" Label="Starts" Variant="Variant.Outlined" Class="mb-4" />
+        <MudTimePicker @bind-Time="_editEnd" Label="Ends (optional)" Variant="Variant.Outlined" Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.Description" Immediate="true"
+                      Label="Description" Variant="Variant.Outlined" Lines="12"
+                      HelperText="Leave a blank line between paragraphs. The first one is the summary."
+                      Class="mb-2" />
+
+        <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+            @Prose.Paragraphs(draft.Description).Count paragraph(s).
+            The agenda row behind this drawer updates as you type.
+        </MudText>
+    </EditDrawer>
+}
+
 @code {
     private static readonly string[] DayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -199,6 +240,71 @@
 
     private List<EventDto> EventsOn(DateTime date) =>
         _events.Where(e => e.StartDateTime.Date == date.Date).ToList();
+
+    // --- In-place editing -------------------------------------------------------------
+
+    private readonly ContentDraft<EventDto> _draft = new();
+    private string? _editError;
+    private DateTime? _editDate;
+    private TimeSpan? _editStart;
+    private TimeSpan? _editEnd;
+
+    private void OpenEditor(EventDto evt)
+    {
+        _editError = null;
+        _draft.Open(evt, evt.Id);
+
+        _editDate = evt.StartDateTime.Date;
+        _editStart = evt.StartDateTime.TimeOfDay;
+        _editEnd = evt.EndDateTime?.TimeOfDay;
+    }
+
+    private void CancelEdit()
+    {
+        _editError = null;
+        _draft.Close();
+    }
+
+    private async Task SaveEditAsync()
+    {
+        if (_draft.Value is not { } edited)
+        {
+            return;
+        }
+
+        _editError = null;
+        _draft.BeginSave();
+
+        try
+        {
+            // Recombine the pickers. Date is required by the domain; the pickers are only
+            // ever null if an officer clears them, so fall back to what was loaded.
+            var date = _editDate ?? edited.StartDateTime.Date;
+            edited.StartDateTime = date + (_editStart ?? edited.StartDateTime.TimeOfDay);
+            edited.EndDateTime = _editEnd is { } end ? date + end : null;
+
+            var saved = await Admin.SaveEventAsync(edited);
+
+            var index = _events.FindIndex(e => e.Id == saved.Id);
+
+            if (index >= 0)
+            {
+                _events[index] = saved;
+            }
+
+            _events = [.. _events.OrderBy(e => e.StartDateTime)];
+            _draft.Close();
+            Snackbar.Add("Saved.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            _editError = ex.Message;
+        }
+        finally
+        {
+            _draft.EndSave();
+        }
+    }
 
     private void Toggle(int id)
     {

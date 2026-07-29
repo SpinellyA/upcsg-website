@@ -3,6 +3,8 @@
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IAchievementService AchievementService
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
 
 <PageTitle>Hall of Fame - UPCSG</PageTitle>
 
@@ -67,24 +69,28 @@
            the difference between a page that looks curated and a page that looks unfinished. *@
         @if (Lead is not null)
         {
-            <section class="upcsg-section">
-                <a class="upcsg-lead" href="@($"hall-of-fame/{Lead.Id}")">
+            var lead = _draft.Display(Lead, a => a.Id);
+
+            <section class="upcsg-section upcsg-editable">
+                <EditPencil Large="true" Label="@($"Edit {lead.Title}")" OnEdit="() => OpenEditor(lead)" />
+
+                <a class="upcsg-lead" href="@($"hall-of-fame/{lead.Id}")">
                     <span class="upcsg-lead__media">
-                        <AchievementImage Entry="Lead" />
+                        <AchievementImage Entry="lead" />
                     </span>
 
                     <span class="upcsg-lead__body">
                         <span class="upcsg-lead__kicker">
                             <span class="upcsg-star"></span>
                             Most recent
-                            @if (!string.IsNullOrWhiteSpace(Lead.Category))
+                            @if (!string.IsNullOrWhiteSpace(lead.Category))
                             {
-                                <text> &middot; @Lead.Category</text>
+                                <text> &middot; @lead.Category</text>
                             }
-                            <text> &middot; @Lead.Year</text>
+                            <text> &middot; @lead.Year</text>
                         </span>
-                        <h2 class="upcsg-lead__title">@Lead.Title</h2>
-                        <p class="upcsg-lead__standfirst">@Prose.Standfirst(Lead.Description)</p>
+                        <h2 class="upcsg-lead__title">@lead.Title</h2>
+                        <p class="upcsg-lead__standfirst">@Prose.Standfirst(lead.Description)</p>
                         <span class="upcsg-card__cue">Read the story <span aria-hidden="true">&rarr;</span></span>
                     </span>
                 </a>
@@ -153,23 +159,29 @@
                     </div>
 
                     <div class="upcsg-storygrid">
-                        @foreach (var entry in group.OrderBy(a => a.Title))
+                        @foreach (var item in group.OrderBy(a => a.Title))
                         {
-                            <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{entry.Id}")">
-                                <span class="upcsg-story__media">
-                                    <AchievementImage Entry="entry" />
-                                </span>
+                            var entry = _draft.Display(item, a => a.Id);
 
-                                <span class="upcsg-story__body">
-                                    @if (!string.IsNullOrWhiteSpace(entry.Category))
-                                    {
-                                        <span class="upcsg-card__tag">@entry.Category</span>
-                                    }
-                                    <h4 class="upcsg-story__title">@entry.Title</h4>
-                                    <p class="upcsg-story__standfirst">@Prose.Standfirst(entry.Description)</p>
-                                    <span class="upcsg-card__cue">Read <span aria-hidden="true">&rarr;</span></span>
-                                </span>
-                            </a>
+                            <div class="upcsg-editable">
+                                <EditPencil Label="@($"Edit {entry.Title}")" OnEdit="() => OpenEditor(entry)" />
+
+                                <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{entry.Id}")">
+                                    <span class="upcsg-story__media">
+                                        <AchievementImage Entry="entry" />
+                                    </span>
+
+                                    <span class="upcsg-story__body">
+                                        @if (!string.IsNullOrWhiteSpace(entry.Category))
+                                        {
+                                            <span class="upcsg-card__tag">@entry.Category</span>
+                                        }
+                                        <h4 class="upcsg-story__title">@entry.Title</h4>
+                                        <p class="upcsg-story__standfirst">@Prose.Standfirst(entry.Description)</p>
+                                        <span class="upcsg-card__cue">Read <span aria-hidden="true">&rarr;</span></span>
+                                    </span>
+                                </a>
+                            </div>
                         }
                     </div>
                 }
@@ -191,6 +203,50 @@
     </section>
 
 </div>
+
+@* ---------- In-place editor ----------
+   The fields bind straight to the draft with Immediate, so every keystroke re-renders the
+   cards behind the drawer. That IS the preview — there is no second renderer to drift. *@
+@if (_draft.Value is { } draft)
+{
+    <EditDrawer Open="true"
+                Title="@(_draft.EditingId == 0 ? "New entry" : draft.Title)"
+                Dirty="_draft.IsDirty"
+                Saving="_draft.IsSaving"
+                CanSave="!string.IsNullOrWhiteSpace(draft.Title)"
+                Error="_editError"
+                OnSave="SaveEditAsync"
+                OnCancel="CancelEdit">
+
+        <MudTextField @bind-Value="draft.Title" Immediate="true"
+                      Label="Title" Variant="Variant.Outlined" Required="true" Class="mb-4" />
+
+        <MudNumericField @bind-Value="draft.Year" Immediate="true"
+                         Label="Year" Variant="Variant.Outlined"
+                         Min="1900" Max="@(DateTime.Now.Year + 1)" Class="mb-4" />
+
+        @* Free text, but suggestions keep categories consistent — the filter chips on this
+           page are derived from whatever is stored here. *@
+        <MudAutocomplete T="string" @bind-Value="draft.Category"
+                         Label="Category" Variant="Variant.Outlined"
+                         CoerceValue="true" SearchFunc="SearchCategories" Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.ImageUrl" Immediate="true"
+                      Label="Photo URL" Variant="Variant.Outlined"
+                      HelperText="Paste a link for now. Uploads come with the file server."
+                      Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.Description" Immediate="true"
+                      Label="Story" Variant="Variant.Outlined" Lines="14"
+                      HelperText="Leave a blank line between paragraphs. The first one is the summary shown on cards."
+                      Class="mb-2" />
+
+        <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+            @Prose.Paragraphs(draft.Description).Count paragraph(s).
+            The card preview behind this drawer updates as you type.
+        </MudText>
+    </EditDrawer>
+}
 
 @code {
     /// <summary>Below this, the summary stats describe the backlog rather than the guild.</summary>
@@ -253,4 +309,89 @@
     }
 
     private void SetCategory(string? category) => _activeCategory = category;
+
+    // --- In-place editing -------------------------------------------------------------
+
+    private readonly ContentDraft<AchievementDto> _draft = new();
+    private string? _editError;
+
+    private static readonly string[] SuggestedCategories =
+        ["Competition", "Recognition", "Community", "Milestone", "Research"];
+
+    private Task<IEnumerable<string>> SearchCategories(string? value, CancellationToken ct) =>
+        Task.FromResult(string.IsNullOrWhiteSpace(value)
+            ? SuggestedCategories.AsEnumerable()
+            : SuggestedCategories.Where(c => c.Contains(value, StringComparison.OrdinalIgnoreCase)));
+
+    private void OpenEditor(AchievementDto entry)
+    {
+        _editError = null;
+        _draft.Open(entry, entry.Id);
+    }
+
+    private void CancelEdit()
+    {
+        _editError = null;
+        _draft.Close();
+    }
+
+    private async Task SaveEditAsync()
+    {
+        if (_draft.Value is not { } edited)
+        {
+            return;
+        }
+
+        _editError = null;
+        _draft.BeginSave();
+
+        try
+        {
+            var saved = await Admin.SaveAchievementAsync(edited);
+
+            // Replace in place rather than refetching the list: a reload would reorder the
+            // page under the officer and lose their scroll position mid-edit.
+            var index = _all.FindIndex(a => a.Id == saved.Id);
+
+            if (index >= 0)
+            {
+                _all[index] = saved;
+            }
+            else
+            {
+                _all.Add(saved);
+            }
+
+            RebuildCategories();
+            _draft.Close();
+            Snackbar.Add("Saved.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            // Domain rejections ("Year 2031 is out of range.") belong on the form, next to
+            // the field that caused them — not in a snackbar that vanishes.
+            _editError = ex.Message;
+        }
+        finally
+        {
+            _draft.EndSave();
+        }
+    }
+
+    private void RebuildCategories()
+    {
+        _categories = _all
+            .Select(a => a.Category)
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c!)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToList();
+
+        // The active filter can disappear when its last entry is recategorised.
+        if (_activeCategory is not null && !_categories.Contains(_activeCategory))
+        {
+            _activeCategory = null;
+        }
+    }
 }

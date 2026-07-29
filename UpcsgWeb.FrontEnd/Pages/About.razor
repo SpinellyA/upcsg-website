@@ -1,8 +1,10 @@
-﻿@page "/about"
+@page "/about"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IMemberService MemberService
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
 
 <PageTitle>About - UPCSG</PageTitle>
 
@@ -58,7 +60,7 @@
 
         @foreach (var row in _facultyRows)
         {
-            <PersonProfile Member="row.Member" Flip="row.Flip" />
+            <PersonProfile Member="_draft.Display(row.Member, m => m.Id)" Flip="row.Flip" OnEdit="() => OpenEditor(row.Member)" />
         }
     </section>
 
@@ -78,7 +80,7 @@
 
             @foreach (var row in committee.Rows)
             {
-                <PersonProfile Member="row.Member" Flip="row.Flip" />
+                <PersonProfile Member="_draft.Display(row.Member, m => m.Id)" Flip="row.Flip" OnEdit="() => OpenEditor(row.Member)" />
             }
         }
     </section>
@@ -98,6 +100,48 @@
 
 </div>
 
+@* ---------- In-place editor ---------- *@
+@if (_draft.Value is { } draft)
+{
+    <EditDrawer Open="true"
+                Title="@draft.Name"
+                Dirty="_draft.IsDirty"
+                Saving="_draft.IsSaving"
+                CanSave="!string.IsNullOrWhiteSpace(draft.Name)"
+                Error="_editError"
+                OnSave="SaveEditAsync"
+                OnCancel="CancelEdit">
+
+        <MudTextField @bind-Value="draft.Name" Immediate="true"
+                      Label="Name" Variant="Variant.Outlined" Required="true" Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.Role" Immediate="true"
+                      Label="Position" Variant="Variant.Outlined" Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.PhotoUrl" Immediate="true"
+                      Label="Photo URL" Variant="Variant.Outlined"
+                      HelperText="Paste a link for now. Uploads come with the file server."
+                      Class="mb-4" />
+
+        @* Portraits are 4:5. Warning them here beats them discovering it after upload. *@
+        <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-4">
+            Portraits render at 4:5 (taller than wide) and are centre-cropped.
+        </MudText>
+
+        <MudTextField @bind-Value="draft.Quote" Immediate="true"
+                      Label="Quote" Variant="Variant.Outlined" Lines="2"
+                      HelperText="Shown in quote marks. Leave the marks out."
+                      Class="mb-4" />
+
+        <MudTextField @bind-Value="draft.Bio" Immediate="true"
+                      Label="What they do" Variant="Variant.Outlined" Lines="6" Class="mb-2" />
+
+        <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+            The profile behind this drawer updates as you type.
+        </MudText>
+    </EditDrawer>
+}
+
 @code {
     private sealed record ProfileRow(MemberDto Member, bool Flip);
     private sealed record CommitteeGroup(string Name, List<ProfileRow> Rows);
@@ -105,6 +149,70 @@
     private List<ProfileRow> _facultyRows = [];
     private List<CommitteeGroup> _committees = [];
     private int _execCount;
+
+    // --- In-place editing -------------------------------------------------------------
+
+    private readonly ContentDraft<MemberDto> _draft = new();
+    private string? _editError;
+
+    private void OpenEditor(MemberDto member)
+    {
+        _editError = null;
+        _draft.Open(member, member.Id);
+    }
+
+    private void CancelEdit()
+    {
+        _editError = null;
+        _draft.Close();
+    }
+
+    private async Task SaveEditAsync()
+    {
+        if (_draft.Value is not { } edited)
+        {
+            return;
+        }
+
+        _editError = null;
+        _draft.BeginSave();
+
+        try
+        {
+            var saved = await Admin.SaveMemberAsync(edited);
+
+            // The rows hold their own MemberDto references, so patch them in place. A full
+            // reload would recompute the left/right alternation and make the whole roster
+            // jump while the officer is mid-edit.
+            Replace(_facultyRows, saved);
+
+            foreach (var committee in _committees)
+            {
+                Replace(committee.Rows, saved);
+            }
+
+            _draft.Close();
+            Snackbar.Add("Saved.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            _editError = ex.Message;
+        }
+        finally
+        {
+            _draft.EndSave();
+        }
+    }
+
+    private static void Replace(List<ProfileRow> rows, MemberDto saved)
+    {
+        var index = rows.FindIndex(r => r.Member.Id == saved.Id);
+
+        if (index >= 0)
+        {
+            rows[index] = rows[index] with { Member = saved };
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

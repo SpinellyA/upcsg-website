@@ -3169,46 +3169,84 @@ h4, h5, h6, .upcsg-heading {
     line-height: 1.9;
 }
 
-/* Signed-in chip in the app bar */
-.upcsg-userchip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    padding: 0.3rem 0.85rem 0.3rem 0.35rem;
-    border-radius: 999px;
-    border: 1px solid rgba(204, 174, 222, 0.28);
-    background: rgba(204, 174, 222, 0.08);
-    text-decoration: none;
+/* --- Signed-in avatar and its menu ---
+   The avatar is the whole control in the bar; everything about the person signed
+   in lives behind it. MudMenu draws the popover, so this only dresses it. */
+
+.upcsg-useravatar.mud-avatar {
+    background: linear-gradient(150deg, var(--upcsg-primary), var(--upcsg-primary-dark));
     color: var(--upcsg-text);
     font-family: var(--upcsg-font-heading);
-    font-size: 0.8rem;
-    white-space: nowrap;
-    transition: border-color 0.25s ease, background-color 0.25s ease;
-}
-
-.upcsg-userchip:hover {
-    border-color: var(--upcsg-cosmic-lavender);
-    background: rgba(204, 174, 222, 0.14);
-}
-
-.upcsg-userchip__avatar {
-    width: 1.6rem;
-    height: 1.6rem;
-    border-radius: 50%;
-    object-fit: cover;
-    display: grid;
-    place-items: center;
-    background: linear-gradient(150deg, var(--upcsg-primary), var(--upcsg-primary-dark));
-    font-size: 0.68rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    flex: none;
+    letter-spacing: 0.04em;
+    border: 1px solid rgba(204, 174, 222, 0.32);
+    cursor: pointer;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-.upcsg-userchip__role {
+.upcsg-useravatar.mud-avatar:hover {
+    border-color: var(--upcsg-cosmic-lavender);
+    box-shadow: 0 0 0 3px rgba(204, 174, 222, 0.16);
+}
+
+/* MudBlazor puts mud-paper on the popover element itself, not inside it, so this
+   has to be a compound selector — as a descendant it silently matches nothing. */
+.upcsg-usermenu.mud-paper {
+    min-width: 15rem;
+    background: var(--upcsg-ink-panel);
+    border: 1px solid var(--upcsg-ink-rule);
+    border-radius: 4px;
+}
+
+/* Who you're signed in as, stated before the actions rather than left implied. */
+.upcsg-usermenu__head {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.85rem 1rem;
+}
+
+.upcsg-usermenu__name {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.85rem;
+    color: var(--upcsg-text);
+}
+
+.upcsg-usermenu__role {
+    display: block;
+    margin-top: 0.1rem;
+    font-family: var(--upcsg-font-heading);
     font-size: 0.62rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--upcsg-highlight);
+}
+
+/* MudMenu's rows are .mud-menu-item, not the .mud-list-item a MudList would use. */
+.upcsg-usermenu .mud-menu-item {
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    color: var(--upcsg-text);
+}
+
+.upcsg-usermenu .mud-menu-item:hover {
+    background: var(--upcsg-ink-hover);
+}
+
+.upcsg-usermenu .mud-menu-item-text {
+    font-size: 0.85rem;
+}
+
+.upcsg-usermenu .mud-menu-item-icon {
+    color: var(--upcsg-text-muted);
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.upcsg-usermenu .mud-divider {
+    border-color: var(--upcsg-ink-rule);
 }
 
 @media (max-width: 767.98px) {

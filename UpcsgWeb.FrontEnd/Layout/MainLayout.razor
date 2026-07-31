@@ -31,26 +31,55 @@
                                    Color="Color.Inherit"
                                    Title="Your cart"
                                    Href="cart" />
-                    <NavLink class="upcsg-navlink" href="orders">Orders</NavLink>
 
                     <AuthorizeView Policy="ExeCom" Context="admin">
                         <NavLink class="upcsg-navlink" href="admin">Admin</NavLink>
                     </AuthorizeView>
 
-                    <a class="upcsg-userchip ml-2" href="login">
-                        <span class="upcsg-userchip__avatar">@Initials(context.User.Identity?.Name)</span>
-                        <span>
-                            @FirstName(context.User.Identity?.Name)
-                            @if (context.User.IsInRole(UpcsgRoles.Admin))
-                            {
-                                <br /><span class="upcsg-userchip__role">Officer</span>
-                            }
-                        </span>
-                    </a>
-                    <MudIconButton Icon="@Icons.Material.Filled.Logout"
-                                   Color="Color.Inherit"
-                                   Title="Sign out"
-                                   OnClick="SignOutAsync" />
+                    @* Orders and Sign out live in here now rather than sitting loose in
+                       the bar: they're about the person signed in, so they belong behind
+                       the thing that represents them.
+
+                       The card hangs off the avatar's right edge — anchoring at the
+                       avatar's top-right and growing from the card's top-left. *@
+                    <MudMenu AnchorOrigin="Origin.TopRight"
+                             TransformOrigin="Origin.TopLeft"
+                             PopoverClass="upcsg-usermenu"
+                             ListClass="pa-0"
+                             AriaLabel="Your account"
+                             Class="ml-2">
+                        @* Named so MudMenu's own context doesn't shadow the AuthorizeView
+                           one this markup needs. *@
+                        <ActivatorContent Context="menu">
+                            <MudAvatar Class="upcsg-useravatar" Size="Size.Medium">
+                                @Initials(context.User.Identity?.Name)
+                            </MudAvatar>
+                        </ActivatorContent>
+                        <ChildContent>
+                            <div class="upcsg-usermenu__head">
+                                <MudAvatar Class="upcsg-useravatar" Size="Size.Medium">
+                                    @Initials(context.User.Identity?.Name)
+                                </MudAvatar>
+                                <div>
+                                    <span class="upcsg-usermenu__name">@context.User.Identity?.Name</span>
+                                    <span class="upcsg-usermenu__role">
+                                        @(context.User.IsInRole(UpcsgRoles.Admin) ? "Officer" : "Guilder")
+                                    </span>
+                                </div>
+                            </div>
+
+                            <MudDivider />
+
+                            <MudMenuItem Href="orders" Icon="@Icons.Material.Filled.Receipt">My Orders</MudMenuItem>
+                            <MudMenuItem Href="cart" Icon="@Icons.Material.Filled.ShoppingCart">Cart</MudMenuItem>
+
+                            <MudDivider />
+
+                            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="SignOutAsync">
+                                Sign out
+                            </MudMenuItem>
+                        </ChildContent>
+                    </MudMenu>
                 </Authorized>
                 <NotAuthorized>
                     <NavLink class="upcsg-navlink ml-2" href="login">Sign in</NavLink>

@@ -65,8 +65,22 @@
                         <tbody>
                             @foreach (var line in _order.Lines)
                             {
-                                <tr>
-                                    <td>@line.ItemName</td>
+                                <tr class="@(line.Status == OrderLineStatusDto.ToFulfil ? null : "upcsg-line--short")">
+                                    <td>
+                                        @line.ItemName
+
+                                        @* The line stays visible whatever its state: an order is a
+                                           record of what was bought, not a picking list. *@
+                                        @if (line.Status == OrderLineStatusDto.RefundDue)
+                                        {
+                                            <span class="upcsg-datatable__flag">Refund due</span>
+                                            <span class="upcsg-line__reason">@line.ShortfallReason</span>
+                                        }
+                                        else if (line.Status == OrderLineStatusDto.Refunded)
+                                        {
+                                            <span class="upcsg-line__refunded">Refunded</span>
+                                        }
+                                    </td>
                                     <td>@(string.IsNullOrWhiteSpace(line.Variant) ? "—" : line.Variant)</td>
                                     <td class="upcsg-num">&#8369;@line.UnitPrice.ToString("N2")</td>
                                     <td class="upcsg-num">@line.Quantity</td>
@@ -76,9 +90,27 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="4">Total</td>
-                                <td class="upcsg-num">&#8369;@_order.Total.ToString("N2")</td>
+                                <td colspan="4">@(_order.HasRefundDue || _order.RefundHasBeenSettled ? "Guilder paid" : "Total")</td>
+                                <td class="upcsg-num">&#8369;@((_order.AmountPaid ?? _order.Total).ToString("N2"))</td>
                             </tr>
+
+                            @* Once anything is owed back, the three figures are shown apart.
+                               A single "total" would hide the fact that money has to move. *@
+                            @if (_order.HasRefundDue || _order.RefundHasBeenSettled)
+                            {
+                                <tr>
+                                    <td colspan="4">Being handed over</td>
+                                    <td class="upcsg-num">&#8369;@_order.FulfilledTotal.ToString("N2")</td>
+                                </tr>
+                                <tr class="upcsg-line--short">
+                                    <td colspan="4">
+                                        @(_order.RefundHasBeenSettled ? "Refunded" : "Refund due")
+                                    </td>
+                                    <td class="upcsg-num">
+                                        &#8369;@(((_order.AmountPaid ?? _order.Total) - _order.FulfilledTotal).ToString("N2"))
+                                    </td>
+                                </tr>
+                            }
                         </tfoot>
                     </MudSimpleTable>
 
@@ -163,6 +195,62 @@
                     <MudText Typo="Typo.overline" Class="upcsg-panel__title">Status</MudText>
                     <OrderStatusChain Order="_order" />
                 </MudPaper>
+
+                @* ---------- Refund obligation ----------
+                   Its own panel, above the lifecycle actions, because money owed back is
+                   the thing an officer must not scroll past. *@
+                @if (_order.HasRefundDue || _order.RefundHasBeenSettled)
+                {
+                    <MudPaper Square="true" Elevation="0" Class="upcsg-panel upcsg-panel--owed mt-4">
+                        <MudText Typo="Typo.overline" Class="upcsg-panel__title">
+                            @(_order.RefundHasBeenSettled ? "Refund sent" : "Refund owed")
+                        </MudText>
+
+                        @if (_order.RefundHasBeenSettled)
+                        {
+                            <MudText Typo="Typo.body2">
+                                &#8369;@(((_order.AmountPaid ?? _order.Total) - _order.FulfilledTotal).ToString("N2"))
+                                returned on @_order.RefundSettledAt!.Value.ToLocalTime().ToString("MMM d, h:mm tt").
+                            </MudText>
+                            <MudText Typo="Typo.body2" Class="upcsg-fact__mono mt-1">
+                                @_order.RefundReference
+                            </MudText>
+                            <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                                Settled refunds are final — a restock can no longer put these lines back.
+                            </MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.h6" Class="upcsg-gradient-text mb-2">
+                                &#8369;@_order.RefundDue.ToString("N2")
+                            </MudText>
+
+                            <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-3">
+                                Restocking is usually the better fix — send the money back only when
+                                you genuinely can't supply the item.
+                            </MudText>
+
+                            <MudStack Spacing="2">
+                                @foreach (var line in _order.Lines.Where(l => l.IsRefundDue))
+                                {
+                                    var l = line;
+                                    <MudButton Variant="Variant.Outlined" Color="Color.Success" FullWidth="true"
+                                               StartIcon="@Icons.Material.Filled.Inventory"
+                                               Disabled="_busy"
+                                               OnClick="() => RefulfilAsync(l)">
+                                        Fill @l.ItemName@(l.Variant is null ? "" : $" ({l.Variant})") from stock
+                                    </MudButton>
+                                }
+
+                                <MudButton Variant="Variant.Filled" Color="Color.Warning" FullWidth="true"
+                                           StartIcon="@Icons.Material.Filled.CurrencyExchange" DropShadow="false"
+                                           Disabled="_busy" OnClick="SettleRefundAsync">
+                                    Record refund sent
+                                </MudButton>
+                            </MudStack>
+                        }
+                    </MudPaper>
+                }
 
                 @* ---------- Actions ---------- *@
                 <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
@@ -268,9 +356,109 @@
             _order = await OrderService.ChangeStatusAsync(Id, next, null);
             Snackbar.Add($"Order #{Id} → {OrderStatusDisplay.Label(next)}", Severity.Success);
         }
+        catch (Exception ex) when (next == OrderStatusDto.Acknowledged && LooksLikeShortfall(ex.Message))
+        {
+            // The domain refused because stock ran short. Rather than leaving the officer
+            // with an error, offer the decision the situation actually calls for — and make
+            // them choose it, since it commits the guild to sending money back.
+            _busy = false;
+            await OfferShortfallAsync(ex.Message);
+        }
         catch (Exception ex)
         {
             // A 409 means the domain refused the move — show its reason verbatim.
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>
+    /// Matches the shortfall message the aggregate produces. Deliberately narrow: any other
+    /// refusal — wrong state, missing receipt — must keep surfacing as a plain error rather
+    /// than prompting for a refund nobody asked about.
+    /// </summary>
+    private static bool LooksLikeShortfall(string message) =>
+        message.Contains("ordered,", StringComparison.OrdinalIgnoreCase)
+        && message.Contains("left", StringComparison.OrdinalIgnoreCase);
+
+    private async Task OfferShortfallAsync(string reason)
+    {
+        var proceed = await DialogService.ShowMessageBoxAsync(
+            "Not enough stock",
+            $"{reason}\n\nYou can acknowledge anyway: the guilder gets what's available, and "
+            + "the rest is recorded as owed back. Restocking later can still fill it.",
+            yesText: "Acknowledge and owe the difference",
+            cancelText: "Leave it pending");
+
+        if (proceed != true)
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.ChangeStatusAsync(
+                Id, OrderStatusDto.Acknowledged, null, allowShortfall: true);
+
+            Snackbar.Add($"Acknowledged. ₱{_order.RefundDue:N2} is owed back.", Severity.Warning);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RefulfilAsync(OrderLineDto line)
+    {
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.RefulfilLineAsync(Id, line.MerchItemId, line.Variant);
+            Snackbar.Add($"{line.ItemName} filled from stock.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            await LoadAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SettleRefundAsync()
+    {
+        var reference = await PromptAsync(
+            $"Record refund for #{Id}",
+            "GCash reference of the money you sent back");
+
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            _order = await OrderService.SettleRefundAsync(Id, reference);
+            Snackbar.Add("Refund recorded.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
             Snackbar.Add(ex.Message, Severity.Error);
             await LoadAsync();
         }

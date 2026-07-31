@@ -40,7 +40,17 @@ public class ChangeOrderStatusEndpoint(IOrderRepository orders, IMerchRepository
                     var items = await merch.GetManyAsync(
                         order.Lines.Select(l => l.MerchItemId), ct);
 
-                    order.Acknowledge(items.ToDictionary(i => i.Id));
+                    var catalog = items.ToDictionary(i => i.Id);
+
+                    if (req.AllowShortfall)
+                    {
+                        order.AcknowledgeWithShortfall(catalog);
+                    }
+                    else
+                    {
+                        order.Acknowledge(catalog);
+                    }
+
                     break;
                 case OrderStatusDto.Released:
                     order.Release();

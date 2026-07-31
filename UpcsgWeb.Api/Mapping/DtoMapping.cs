@@ -114,6 +114,13 @@ public static class DtoMapping
         },
         Total = o.Total.Amount,
         Currency = o.Total.Currency,
+
+        AmountPaid = o.AmountPaid?.Amount,
+        RefundDue = o.RefundDue.Amount,
+        FulfilledTotal = o.FulfilledTotal.Amount,
+        RefundReference = o.RefundReference,
+        RefundSettledAt = o.RefundSettledAt,
+
         Lines = [.. o.Lines.Select(l => new OrderLineDto
         {
             MerchItemId = l.MerchItemId,
@@ -122,6 +129,8 @@ public static class DtoMapping
             UnitPrice = l.UnitPrice.Amount,
             Quantity = l.Quantity,
             LineTotal = l.LineTotal.Amount,
+            Status = Enum.Parse<OrderLineStatusDto>(l.Status.ToString()),
+            ShortfallReason = l.ShortfallReason,
         })],
     };
 }

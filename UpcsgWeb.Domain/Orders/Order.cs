@@ -75,9 +75,41 @@ public class Order : AggregateRoot
     /// <summary>Read-only to callers: lines are only added through AddLine.</summary>
     public IReadOnlyList<OrderLine> Lines => _lines.AsReadOnly();
 
+    /// <summary>
+    /// What the order came to. Note this does NOT shrink when a line falls short — the
+    /// guilder paid this, and quietly reducing it would erase the evidence that money is
+    /// owed back.
+    /// </summary>
     public Money Total => _lines.Count == 0
         ? Money.Zero()
         : _lines.Aggregate(Money.Zero(), (sum, line) => sum.Add(line.LineTotal));
+
+    /// <summary>
+    /// What the guilder actually handed over, captured when an officer confirmed the
+    /// receipt. Kept apart from Total so "paid ₱2,460, delivering ₱1,640, owe ₱820" is a
+    /// fact the system holds rather than something an officer works out on paper.
+    /// </summary>
+    public Money? AmountPaid { get; private set; }
+
+    /// <summary>Money owed back for lines that couldn't be filled and haven't been settled.</summary>
+    public Money RefundDue => _lines
+        .Where(l => l.IsRefundDue)
+        .Aggregate(Money.Zero(), (sum, line) => sum.Add(line.LineTotal));
+
+    public bool HasRefundDue => _lines.Any(l => l.IsRefundDue);
+
+    /// <summary>True once every shortfall on this order has been paid back.</summary>
+    public bool RefundSettled => RefundReference is not null;
+
+    /// <summary>GCash reference for the money sent back. Null until it has been.</summary>
+    public string? RefundReference { get; private set; }
+
+    public DateTime? RefundSettledAt { get; private set; }
+
+    /// <summary>What the guilder is actually receiving, after shortfalls.</summary>
+    public Money FulfilledTotal => _lines
+        .Where(l => l.Status == OrderLineStatus.ToFulfil)
+        .Aggregate(Money.Zero(), (sum, line) => sum.Add(line.LineTotal));
 
     /// <summary>Lines are fixed the moment a receipt is submitted.</summary>
     public bool IsEditable => Status == OrderStatus.AwaitingPayment;
@@ -213,7 +245,122 @@ public class Order : AggregateRoot
             items[line.MerchItemId].DeductStock(line.Variant, line.Quantity);
         }
 
+        AmountPaid = Total;
         TransitionTo(OrderStatus.Acknowledged);
+    }
+
+    /// <summary>
+    /// Acknowledges anyway, taking what stock exists and marking the rest as owed back.
+    ///
+    /// Deliberately a separate method rather than a flag on Acknowledge: creating a refund
+    /// obligation is a decision an officer makes knowingly, not a fallback that happens
+    /// because a boolean was left at its default.
+    ///
+    /// Returns the lines that fell short, so the caller can tell the guilder precisely
+    /// what is being refunded.
+    /// </summary>
+    public IReadOnlyList<OrderLine> AcknowledgeWithShortfall(IReadOnlyDictionary<int, MerchItem> items)
+    {
+        var short_ = new List<OrderLine>();
+
+        foreach (var line in _lines)
+        {
+            if (!items.TryGetValue(line.MerchItemId, out var item))
+            {
+                line.MarkRefundDue("This item is no longer in the store.");
+                short_.Add(line);
+                continue;
+            }
+
+            if (item.CanFulfil(line.Variant, line.Quantity))
+            {
+                item.DeductStock(line.Variant, line.Quantity);
+                continue;
+            }
+
+            var left = item.StockFor(line.Variant);
+            line.MarkRefundDue(left == 0
+                ? "Sold out before we could fill this."
+                : $"Only {left} left, {line.Quantity} were ordered.");
+
+            short_.Add(line);
+        }
+
+        if (short_.Count == _lines.Count)
+        {
+            throw new DomainException(
+                "Nothing on this order can be filled. Cancel and refund it in full instead.");
+        }
+
+        AmountPaid = Total;
+        TransitionTo(OrderStatus.Acknowledged);
+
+        return short_;
+    }
+
+    /// <summary>
+    /// A restock arrived, so a line that fell short can be filled after all. The officer
+    /// chooses this — a restock never silently resurrects an order, because the guilder
+    /// may already have been told they're being refunded.
+    /// </summary>
+    public void RefulfilLine(int merchItemId, string? variant, IReadOnlyDictionary<int, MerchItem> items)
+    {
+        // Checked before the line lookup: once settled, every line is Refunded rather than
+        // RefundDue, so the lookup would fail first and report "not awaiting a refund" —
+        // true, but useless. The officer needs to know the money already went back.
+        if (RefundSettled)
+        {
+            throw new DomainException(
+                "This order's refund has already been sent. You cannot un-send GCash — "
+                + "ask the guilder to place a new order.");
+        }
+
+        var line = _lines.FirstOrDefault(l =>
+            l.MerchItemId == merchItemId && l.Variant == variant && l.IsRefundDue)
+            ?? throw new DomainException("That line is not awaiting a refund.");
+
+        if (!items.TryGetValue(merchItemId, out var item))
+        {
+            throw new DomainException($"{line.ItemName} is no longer in the store.");
+        }
+
+        if (!item.CanFulfil(variant, line.Quantity))
+        {
+            var left = item.StockFor(variant);
+            throw new DomainException($"Still not enough — {line.Quantity} needed, {left} left.");
+        }
+
+        item.DeductStock(variant, line.Quantity);
+        line.RestoreToFulfil();
+        Touch();
+    }
+
+    /// <summary>
+    /// Records that the money went back, with the GCash reference. Terminal for those
+    /// lines: this is the point after which a restock can no longer rescue them.
+    /// </summary>
+    public void SettleRefund(string reference)
+    {
+        if (!HasRefundDue)
+        {
+            throw new DomainException("This order has nothing owing.");
+        }
+
+        if (string.IsNullOrWhiteSpace(reference))
+        {
+            throw new DomainException(
+                "Recording a refund requires the GCash reference — without it the Auditor "
+                + "cannot verify the money actually moved.");
+        }
+
+        foreach (var line in _lines.Where(l => l.IsRefundDue).ToList())
+        {
+            line.MarkRefunded();
+        }
+
+        RefundReference = reference.Trim();
+        RefundSettledAt = DateTime.UtcNow;
+        Touch();
     }
 
     public void Release() => TransitionTo(OrderStatus.Released);

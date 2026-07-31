@@ -34,6 +34,16 @@ public class OrderLineConfiguration : IEntityTypeConfiguration<OrderLine>
                 .IsRequired();
         });
 
+        // Text, for the same reason as OrderStatus: an ordinal would silently remap every
+        // existing row if a value were ever inserted mid-enum.
+        builder.Property(l => l.Status)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .IsRequired();
+
+        builder.Property(l => l.ShortfallReason).HasMaxLength(500);
+
         builder.Ignore(l => l.LineTotal);
+        builder.Ignore(l => l.IsRefundDue);
     }
 }

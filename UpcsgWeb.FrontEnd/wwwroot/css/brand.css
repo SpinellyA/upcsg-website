@@ -1,4 +1,4 @@
-﻿/*
+/*
   UPCSG brand tokens, sourced from "UPCSG - BRANDBOOK.pdf" (2026-2027, Starry Night / cosmic-tech theme).
   Fonts Aileron/Neue Montreal/Helvetica Now/Kaoly are not freely web-licensed; substituted with
   the closest free Google Fonts equivalents (see --upcsg-font-* below).
@@ -3511,6 +3511,38 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* Sits next to the status pill when the row is waiting on the reader, not on staff. */
+/* --- Shortfall lines ---
+   A line that can't be filled stays in the table rather than vanishing: an order is a
+   record of what was bought, not a picking list. It just stops looking like the rest. */
+
+.upcsg-line--short td {
+    background: rgba(255, 63, 95, 0.06);
+}
+
+.upcsg-line__reason {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-line__refunded {
+    display: block;
+    margin-top: 0.2rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+/* The owed-money panel earns a warm edge so it doesn't read as one more grey card. */
+.upcsg-panel--owed {
+    border-color: rgba(246, 200, 117, 0.5);
+}
+
 .upcsg-datatable__flag {
     display: block;
     margin-top: 0.2rem;

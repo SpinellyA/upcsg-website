@@ -1,4 +1,4 @@
-﻿@page "/orders"
+@page "/orders"
 @attribute [Authorize]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -72,6 +72,12 @@
                     @if (context.Status == OrderStatusDto.AwaitingPayment)
                     {
                         <span class="upcsg-datatable__flag">receipt needed</span>
+                    }
+                    else if (context.HasRefundDue)
+                    {
+                        <span class="upcsg-datatable__flag">
+                            &#8369;@context.RefundDue.ToString("N2") coming back
+                        </span>
                     }
                 </MudTd>
                 <MudTd Class="upcsg-num upcsg-datatable__chevron">&rsaquo;</MudTd>

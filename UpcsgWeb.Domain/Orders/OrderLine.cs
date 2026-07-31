@@ -51,6 +51,13 @@ public class OrderLine : Entity
 
     public Money LineTotal => UnitPrice.MultiplyBy(Quantity);
 
+    public OrderLineStatus Status { get; private set; } = OrderLineStatus.ToFulfil;
+
+    /// <summary>Why this line couldn't be filled. Shown to the guilder verbatim.</summary>
+    public string? ShortfallReason { get; private set; }
+
+    public bool IsRefundDue => Status == OrderLineStatus.RefundDue;
+
     internal void ChangeQuantity(int quantity)
     {
         if (quantity <= 0)
@@ -59,5 +66,43 @@ public class OrderLine : Entity
         }
 
         Quantity = quantity;
+    }
+
+    internal void MarkRefundDue(string reason)
+    {
+        if (Status == OrderLineStatus.Refunded)
+        {
+            throw new DomainException($"{ItemName} has already been refunded.");
+        }
+
+        Status = OrderLineStatus.RefundDue;
+        ShortfallReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+    }
+
+    /// <summary>
+    /// A restock arrived and this line can be filled after all. Refused once the money has
+    /// gone back — you cannot un-send GCash.
+    /// </summary>
+    internal void RestoreToFulfil()
+    {
+        if (Status == OrderLineStatus.Refunded)
+        {
+            throw new DomainException(
+                $"{ItemName} was already refunded, so it can't be put back on this order. "
+                + "Ask the guilder to order it again.");
+        }
+
+        Status = OrderLineStatus.ToFulfil;
+        ShortfallReason = null;
+    }
+
+    internal void MarkRefunded()
+    {
+        if (Status != OrderLineStatus.RefundDue)
+        {
+            throw new DomainException($"{ItemName} is not awaiting a refund.");
+        }
+
+        Status = OrderLineStatus.Refunded;
     }
 }

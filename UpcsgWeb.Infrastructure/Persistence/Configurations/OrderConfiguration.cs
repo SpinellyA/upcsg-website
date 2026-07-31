@@ -23,6 +23,21 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(o => o.CancellationReason).HasMaxLength(500);
         builder.Property(o => o.ReceiptRejectionReason).HasMaxLength(500);
 
+        // What the guilder actually handed over, kept apart from Total so a partial
+        // fulfilment leaves a verifiable trail rather than a silently shrunken order.
+        builder.OwnsOne(o => o.AmountPaid, paid =>
+        {
+            paid.Property(p => p.Amount)
+                .HasColumnName("AmountPaidAmount")
+                .HasPrecision(10, 2);
+
+            paid.Property(p => p.Currency)
+                .HasColumnName("AmountPaidCurrency")
+                .HasMaxLength(3);
+        });
+
+        builder.Property(o => o.RefundReference).HasMaxLength(PaymentReceipt.MaxReferenceLength);
+
         // Optional owned type: columns are nullable, and the whole receipt reads as
         // null until the guilder submits one. The length mirrors the domain's own limit
         // so the column can never be narrower than what the aggregate accepts.
@@ -62,5 +77,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Ignore(o => o.IsEditable);
         builder.Ignore(o => o.IsOpen);
         builder.Ignore(o => o.AwaitsPayment);
+
+        // Derived from the lines; nothing to persist.
+        builder.Ignore(o => o.RefundDue);
+        builder.Ignore(o => o.HasRefundDue);
+        builder.Ignore(o => o.RefundSettled);
+        builder.Ignore(o => o.FulfilledTotal);
     }
 }

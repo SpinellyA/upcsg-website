@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
@@ -11,8 +11,10 @@ public interface IOrderService
 
     // Officer actions
     Task<List<OrderDto>> GetQueueAsync(OrderStatusDto? status);
-    Task<OrderDto> ChangeStatusAsync(int orderId, OrderStatusDto status, string? reason);
+    Task<OrderDto> ChangeStatusAsync(int orderId, OrderStatusDto status, string? reason, bool allowShortfall = false);
     Task<OrderDto> RejectReceiptAsync(int orderId, string reason);
+    Task<OrderDto> SettleRefundAsync(int orderId, string reference);
+    Task<OrderDto> RefulfilLineAsync(int orderId, int merchItemId, string? variant);
 }
 
 public class OrderService(HttpClient http, ApiOptions options) : IOrderService
@@ -55,7 +57,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
         return await http.GetFromJsonAsync<List<OrderDto>>(url, UpcsgJson.Options) ?? [];
     }
 
-    public async Task<OrderDto> ChangeStatusAsync(int orderId, OrderStatusDto status, string? reason)
+    public async Task<OrderDto> ChangeStatusAsync(int orderId, OrderStatusDto status, string? reason, bool allowShortfall = false)
     {
         EnsureConfigured();
 
@@ -63,7 +65,28 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
         {
             Status = status,
             Reason = reason,
+            AllowShortfall = allowShortfall,
         }, UpcsgJson.Options);
+
+        return await ReadOrThrowAsync(response);
+    }
+
+    public async Task<OrderDto> SettleRefundAsync(int orderId, string reference)
+    {
+        EnsureConfigured();
+
+        var response = await http.PostAsJsonAsync($"api/orders/{orderId}/settle-refund",
+            new SettleRefundRequest { Reference = reference }, UpcsgJson.Options);
+
+        return await ReadOrThrowAsync(response);
+    }
+
+    public async Task<OrderDto> RefulfilLineAsync(int orderId, int merchItemId, string? variant)
+    {
+        EnsureConfigured();
+
+        var response = await http.PostAsJsonAsync($"api/orders/{orderId}/refulfil",
+            new RefulfilLineRequest { MerchItemId = merchItemId, Variant = variant }, UpcsgJson.Options);
 
         return await ReadOrThrowAsync(response);
     }

@@ -292,6 +292,198 @@ public class OrderLifecycleTests
     }
 }
 
+public class RefundDueTests
+{
+    /// <summary>An order for 2 hoodies and a tote, with only 1 hoodie on the shelf.</summary>
+    private static Order ShortOrder(out MerchItem hoodie, out MerchItem tote)
+    {
+        hoodie = Hoodie(stock: 1, price: 750m);
+        tote = Tote(price: 250m);
+
+        var order = Order.Place(UserId);
+        order.AddLine(hoodie, "M", 2);        // 1500, only 1 available
+        order.AddLine(tote, "One size", 1);   //  250
+        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+
+        return order;
+    }
+
+    [Fact]
+    public void PartialAcknowledgeFillsWhatItCanAndOwesTheRest()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+
+        var shortfall = order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        Assert.Equal(OrderStatus.Acknowledged, order.Status);
+        Assert.Single(shortfall);
+        Assert.Equal("Cosmic Hoodie", shortfall[0].ItemName);
+
+        // The tote was filled and its stock taken; the hoodie line was not touched.
+        Assert.Equal(99, tote.StockFor("One size"));
+        Assert.Equal(1, hoodie.StockFor("M"));
+    }
+
+    [Fact]
+    public void TotalStaysWhatWasPaidAndTheShortfallIsRecordedSeparately()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        // Quietly shrinking the total would erase the evidence that money is owed.
+        Assert.Equal(1750m, order.Total.Amount);
+        Assert.Equal(1750m, order.AmountPaid!.Amount);
+        Assert.Equal(1500m, order.RefundDue.Amount);
+        Assert.Equal(250m, order.FulfilledTotal.Amount);
+    }
+
+    [Fact]
+    public void TheShortfallReasonSaysWhatActuallyHappened()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        var shortfall = order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        Assert.Equal("Only 1 left, 2 were ordered.", shortfall[0].ShortfallReason);
+    }
+
+    [Fact]
+    public void AnOrderWhereNothingCanBeFilledIsRefusedOutright()
+    {
+        var hoodie = Hoodie(stock: 0);
+        var order = Order.Place(UserId);
+        order.AddLine(hoodie, "M", 1);
+        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+
+        // Acknowledging an order that delivers nothing is just a cancellation wearing a
+        // different hat, and it would leave the guilder waiting for goods that never come.
+        var ex = Assert.Throws<DomainException>(() => order.AcknowledgeWithShortfall(Catalog(hoodie)));
+        Assert.Contains("Cancel and refund it in full", ex.Message);
+    }
+
+    // --- Restocking rescues it -------------------------------------------------------
+
+    [Fact]
+    public void RestockingLetsAnOfficerFillTheLineAfterAll()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+        Assert.True(order.HasRefundDue);
+
+        hoodie.Restock("M", 10);
+        order.RefulfilLine(hoodie.Id, "M", Catalog(hoodie, tote));
+
+        Assert.False(order.HasRefundDue);
+        Assert.Equal(0m, order.RefundDue.Amount);
+        Assert.Equal(1750m, order.FulfilledTotal.Amount);
+
+        // And the restock was actually consumed.
+        Assert.Equal(9, hoodie.StockFor("M"));
+    }
+
+    [Fact]
+    public void RefulfillingNeedsEnoughStockForTheWholeLine()
+    {
+        // 3 ordered, 1 on the shelf.
+        var hoodie = Hoodie(stock: 1);
+        var tote = Tote();
+
+        var order = Order.Place(UserId);
+        order.AddLine(hoodie, "M", 3);
+        order.AddLine(tote, "One size", 1);
+        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        // A partial restock is not enough — lines are filled whole or not at all.
+        hoodie.Restock("M", 1);
+
+        var ex = Assert.Throws<DomainException>(
+            () => order.RefulfilLine(hoodie.Id, "M", Catalog(hoodie, tote)));
+
+        Assert.Contains("3 needed, 2 left", ex.Message);
+        Assert.True(order.HasRefundDue);
+    }
+
+    [Fact]
+    public void OnceTheMoneyHasGoneBackARestockCannotUndoIt()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+        order.SettleRefund("0009999999999");
+
+        hoodie.Restock("M", 10);
+
+        // You cannot un-send GCash.
+        var ex = Assert.Throws<DomainException>(
+            () => order.RefulfilLine(hoodie.Id, "M", Catalog(hoodie, tote)));
+
+        Assert.Contains("already been sent", ex.Message);
+    }
+
+    // --- Settling --------------------------------------------------------------------
+
+    [Fact]
+    public void SettlingRecordsTheReferenceAndClosesTheObligation()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        order.SettleRefund("  0009999999999  ");
+
+        Assert.True(order.RefundSettled);
+        Assert.Equal("0009999999999", order.RefundReference);
+        Assert.NotNull(order.RefundSettledAt);
+
+        // Nothing outstanding any more, but the line still shows what happened.
+        Assert.False(order.HasRefundDue);
+        Assert.Equal(OrderLineStatus.Refunded, order.Lines[0].Status);
+    }
+
+    [Fact]
+    public void SettlingRequiresAReference()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        // Without it the Auditor has no way to verify the money moved.
+        var ex = Assert.Throws<DomainException>(() => order.SettleRefund("   "));
+        Assert.Contains("GCash reference", ex.Message);
+    }
+
+    [Fact]
+    public void CannotSettleAnOrderThatOwesNothing()
+    {
+        var order = PendingOrder(out var item);
+        order.Acknowledge(Catalog(item));
+
+        Assert.Throws<DomainException>(() => order.SettleRefund("0009999999999"));
+    }
+
+    [Fact]
+    public void AShortOrderStillMovesThroughReleaseAndReceipt()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        // The refund is orthogonal to the lifecycle: the tote still gets handed over.
+        order.Release();
+        order.MarkReceived();
+
+        Assert.Equal(OrderStatus.Received, order.Status);
+        Assert.True(order.HasRefundDue);
+    }
+
+    [Fact]
+    public void StrictAcknowledgeStillRefusesRatherThanCreatingARefund()
+    {
+        var order = ShortOrder(out var hoodie, out var tote);
+
+        // The plain path must never quietly produce a refund obligation.
+        Assert.Throws<DomainException>(() => order.Acknowledge(Catalog(hoodie, tote)));
+        Assert.Equal(OrderStatus.Pending, order.Status);
+        Assert.False(order.HasRefundDue);
+    }
+}
+
 public class MerchSaleTests
 {
     [Fact]

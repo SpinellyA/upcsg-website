@@ -52,6 +52,16 @@ else
                     {
                         <span class="upcsg-gallery__soldout">Sold out</span>
                     }
+                    else if (_item.IsPreorder)
+                    {
+                        <span class="upcsg-gallery__badge upcsg-gallery__badge--preorder">Preorder</span>
+                    }
+                    else if (_item.HasActiveSale)
+                    {
+                        <span class="upcsg-gallery__badge upcsg-gallery__badge--sale">
+                            @_item.SalePercentage.ToString("0.##")% off
+                        </span>
+                    }
                 </div>
 
                 @* Thumbnails only earn their space once there's more than one photo. *@
@@ -83,6 +93,13 @@ else
                         <span class="upcsg-buy__from">from</span>
                     }
                     <span class="upcsg-gradient-text">&#8369;@UnitPrice.ToString("N2")</span>
+
+                    @* Struck-through list price, so the saving is visible rather than
+                       asserted. Only when a sale is actually active. *@
+                    @if (_item.HasActiveSale && ListUnitPrice > UnitPrice)
+                    {
+                        <span class="upcsg-buy__was">&#8369;@ListUnitPrice.ToString("N2")</span>
+                    }
                 </p>
 
                 @if (!string.IsNullOrWhiteSpace(Blurb))
@@ -105,9 +122,12 @@ else
                             @foreach (var variant in _item.Variants)
                             {
                                 var v = variant;
+                                var soldOut = !_item.IsPreorder && v.Stock <= 0;
+
                                 <button type="button"
-                                        class="upcsg-variant @(_selected?.Id == v.Id ? "upcsg-variant--on" : null)"
+                                        class="upcsg-variant @(_selected?.Id == v.Id ? "upcsg-variant--on" : null) @(soldOut ? "upcsg-variant--gone" : null)"
                                         aria-pressed="@(_selected?.Id == v.Id ? "true" : "false")"
+                                        disabled="@soldOut"
                                         @onclick="() => SelectVariant(v)">
                                     <span class="upcsg-variant__name">@v.Name</span>
 
@@ -115,7 +135,12 @@ else
                                        otherwise every chip repeats the same number. *@
                                     @if (_item.HasPriceRange)
                                     {
-                                        <span class="upcsg-variant__price">&#8369;@v.Price.ToString("N2")</span>
+                                        <span class="upcsg-variant__price">&#8369;@_item.PriceOf(v.Name).ToString("N2")</span>
+                                    }
+
+                                    @if (soldOut)
+                                    {
+                                        <span class="upcsg-variant__note">Sold out</span>
                                     }
                                 </button>
                             }
@@ -129,11 +154,22 @@ else
                         <button type="button" class="upcsg-qty__step" aria-label="Fewer"
                                 disabled="@(_quantity <= 1)" @onclick="() => SetQuantity(_quantity - 1)">&minus;</button>
                         <input class="upcsg-qty__value" type="number" inputmode="numeric"
-                               min="1" max="@MaxPerLine" aria-label="Quantity"
+                               min="1" max="@Ceiling" aria-label="Quantity"
                                value="@_quantity" @onchange="OnQuantityTyped" />
                         <button type="button" class="upcsg-qty__step" aria-label="More"
-                                disabled="@(_quantity >= MaxPerLine)" @onclick="() => SetQuantity(_quantity + 1)">+</button>
-                        <span class="upcsg-qty__cap">max @MaxPerLine</span>
+                                disabled="@(_quantity >= Ceiling)" @onclick="() => SetQuantity(_quantity + 1)">+</button>
+
+                        @* Says which limit is biting: the per-line cap, or what's left. *@
+                        <span class="upcsg-qty__cap">
+                            @if (_item.IsPreorder || !HasSelection || Remaining > MaxPerLine)
+                            {
+                                <text>max @MaxPerLine</text>
+                            }
+                            else
+                            {
+                                <text>@Remaining left</text>
+                            }
+                        </span>
                     </div>
                 </div>
 
@@ -155,7 +191,7 @@ else
                                        Class="upcsg-cta-button"
                                        Disabled="!CanBuy || _busy"
                                        OnClick="() => AddAsync(true)">
-                                Buy now
+                                @(_item.IsPreorder ? "Preorder now" : "Buy now")
                             </MudButton>
                         </div>
 
@@ -163,9 +199,33 @@ else
                         {
                             <p class="upcsg-buy__note">This item is sold out right now.</p>
                         }
+                        else if (_item.IsPreorderClosed)
+                        {
+                            <p class="upcsg-buy__note">The preorder window for this item has closed.</p>
+                        }
                         else if (_selected is null && _item.Variants.Count > 0)
                         {
                             <p class="upcsg-buy__note">Choose a variant to continue.</p>
+                        }
+                        else if (_selected is not null && Remaining <= 0)
+                        {
+                            <p class="upcsg-buy__note">@_selected.Name is sold out. Try another variant.</p>
+                        }
+                        else if (_item.IsPreorder)
+                        {
+                            <p class="upcsg-buy__note">
+                                Made to order, so there's no stock limit.
+                                @if (_item.PreorderClosesAt is { } closes)
+                                {
+                                    <text>
+                                        Preorders close @closes.ToLocalTime().ToString("MMMM d, h:mm tt").
+                                    </text>
+                                }
+                            </p>
+                        }
+                        else if (Remaining is > 0 and <= LowStockThreshold)
+                        {
+                            <p class="upcsg-buy__note">Only @Remaining left.</p>
                         }
                     </Authorized>
                     <NotAuthorized>
@@ -210,9 +270,37 @@ else
     private bool _loading = true;
     private bool _busy;
 
+    /// <summary>Below this, saying how many are left creates useful urgency rather than noise.</summary>
+    private const int LowStockThreshold = 5;
+
     private List<string> Photos => _item?.PhotosOf(_selected?.Name) ?? [];
 
-    private decimal UnitPrice => _selected?.Price ?? _item?.PriceFrom ?? 0m;
+    private decimal UnitPrice => _selected is null
+        ? _item?.PriceFrom ?? 0m
+        : _item!.PriceOf(_selected.Name);
+
+    private decimal ListUnitPrice => _selected is null
+        ? _item?.ListPriceFrom ?? 0m
+        : _item!.ListPriceOf(_selected.Name);
+
+    /// <summary>True once there is something concrete to count stock for.</summary>
+    private bool HasSelection => _item is not null
+        && (_selected is not null || _item.Variants.Count == 0);
+
+    /// <summary>
+    /// Units left for the current selection; int.MaxValue for a preorder.
+    ///
+    /// Before a variant is chosen there is nothing to count — falling back to the item's
+    /// own stock would report 0 for any item whose stock lives on its variants, which
+    /// reads as "sold out" on a page that is anything but.
+    /// </summary>
+    private int Remaining => HasSelection ? _item!.StockOf(_selected?.Name) : int.MaxValue;
+
+    /// <summary>
+    /// The quantity stepper stops at whichever limit bites first — the per-line cap or
+    /// what's actually left — so the guilder can't build a basket the domain will refuse.
+    /// </summary>
+    private int Ceiling => Math.Max(1, Math.Min(MaxPerLine, Remaining));
 
     /// <summary>The variant's own blurb when it has one, else the item's opening line.</summary>
     private string Blurb => !string.IsNullOrWhiteSpace(_selected?.Description)
@@ -220,7 +308,9 @@ else
         : Prose.Standfirst(_item?.Description);
 
     private bool CanBuy => _item is { InStock: true }
-        && (_item.Variants.Count == 0 || _selected is not null);
+        && !_item.IsPreorderClosed
+        && (_item.Variants.Count == 0 || _selected is not null)
+        && _item.CanBuy(_selected?.Name, _quantity);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -235,8 +325,9 @@ else
             _item = await MerchService.GetMerchItemAsync(Id);
 
             // Preselect when there's only one way to buy it — making someone click "One
-            // size" before they can order is a pointless gate.
-            if (_item is { Variants.Count: 1 })
+            // size" before they can order is a pointless gate. Skipped when that single
+            // variant is sold out, so the page doesn't open on a dead selection.
+            if (_item is { Variants.Count: 1 } && _item.StockOf(_item.Variants[0].Name) > 0)
             {
                 _selected = _item.Variants[0];
             }
@@ -258,9 +349,13 @@ else
         // The gallery may now be showing a different set, so an index carried over from
         // the previous variant could point past the end.
         _photoIndex = 0;
+
+        // Switching to a variant with less stock must pull the quantity down with it,
+        // or the buttons would sit enabled on a basket that checkout will reject.
+        SetQuantity(_quantity);
     }
 
-    private void SetQuantity(int value) => _quantity = Math.Clamp(value, 1, MaxPerLine);
+    private void SetQuantity(int value) => _quantity = Math.Clamp(value, 1, Ceiling);
 
     private void OnQuantityTyped(ChangeEventArgs e) =>
         SetQuantity(int.TryParse(e.Value?.ToString(), out var typed) ? typed : 1);

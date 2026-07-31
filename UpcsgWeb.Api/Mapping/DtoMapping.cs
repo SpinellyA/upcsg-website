@@ -35,13 +35,21 @@ public static class DtoMapping
         Name = m.Name,
         Description = m.Description,
         Price = m.Price.Amount,
+        Stock = m.Stock,
         PhotoUrls = [.. m.PhotoUrls],
         Variants = [.. m.Variants.Select(v => v.ToDto())],
         InStock = m.InStock,
+        SalePercentage = m.SalePercentage,
+        IsOnSale = m.IsOnSale,
+        IsPreorder = m.IsPreorder,
+        PreorderClosesAt = m.PreorderClosesAt,
 
         // Computed server-side so every client agrees on the headline number.
         PriceFrom = m.PriceFrom.Amount,
+        ListPriceFrom = m.ListPriceFrom.Amount,
         HasPriceRange = m.HasPriceRange,
+        HasActiveSale = m.HasActiveSale,
+        IsPreorderClosed = m.IsPreorderClosed,
     };
 
     public static MerchVariantDto ToDto(this MerchVariant v) => new()
@@ -50,6 +58,7 @@ public static class DtoMapping
         Name = v.Name,
         Description = v.Description,
         Price = v.Price.Amount,
+        Stock = v.Stock,
         PhotoUrls = [.. v.PhotoUrls],
     };
 

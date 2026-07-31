@@ -1,4 +1,4 @@
-﻿@page "/merch"
+@page "/merch"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
@@ -105,6 +105,16 @@
                             {
                                 <span class="upcsg-merch-card__badge">Sold out</span>
                             }
+                            else if (item.IsPreorder)
+                            {
+                                <span class="upcsg-merch-card__badge upcsg-merch-card__badge--preorder">Preorder</span>
+                            }
+                            else if (item.HasActiveSale)
+                            {
+                                <span class="upcsg-merch-card__badge upcsg-merch-card__badge--sale">
+                                    @item.SalePercentage.ToString("0.##")% off
+                                </span>
+                            }
                         </div>
 
                         <div class="upcsg-merch-card__body">
@@ -119,6 +129,11 @@
                                     <span class="upcsg-merch-card__from">from</span>
                                 }
                                 &#8369;@item.PriceFrom.ToString("N2")
+
+                                @if (item.HasActiveSale && item.ListPriceFrom > item.PriceFrom)
+                                {
+                                    <span class="upcsg-buy__was">&#8369;@item.ListPriceFrom.ToString("N2")</span>
+                                }
                             </p>
 
                             @if (item.Variants.Count > 0)

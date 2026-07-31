@@ -726,6 +726,58 @@ h4, h5, h6, .upcsg-heading {
     display: block;
 }
 
+/* Struck-through list price, next to the sale price. */
+.upcsg-buy__was {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.85rem;
+    color: var(--upcsg-text-muted);
+    text-decoration: line-through;
+    opacity: 0.75;
+}
+
+.upcsg-gallery__badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.upcsg-gallery__badge--sale,
+.upcsg-merch-card__badge--sale {
+    background: var(--upcsg-highlight);
+    border: 1px solid var(--upcsg-highlight);
+    color: #221A57;
+}
+
+.upcsg-gallery__badge--preorder,
+.upcsg-merch-card__badge--preorder {
+    background: rgba(9, 6, 32, 0.85);
+    border: 1px solid rgba(204, 174, 222, 0.6);
+    color: var(--upcsg-cosmic-lavender);
+}
+
+/* A sold-out variant stays visible rather than disappearing: knowing the size exists
+   but has gone is more useful than wondering whether it was ever offered. */
+.upcsg-variant--gone {
+    opacity: 0.45;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.upcsg-variant__note {
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ff8fa3;
+    text-decoration: none;
+}
+
 .upcsg-gallery__soldout {
     position: absolute;
     top: 1rem;

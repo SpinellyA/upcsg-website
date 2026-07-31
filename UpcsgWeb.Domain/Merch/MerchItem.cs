@@ -124,7 +124,13 @@ public class MerchItem : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public MerchVariant AddVariant(string name, string description, Money price, IEnumerable<string>? photoUrls = null)
+    /// <summary>
+    /// Stock is set here rather than afterwards: a new variant has no id until it is
+    /// saved, so SetVariantStock could not find it — and with two new variants pending it
+    /// would match the wrong one.
+    /// </summary>
+    public MerchVariant AddVariant(
+        string name, string description, Money price, IEnumerable<string>? photoUrls = null, int stock = 0)
     {
         if (_variants.Any(v => v.NameMatches(name)))
         {
@@ -133,6 +139,7 @@ public class MerchItem : AggregateRoot
 
         var variant = MerchVariant.Create(name, description, price, _variants.Count);
         variant.ReplacePhotos(photoUrls ?? []);
+        variant.SetStock(stock);
         _variants.Add(variant);
         UpdatedAt = DateTime.UtcNow;
 

@@ -15,6 +15,12 @@ public static class MerchWrites
         item.UpdateDetails(req.Name, req.Description, Money.Of(req.Price));
         item.ReplacePhotos(req.PhotoUrls);
         item.SetInStock(req.InStock);
+        item.SetSale(req.IsOnSale, req.SalePercentage);
+
+        // Preorder before stock: turning it on makes every count meaningless, and the
+        // aggregate rejects a closing date on a non-preorder.
+        item.SetPreorder(req.IsPreorder, req.IsPreorder ? req.PreorderClosesAt : null);
+        item.SetStock(req.Stock);
 
         ApplyVariants(item, req.Variants);
     }
@@ -40,11 +46,12 @@ public static class MerchWrites
         {
             if (dto.Id == 0)
             {
-                item.AddVariant(dto.Name, dto.Description, Money.Of(dto.Price), dto.PhotoUrls);
+                item.AddVariant(dto.Name, dto.Description, Money.Of(dto.Price), dto.PhotoUrls, dto.Stock);
             }
             else
             {
                 item.UpdateVariant(dto.Id, dto.Name, dto.Description, Money.Of(dto.Price), dto.PhotoUrls);
+                item.SetVariantStock(dto.Id, dto.Stock);
             }
         }
 

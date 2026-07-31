@@ -82,6 +82,71 @@
             </MudPaper>
         </div>
 
+        @* ---------- Selling mode ---------- *@
+        <div class="upcsg-merchform mt-4">
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Sale</MudText>
+
+                <MudSwitch T="bool" Value="_item.IsOnSale" Color="Color.Warning" Label="On sale"
+                           ValueChanged="v => { _item.IsOnSale = v; Touch(); }" Class="mb-3" />
+
+                <MudNumericField @bind-Value="_item.SalePercentage" Immediate="true"
+                                 Label="Percent off" Variant="Variant.Outlined"
+                                 Min="0" Max="100" Format="0.##" Disabled="!_item.IsOnSale"
+                                 Class="mb-2" />
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    @if (_item.IsOnSale && _item.SalePercentage > 0)
+                    {
+                        <text>
+                            Guilders pay &#8369;@SalePreview.ToString("N2") instead of
+                            &#8369;@CheapestVariant.ToString("N2"). The percentage is what's stored,
+                            so switching this off restores the original price exactly.
+                        </text>
+                    }
+                    else
+                    {
+                        <text>Comes off whichever variant the guilder picks.</text>
+                    }
+                </MudText>
+            </MudPaper>
+
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Availability</MudText>
+
+                <MudSwitch T="bool" Value="_item.IsPreorder" Color="Color.Info" Label="Preorder"
+                           ValueChanged="OnPreorderChanged" Class="mb-3" />
+
+                @if (_item.IsPreorder)
+                {
+                    <MudDatePicker @bind-Date="_preorderCloses" Label="Preorder closes (optional)"
+                                   Variant="Variant.Outlined" Clearable="true" Class="mb-2" />
+
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                        Made to order, so stock isn't tracked and it can never sell out.
+                        Leave the date empty to keep the window open.
+                    </MudText>
+                }
+                else if (_item.Variants.Count == 0)
+                {
+                    <MudNumericField @bind-Value="_item.Stock" Immediate="true"
+                                     Label="Units in stock" Variant="Variant.Outlined" Min="0"
+                                     Class="mb-2" />
+
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                        Deducted when you acknowledge a payment, not when someone checks out.
+                    </MudText>
+                }
+                else
+                {
+                    <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                        Stock is per variant &mdash; @TotalVariantStock unit(s) across
+                        @_item.Variants.Count variant(s). Set the numbers in the variant list below.
+                    </MudText>
+                }
+            </MudPaper>
+        </div>
+
         @* ---------- Variants ---------- *@
         <section class="upcsg-section mt-4">
             <div class="upcsg-section-head">
@@ -111,12 +176,35 @@
                     <HeaderContent>
                         <MudTh>Variant</MudTh>
                         <MudTh Class="upcsg-num">Price</MudTh>
+                        <MudTh Class="upcsg-num">Stock</MudTh>
                         <MudTh Class="upcsg-num">Photos</MudTh>
                         <MudTh Style="width:6rem"></MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="Variant"><strong>@context.Name</strong></MudTd>
-                        <MudTd DataLabel="Price" Class="upcsg-num">&#8369;@context.Price.ToString("N2")</MudTd>
+                        <MudTd DataLabel="Price" Class="upcsg-num">
+                            &#8369;@context.Price.ToString("N2")
+                            @if (_item.IsOnSale && _item.SalePercentage > 0)
+                            {
+                                <span class="upcsg-datatable__flag">
+                                    &#8369;@_item.PriceOf(context.Name).ToString("N2") on sale
+                                </span>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Stock" Class="upcsg-num">
+                            @if (_item.IsPreorder)
+                            {
+                                <span class="upcsg-panel__hint">n/a</span>
+                            }
+                            else if (context.Stock == 0)
+                            {
+                                <span class="upcsg-datatable__flag">sold out</span>
+                            }
+                            else
+                            {
+                                @context.Stock
+                            }
+                        </MudTd>
                         <MudTd DataLabel="Photos" Class="upcsg-num">
                             @(context.PhotoUrls.Count == 0 ? "item's" : context.PhotoUrls.Count.ToString())
                         </MudTd>
@@ -160,8 +248,31 @@
 
     private bool IsNew => Id is null;
 
+    private DateTime? _preorderCloses;
+
     private decimal CheapestVariant =>
         _item.Variants.Count == 0 ? _item.Price : _item.Variants.Min(v => v.Price);
+
+    /// <summary>What the cheapest way in costs once the sale is applied.</summary>
+    private decimal SalePreview =>
+        decimal.Round(CheapestVariant * (1m - _item.SalePercentage / 100m), 2, MidpointRounding.ToEven);
+
+    private int TotalVariantStock => _item.Variants.Sum(v => v.Stock);
+
+    private void OnPreorderChanged(bool isPreorder)
+    {
+        _item.IsPreorder = isPreorder;
+
+        // A closing date only means something on a preorder; the aggregate rejects one
+        // otherwise, so clear it here rather than letting the save fail.
+        if (!isPreorder)
+        {
+            _preorderCloses = null;
+            _item.PreorderClosesAt = null;
+        }
+
+        Touch();
+    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -183,11 +294,13 @@
                 else
                 {
                     _item = found;
+                    _preorderCloses = found.PreorderClosesAt?.ToLocalTime();
                 }
             }
             else
             {
                 _item = new MerchItemDto { InStock = true };
+                _preorderCloses = null;
             }
         }
         catch (Exception ex)
@@ -229,6 +342,7 @@
             Name = variant.Name,
             Description = variant.Description,
             Price = variant.Price,
+            Stock = variant.Stock,
             PhotoUrls = [.. variant.PhotoUrls],
         };
 
@@ -242,7 +356,11 @@
 
     private async Task<bool> ShowVariantAsync(MerchVariantDto draft, string title)
     {
-        var parameters = new DialogParameters<VariantFormDialog> { { x => x.Model, draft } };
+        var parameters = new DialogParameters<VariantFormDialog>
+        {
+            { x => x.Model, draft },
+            { x => x.IsPreorder, _item.IsPreorder },
+        };
 
         var dialog = await Dialogs.ShowAsync<VariantFormDialog>(title, parameters,
             new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true });
@@ -264,6 +382,9 @@
 
         try
         {
+            // The picker hands back a local date; the domain stores UTC.
+            _item.PreorderClosesAt = _item.IsPreorder ? _preorderCloses?.ToUniversalTime() : null;
+
             var saved = await Admin.SaveMerchAsync(_item);
             Snackbar.Add("Saved.", Severity.Success);
 
@@ -276,6 +397,7 @@
             }
 
             _item = saved;
+            _preorderCloses = saved.PreorderClosesAt?.ToLocalTime();
             _dirty = false;
         }
         catch (Exception ex)

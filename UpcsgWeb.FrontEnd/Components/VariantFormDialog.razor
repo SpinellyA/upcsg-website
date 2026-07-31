@@ -27,6 +27,20 @@
                                  HelperText="What this variant costs. The store lists the cheapest one."
                                  Class="mb-4" />
 
+                @if (IsPreorder)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true" Square="true" Elevation="0" Class="mb-4">
+                        This item is a preorder, so stock isn't tracked.
+                    </MudAlert>
+                }
+                else
+                {
+                    <MudNumericField @bind-Value="Model.Stock" Immediate="true"
+                                     Label="Units in stock" Variant="Variant.Outlined" Min="0"
+                                     HelperText="Deducted when a payment is acknowledged, not at checkout."
+                                     Class="mb-4" />
+                }
+
                 <MudTextField @bind-Value="Model.Description" Immediate="true"
                               Label="Description" Variant="Variant.Outlined" Lines="5"
                               HelperText="Optional. Shown in place of the item's summary when this variant is selected."
@@ -48,4 +62,7 @@
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
     [Parameter, EditorRequired] public MerchVariantDto Model { get; set; } = default!;
+
+    /// <summary>Hides the stock field: a preorder has no count to keep.</summary>
+    [Parameter] public bool IsPreorder { get; set; }
 }

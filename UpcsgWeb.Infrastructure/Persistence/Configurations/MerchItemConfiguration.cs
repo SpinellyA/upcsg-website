@@ -15,6 +15,9 @@ public class MerchItemConfiguration : IEntityTypeConfiguration<MerchItem>
         builder.Property(m => m.Name).HasMaxLength(200).IsRequired();
         builder.Property(m => m.Description).HasMaxLength(2000);
 
+        // The percentage, not the discounted amount — see the note on MerchItem.
+        builder.Property(m => m.SalePercentage).HasPrecision(5, 2);
+
         builder.OwnsOne(m => m.Price, price =>
         {
             price.Property(p => p.Amount)
@@ -50,7 +53,12 @@ public class MerchItemConfiguration : IEntityTypeConfiguration<MerchItem>
             .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.Ignore(m => m.Variants);
+
+        // Derived from the columns above; nothing to persist.
         builder.Ignore(m => m.PriceFrom);
+        builder.Ignore(m => m.ListPriceFrom);
         builder.Ignore(m => m.HasPriceRange);
+        builder.Ignore(m => m.HasActiveSale);
+        builder.Ignore(m => m.IsPreorderClosed);
     }
 }

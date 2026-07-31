@@ -51,10 +51,10 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
                 Price = 750m,
                 Variants =
                 [
-                    new MerchVariantDto { Id = 1, Name = "S", Price = 750m },
-                    new MerchVariantDto { Id = 2, Name = "M", Price = 750m },
-                    new MerchVariantDto { Id = 3, Name = "L", Price = 780m },
-                    new MerchVariantDto { Id = 4, Name = "XL", Price = 820m, Description = "Runs generous through the shoulders." },
+                    new MerchVariantDto { Id = 1, Name = "S", Price = 750m, Stock = 12 },
+                    new MerchVariantDto { Id = 2, Name = "M", Price = 750m, Stock = 12 },
+                    new MerchVariantDto { Id = 3, Name = "L", Price = 780m, Stock = 12 },
+                    new MerchVariantDto { Id = 4, Name = "XL", Price = 820m, Stock = 4, Description = "Runs generous through the shoulders." },
                 ],
             },
             new()
@@ -63,7 +63,7 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
                 Name = "Starlight Core Tote Bag",
                 Description = "Canvas tote with the UPCSG starburst print in liquid chrome gold.",
                 Price = 250m,
-                Variants = [new MerchVariantDto { Id = 5, Name = "One size", Price = 250m }],
+                Variants = [new MerchVariantDto { Id = 5, Name = "One size", Price = 250m, Stock = 12 }],
             },
             new()
             {
@@ -72,21 +72,23 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
                 Description = "Set of 3 pins: UPCSG crest, mascot, and constellation icon.",
                 Price = 180m,
                 InStock = false,
-                Variants = [new MerchVariantDto { Id = 6, Name = "Set of 3", Price = 180m }],
+                Variants = [new MerchVariantDto { Id = 6, Name = "Set of 3", Price = 180m, Stock = 12 }],
             },
             new()
             {
                 Id = 4,
+                IsOnSale = true,
+                SalePercentage = 15m,
                 Name = "Guild Statement Shirt",
                 Description = "Honeydew white cotton tee with the starry-night crest printed across the chest.",
                 Price = 450m,
                 Variants =
                 [
-                    new MerchVariantDto { Id = 7, Name = "S", Price = 450m },
-                    new MerchVariantDto { Id = 8, Name = "M", Price = 450m },
-                    new MerchVariantDto { Id = 9, Name = "L", Price = 450m },
-                    new MerchVariantDto { Id = 10, Name = "XL", Price = 480m },
-                    new MerchVariantDto { Id = 11, Name = "2XL", Price = 510m },
+                    new MerchVariantDto { Id = 7, Name = "S", Price = 450m, Stock = 12 },
+                    new MerchVariantDto { Id = 8, Name = "M", Price = 450m, Stock = 12 },
+                    new MerchVariantDto { Id = 9, Name = "L", Price = 450m, Stock = 12 },
+                    new MerchVariantDto { Id = 10, Name = "XL", Price = 480m, Stock = 12 },
+                    new MerchVariantDto { Id = 11, Name = "2XL", Price = 510m, Stock = 12 },
                 ],
             },
             new()
@@ -95,15 +97,16 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
                 Name = "Nebula Lanyard",
                 Description = "Woven lanyard in deep amethyst with a periwinkle guild repeat print.",
                 Price = 120m,
-                Variants = [new MerchVariantDto { Id = 12, Name = "One size", Price = 120m }],
+                Variants = [new MerchVariantDto { Id = 12, Name = "One size", Price = 120m, Stock = 12 }],
             },
             new()
             {
                 Id = 6,
+                IsPreorder = true,
                 Name = "Sticker Pack: Cosmo Tech",
                 Description = "Eight die-cut vinyl stickers from the Cosmo Tech graphic set. Laptop-safe.",
                 Price = 90m,
-                Variants = [new MerchVariantDto { Id = 13, Name = "Pack of 8", Price = 90m }],
+                Variants = [new MerchVariantDto { Id = 13, Name = "Pack of 8", Price = 90m, Stock = 12 }],
             },
         };
 
@@ -111,8 +114,16 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
         // a base price the variants don't agree with.
         foreach (var item in items)
         {
-            item.PriceFrom = item.Variants.Count == 0 ? item.Price : item.Variants.Min(v => v.Price);
+            item.ListPriceFrom = item.Variants.Count == 0 ? item.Price : item.Variants.Min(v => v.Price);
+            item.HasActiveSale = item.IsOnSale && item.SalePercentage > 0m;
+
+            item.PriceFrom = item.HasActiveSale
+                ? decimal.Round(item.ListPriceFrom * (1m - item.SalePercentage / 100m), 2, MidpointRounding.ToEven)
+                : item.ListPriceFrom;
+
             item.HasPriceRange = item.Variants.Select(v => v.Price).Distinct().Count() > 1;
+            item.IsPreorderClosed = item.IsPreorder
+                && item.PreorderClosesAt is { } closes && closes <= DateTime.UtcNow;
         }
 
         return items;

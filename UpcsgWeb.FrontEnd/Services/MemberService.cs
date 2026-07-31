@@ -5,6 +5,22 @@ namespace UpcsgWeb.FrontEnd.Services;
 
 public class MemberService(HttpClient http, ApiOptions options) : IMemberService
 {
+    public async Task<MemberDto?> GetMemberAsync(int id)
+    {
+        if (!options.IsConfigured)
+        {
+            return (await GetMembersAsync()).FirstOrDefault(m => m.Id == id);
+        }
+
+        // 404 is an ordinary answer here — a bad id in the URL — so it must not surface
+        // as an exception the page has to catch.
+        var response = await http.GetAsync($"api/members/{id}");
+
+        return response.IsSuccessStatusCode
+            ? await response.Content.ReadFromJsonAsync<MemberDto>(UpcsgJson.Options)
+            : null;
+    }
+
     public async Task<List<MemberDto>> GetMembersAsync()
     {
         // Live when an API is configured; the seed below keeps the public site

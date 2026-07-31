@@ -1,11 +1,10 @@
-@page "/admin/members"
+﻿@page "/admin/members"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IAdminContentService Admin
-@inject ISnackbar Snackbar
-@inject IDialogService DialogService
+@inject NavigationManager Navigation
 
 <PageTitle>People - UPCSG Admin</PageTitle>
 
@@ -16,7 +15,7 @@
             <h1 class="upcsg-title-xl">People</h1>
         </div>
         <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
-                   StartIcon="@Icons.Material.Filled.Add" OnClick="() => EditAsync(null)">
+                   StartIcon="@Icons.Material.Filled.Add" Href="admin/members/new">
             New Person
         </MudButton>
     </div>
@@ -42,7 +41,7 @@
                   LoadingProgressColor="Color.Primary"
                   Filter="new Func<MemberDto, bool>(Matches)"
                   AllowUnsorted="false"
-                  OnRowClick="@(args => OpenAsync(args.Item))"
+                  OnRowClick="@(args => OpenMember(args.Item))"
                   RowClass="upcsg-datatable__row">
             <ToolBarContent>
                 <MudTextField @bind-Value="_search"
@@ -133,74 +132,14 @@
         }
     }
 
-    /// <summary>Rows are click-to-open; MudTable hands us the item that was clicked.</summary>
-    private Task OpenAsync(MemberDto? item) => item is null ? Task.CompletedTask : EditAsync(item);
-
-    private async Task EditAsync(MemberDto? existing)
+    // Editing lives at /admin/members/{id}: a person carries a portrait, a quote and a
+    // bio, which is more than a dialog can hold without becoming a scroll trap. Deleting
+    // lives there too, with the whole record in view.
+    private void OpenMember(MemberDto? item)
     {
-        var draft = existing is null
-            ? new MemberDto { Category = MemberCategory.ExeCom, DisplayOrder = _members.Count + 1 }
-            : new MemberDto
-            {
-                Id = existing.Id,
-                Name = existing.Name,
-                Role = existing.Role,
-                Category = existing.Category,
-                Committee = existing.Committee,
-                PhotoUrl = existing.PhotoUrl,
-                Quote = existing.Quote,
-                Bio = existing.Bio,
-                DisplayOrder = existing.DisplayOrder,
-            };
-
-        var parameters = new DialogParameters<MemberEditDialog> { { x => x.Item, draft } };
-        var dialog = await DialogService.ShowAsync<MemberEditDialog>(
-            existing is null ? "New person" : $"Edit {existing.Name}", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-
-        var result = await dialog.Result;
-        if (result is null || result.Canceled)
+        if (item is not null)
         {
-            return;
-        }
-
-        if (result.Data is EditDialogAction.Delete && existing is not null)
-        {
-            await DeleteAsync(existing);
-            return;
-        }
-
-        try
-        {
-            await Admin.SaveMemberAsync(draft);
-            Snackbar.Add("Saved.", Severity.Success);
-            await LoadAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
-    }
-
-    private async Task DeleteAsync(MemberDto item)
-    {
-        var confirmed = await DialogService.ShowMessageBoxAsync(
-            "Remove person", $"Remove {item.Name} from the site?", yesText: "Remove", cancelText: "Cancel");
-
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        try
-        {
-            await Admin.DeleteMemberAsync(item.Id);
-            Snackbar.Add("Removed.", Severity.Success);
-            await LoadAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
+            Navigation.NavigateTo($"admin/members/{item.Id}");
         }
     }
 }

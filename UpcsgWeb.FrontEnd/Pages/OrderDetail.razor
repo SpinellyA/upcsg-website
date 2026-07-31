@@ -4,6 +4,7 @@
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IOrderService OrderService
+@inject IMediaUploadService Media
 @inject ISnackbar Snackbar
 
 <PageTitle>Order #@Id - UPCSG</PageTitle>
@@ -152,16 +153,61 @@
                                   Required="true"
                                   Class="mb-3" />
 
-                    <MudTextField @bind-Value="_screenshotUrl"
-                                  Label="Screenshot link (optional)"
-                                  Variant="Variant.Outlined"
-                                  Class="mb-4" />
+                    @* The screenshot is uploaded, not linked. Asking a student to host an
+                       image somewhere and paste a URL is asking them to get it wrong. *@
+                    <div class="upcsg-receiptdrop">
+                        @if (_screenshotUrl is not null)
+                        {
+                            <img class="upcsg-receiptdrop__preview" src="@_screenshotUrl" alt="Your GCash receipt" />
+
+                            <div class="upcsg-receiptdrop__actions">
+                                <MudButton Variant="Variant.Text" Size="Size.Small"
+                                           StartIcon="@Icons.Material.Filled.Refresh"
+                                           Disabled="_uploading || _busy"
+                                           OnClick="UploadScreenshotAsync">
+                                    Replace
+                                </MudButton>
+                                <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error"
+                                           StartIcon="@Icons.Material.Filled.Close"
+                                           Disabled="_uploading || _busy"
+                                           OnClick="@(() => _screenshotUrl = null)">
+                                    Remove
+                                </MudButton>
+                            </div>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Outlined"
+                                       FullWidth="true"
+                                       Class="upcsg-ghost-button"
+                                       StartIcon="@Icons.Material.Filled.PhotoCamera"
+                                       Disabled="_uploading || _busy"
+                                       OnClick="UploadScreenshotAsync">
+                                @(_uploading ? "Uploading…" : "Attach screenshot (optional)")
+                            </MudButton>
+                        }
+                    </div>
+
+                    @if (_uploading)
+                    {
+                        <MudProgressLinear Indeterminate="true" Class="mt-2" />
+                    }
+
+                    @if (_uploadError is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2">@_uploadError</MudAlert>
+                    }
+
+                    <p class="upcsg-checkout__fineprint mt-3 mb-4">
+                        Only officers verifying your payment can see this. It's optional, but a
+                        screenshot gets your order confirmed faster than a reference number alone.
+                    </p>
 
                     <MudButton Variant="Variant.Filled"
                                Size="Size.Large"
                                FullWidth="true"
                                Class="upcsg-cta-button"
-                               Disabled="_busy || string.IsNullOrWhiteSpace(_reference)"
+                               Disabled="_busy || _uploading || string.IsNullOrWhiteSpace(_reference)"
                                OnClick="SubmitReceiptAsync">
                         Submit Receipt
                     </MudButton>
@@ -177,11 +223,14 @@
                         <span>Submitted</span>
                         <span>@_order.Receipt.SubmittedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
                     </div>
+                    @* Show the proof itself rather than a link to it — it's their own
+                       receipt, and one glance confirms the right image went in. *@
                     @if (!string.IsNullOrWhiteSpace(_order.Receipt.ScreenshotUrl))
                     {
-                        <MudLink Href="@_order.Receipt.ScreenshotUrl" Target="_blank" Class="mt-3 d-inline-block">
-                            View screenshot
-                        </MudLink>
+                        <img class="upcsg-receiptdrop__preview mt-3"
+                             src="@_order.Receipt.ScreenshotUrl"
+                             alt="The GCash receipt you submitted"
+                             onerror="upcsgReceiptBroken(this)" />
                     }
                 }
                 else
@@ -197,11 +246,49 @@
 @code {
     [Parameter] public int Id { get; set; }
 
+    /// <summary>Mirrors MediaKeys.ReceiptsFolder on the API — the only folder a guilder may write to.</summary>
+    private const string ReceiptsFolder = "receipts";
+
     private OrderDto? _order;
     private string _reference = string.Empty;
     private string? _screenshotUrl;
     private bool _loading = true;
     private bool _busy;
+    private bool _uploading;
+    private string? _uploadError;
+
+    private async Task UploadScreenshotAsync()
+    {
+        _uploading = true;
+        _uploadError = null;
+
+        try
+        {
+            var result = await Media.PickAndUploadAsync(ReceiptsFolder);
+
+            // Null means they closed the picker without choosing anything.
+            if (result is null)
+            {
+                return;
+            }
+
+            if (result.Error is not null)
+            {
+                _uploadError = result.Error;
+                return;
+            }
+
+            _screenshotUrl = result.Url;
+        }
+        catch (Exception ex)
+        {
+            _uploadError = ex.Message;
+        }
+        finally
+        {
+            _uploading = false;
+        }
+    }
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 

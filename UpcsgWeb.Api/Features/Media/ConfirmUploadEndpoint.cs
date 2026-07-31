@@ -21,11 +21,19 @@ public class ConfirmUploadEndpoint(IMediaStore media, IOptions<MediaOptions> opt
     public override void Configure()
     {
         Post("/media/confirm");
-        Policies(AuthPolicies.ExeCom);
+
+        // Matches the grant endpoint: members may confirm a receipt, nothing else.
+        Roles(UpcsgRoles.Member, UpcsgRoles.Admin);
     }
 
     public override async Task HandleAsync(ConfirmUploadRequest req, CancellationToken ct)
     {
+        if (!MediaKeys.IsReceiptKey(req.Key) && !User.IsInRole(UpcsgRoles.Admin))
+        {
+            await Send.ForbiddenAsync(ct);
+            return;
+        }
+
         var stored = await media.InspectAsync(req.Key, ct);
 
         if (stored is null)

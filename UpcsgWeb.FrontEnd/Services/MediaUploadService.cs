@@ -8,7 +8,10 @@ public interface IMediaUploadService
 {
     /// <summary>
     /// Opens a file picker, downscales the chosen image, uploads it, and returns the URL
-    /// to store. Null when the officer cancelled the picker.
+    /// to store. Null when the picker was closed without choosing anything.
+    ///
+    /// Officers use this for site content; guilders use it for the "receipts" folder,
+    /// which is the only one the API lets an ordinary member write to.
     /// </summary>
     Task<UploadResult?> PickAndUploadAsync(string folder);
 }

@@ -27,25 +27,45 @@
         Only publish what the ExeCom can verify &mdash; the public page says so explicitly.
     </MudAlert>
 
-    @if (_loading)
-    {
-        <MudProgressLinear Indeterminate="true" Class="my-8" />
-    }
-    else if (_error is not null)
+    @if (_error is not null)
     {
         <MudAlert Severity="Severity.Error">@_error</MudAlert>
     }
     else
     {
-        <MudTable Items="_items" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true">
+        <MudTable Items="_items"
+                  T="AchievementDto"
+                  Hover="true"
+                  Class="upcsg-datatable mt-4"
+                  Elevation="0"
+                  Dense="true"
+                  Loading="_loading"
+                  LoadingProgressColor="Color.Primary"
+                  Filter="new Func<AchievementDto, bool>(Matches)"
+                  AllowUnsorted="false">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_search"
+                              Immediate="true"
+                              DebounceInterval="150"
+                              Placeholder="Search title or category"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Small"
+                              Variant="Variant.Text"
+                              Clearable="true"
+                              Class="upcsg-datatable__search mt-0" />
+            </ToolBarContent>
             <HeaderContent>
-                <MudTh>Year</MudTh>
-                <MudTh>Title</MudTh>
-                <MudTh>Category</MudTh>
+                @* Most recent first — the newest win is the one being added. *@
+                <MudTh Class="upcsg-num">
+                    <MudTableSortLabel T="AchievementDto" SortBy="@(a => a.Year)" InitialDirection="SortDirection.Descending">Year</MudTableSortLabel>
+                </MudTh>
+                <MudTh><MudTableSortLabel T="AchievementDto" SortBy="@(a => a.Title)">Title</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="AchievementDto" SortBy="@(a => a.Category)">Category</MudTableSortLabel></MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Year">@context.Year</MudTd>
+                <MudTd DataLabel="Year" Class="upcsg-num">@context.Year</MudTd>
                 <MudTd DataLabel="Title">@context.Title</MudTd>
                 <MudTd DataLabel="Category">@context.Category</MudTd>
                 <MudTd>
@@ -53,14 +73,39 @@
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
                 </MudTd>
             </RowTemplate>
+            <NoRecordsContent>
+                <p class="upcsg-lede my-4">
+                    @(string.IsNullOrWhiteSpace(_search) ? "Nothing in the hall yet." : $"Nothing matches \"{_search}\".")
+                </p>
+            </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="PageSizes" InfoFormat="{first_item}-{last_item} of {all_items} entries" />
+            </PagerContent>
         </MudTable>
     }
 </div>
 
 @code {
+    private static readonly int[] PageSizes = [10, 25, 50];
+
     private List<AchievementDto> _items = [];
+    private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
+
+    private bool Matches(AchievementDto item)
+    {
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        var term = _search.Trim();
+
+        return item.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (item.Category?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+            || item.Year.ToString().Contains(term, StringComparison.OrdinalIgnoreCase);
+    }
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 

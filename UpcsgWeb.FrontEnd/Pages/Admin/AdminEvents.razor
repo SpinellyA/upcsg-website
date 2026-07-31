@@ -31,25 +31,39 @@
         <MudButton Variant="Variant.Text" Class="ml-2" OnClick="GoToCurrentMonthAsync">Today</MudButton>
     </div>
 
-    @if (_loading)
-    {
-        <MudProgressLinear Indeterminate="true" Class="my-8" />
-    }
-    else if (_error is not null)
+    @if (_error is not null)
     {
         <MudAlert Severity="Severity.Error">@_error</MudAlert>
     }
-    else if (_events.Count == 0)
-    {
-        <p class="upcsg-lede mt-6">No events in this month yet.</p>
-    }
     else
     {
-        <MudTable Items="_events" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true">
+        <MudTable Items="_events"
+                  T="EventDto"
+                  Hover="true"
+                  Class="upcsg-datatable mt-4"
+                  Elevation="0"
+                  Dense="true"
+                  Loading="_loading"
+                  LoadingProgressColor="Color.Primary"
+                  Filter="new Func<EventDto, bool>(Matches)"
+                  AllowUnsorted="false">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_search"
+                              Immediate="true"
+                              DebounceInterval="150"
+                              Placeholder="Search this month's events"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Small"
+                              Variant="Variant.Text"
+                              Clearable="true"
+                              Class="upcsg-datatable__search mt-0" />
+            </ToolBarContent>
             <HeaderContent>
-                <MudTh>When</MudTh>
-                <MudTh>Title</MudTh>
-                <MudTh>Location</MudTh>
+                @* Chronological by default: that's how a month is read. *@
+                <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.StartDateTime)" InitialDirection="SortDirection.Ascending">When</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.Title)">Title</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.Location)">Location</MudTableSortLabel></MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -61,16 +75,41 @@
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
                 </MudTd>
             </RowTemplate>
+            <NoRecordsContent>
+                <p class="upcsg-lede my-4">
+                    @(string.IsNullOrWhiteSpace(_search) ? "No events in this month yet." : $"Nothing this month matches \"{_search}\".")
+                </p>
+            </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="PageSizes" InfoFormat="{first_item}-{last_item} of {all_items} events" />
+            </PagerContent>
         </MudTable>
     }
 </div>
 
 @code {
+    private static readonly int[] PageSizes = [10, 25, 50];
+
     private List<EventDto> _events = [];
     private int _year = DateTime.Now.Year;
     private int _month = DateTime.Now.Month;
+    private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
+
+    private bool Matches(EventDto item)
+    {
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        var term = _search.Trim();
+
+        return item.Title.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (item.Location?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (item.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 

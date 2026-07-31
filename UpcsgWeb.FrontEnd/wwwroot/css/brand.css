@@ -3510,12 +3510,110 @@ h4, h5, h6, .upcsg-heading {
     opacity: 0.55;
 }
 
+/* --- MudTable's own furniture: search toolbar, sort labels, pager ---
+   These come with the component; they only need to be dressed to match the
+   record sheet instead of MudBlazor's default card look. */
+
+.upcsg-datatable .mud-table-toolbar {
+    background: var(--upcsg-ink-head);
+    border-bottom: 1px solid var(--upcsg-ink-rule);
+    padding: 0.35rem 0.75rem;
+    min-height: 0;
+    height: auto;
+}
+
+.upcsg-datatable__search {
+    max-width: 22rem;
+}
+
+.upcsg-datatable__search .mud-input-root {
+    font-size: 0.87rem;
+    color: var(--upcsg-text);
+}
+
+.upcsg-datatable__search .mud-input-root::placeholder {
+    color: var(--upcsg-text-muted);
+    opacity: 0.75;
+}
+
+.upcsg-datatable__search .mud-input-adornment .mud-icon-root {
+    color: var(--upcsg-text-muted);
+    font-size: 1.05rem;
+}
+
+/* The underline MudBlazor draws under a text-variant field reads as a stray
+   rule inside a table header, so it goes. */
+.upcsg-datatable__search .mud-input.mud-input-text:before,
+.upcsg-datatable__search .mud-input.mud-input-text:after {
+    display: none;
+}
+
+/* Sort labels sit inside the uppercase header, so they inherit rather than
+   impose their own type. */
+.upcsg-datatable .mud-table-head .mud-button-root.mud-table-sort-label {
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    padding: 0;
+    min-width: 0;
+}
+
+.upcsg-datatable .mud-table-head .mud-table-sort-label:hover,
+.upcsg-datatable .mud-table-head .mud-table-sort-label.mud-table-sort-label-active {
+    color: var(--upcsg-text);
+}
+
+.upcsg-datatable .mud-table-head .mud-table-sort-label .mud-table-sort-label-icon {
+    color: var(--upcsg-highlight);
+    font-size: 1rem;
+}
+
+/* Right-aligned columns need the label to hug the right edge too, or the
+   figures and their header stop lining up. */
+.upcsg-datatable .mud-table-head .upcsg-num .mud-table-sort-label {
+    flex-direction: row-reverse;
+}
+
+.upcsg-datatable .mud-table-pagination {
+    background: var(--upcsg-ink-head);
+    border-top: 1px solid var(--upcsg-ink-rule);
+    color: var(--upcsg-text-muted);
+    font-size: 0.78rem;
+}
+
+.upcsg-datatable .mud-table-pagination .mud-table-page-number-information,
+.upcsg-datatable .mud-table-pagination .mud-select-input .mud-input-root {
+    color: var(--upcsg-text-muted);
+    font-size: 0.78rem;
+}
+
+.upcsg-datatable .mud-table-pagination .mud-icon-button {
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-datatable .mud-table-pagination .mud-icon-button:hover:not(:disabled) {
+    color: var(--upcsg-text);
+    background: var(--upcsg-ink-hover);
+}
+
+/* The empty-state and loading rows shouldn't pick up the hover treatment. */
+.upcsg-datatable .mud-table-row.mud-table-no-data-row .mud-table-cell {
+    border-bottom: none;
+    background: transparent;
+}
+
 /* Sits next to the status pill when the row is waiting on the reader, not on staff. */
 /* --- Shortfall lines ---
    A line that can't be filled stays in the table rather than vanishing: an order is a
    record of what was bought, not a picking list. It just stops looking like the rest. */
 
-.upcsg-line--short td {
+/* Both selectors are needed: the plain one for the guilder's cart, and the
+   longer one to outrank `.upcsg-recordtable .mud-table-body .mud-table-cell`,
+   which sets a transparent background at (0,3,0). */
+.upcsg-line--short td,
+.upcsg-recordtable .mud-table-body .mud-table-row.upcsg-line--short .mud-table-cell,
+.upcsg-recordtable .mud-table-foot tr.upcsg-line--short .mud-table-cell {
     background: rgba(255, 63, 95, 0.06);
 }
 
@@ -3642,21 +3740,26 @@ h4, h5, h6, .upcsg-heading {
     color: var(--upcsg-text);
 }
 
-/* --- MudSimpleTable, same record-sheet treatment as the orders list --- */
+/* --- The order receipt, same record-sheet treatment as the orders list ---
+   A MudTable with no sorting or paging: an order is a fixed record. The panel
+   already draws the frame, so the table itself stays bare. */
 
 .upcsg-recordtable.mud-table {
     background: transparent;
     box-shadow: none;
 }
 
-/* MudBlazor styles these as `.mud-table.mud-simple-table table th`, so the
-   overrides have to match that specificity to land. */
-.upcsg-recordtable.mud-simple-table table {
+.upcsg-recordtable .mud-table-container,
+.upcsg-recordtable .mud-table-root {
+    background: transparent;
+}
+
+.upcsg-recordtable .mud-table-root {
     width: 100%;
     border-collapse: collapse;
 }
 
-.upcsg-recordtable.mud-simple-table table th {
+.upcsg-recordtable .mud-table-head .mud-table-cell {
     text-align: left;
     font-family: var(--upcsg-font-heading);
     font-size: 0.66rem;
@@ -3669,7 +3772,7 @@ h4, h5, h6, .upcsg-heading {
     background: transparent;
 }
 
-.upcsg-recordtable.mud-simple-table table td {
+.upcsg-recordtable .mud-table-body .mud-table-cell {
     padding: 0.65rem 0.6rem;
     font-size: 0.87rem;
     color: var(--upcsg-text);
@@ -3677,18 +3780,26 @@ h4, h5, h6, .upcsg-heading {
     background: transparent;
 }
 
-.upcsg-recordtable.mud-simple-table table tfoot td {
+/* The money rows: ruled off from the lines, and set in the heading face so the
+   totals read as a summary rather than as more line items. */
+.upcsg-recordtable .mud-table-foot .mud-table-cell {
     border-bottom: none;
-    border-top: 1px solid var(--upcsg-ink-rule);
-    padding-top: 0.8rem;
+    padding: 0.65rem 0.6rem;
+    font-size: 0.87rem;
     font-family: var(--upcsg-font-heading);
     font-weight: 600;
+    color: var(--upcsg-text);
+    background: transparent;
+}
+
+.upcsg-recordtable .mud-table-foot tr:first-child .mud-table-cell {
+    border-top: 1px solid var(--upcsg-ink-rule);
+    padding-top: 0.8rem;
 }
 
 /* Figures are scanned down the column, so they line up. Shared with the orders table. */
 .upcsg-num,
-.upcsg-recordtable.mud-simple-table table th.upcsg-num,
-.upcsg-recordtable.mud-simple-table table td.upcsg-num {
+.upcsg-recordtable .mud-table-cell.upcsg-num {
     text-align: right;
     font-variant-numeric: tabular-nums;
 }

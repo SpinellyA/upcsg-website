@@ -70,66 +70,66 @@
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Items</MudText>
 
-                <MudSimpleTable Dense="true" Hover="false" Striped="false" Bordered="false"
-                                Elevation="0" Class="upcsg-recordtable">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Variant</th>
-                            <th class="upcsg-num">Unit</th>
-                            <th class="upcsg-num">Qty</th>
-                            <th class="upcsg-num">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var line in _order.Lines)
-                        {
-                            <tr class="@(line.Status == OrderLineStatusDto.ToFulfil ? null : "upcsg-line--short")">
-                                <td>
-                                    @line.ItemName
+                @* Matches the officers' copy of the same order, down to the markup. *@
+                <MudTable Items="_order.Lines"
+                          T="OrderLineDto"
+                          Dense="true"
+                          Hover="false"
+                          Striped="false"
+                          Bordered="false"
+                          Elevation="0"
+                          Class="upcsg-recordtable"
+                          RowClassFunc="@((line, _) => line.Status == OrderLineStatusDto.ToFulfil ? string.Empty : "upcsg-line--short")"
+                          CustomFooter="true">
+                    <HeaderContent>
+                        <MudTh>Item</MudTh>
+                        <MudTh>Variant</MudTh>
+                        <MudTh Class="upcsg-num">Unit</MudTh>
+                        <MudTh Class="upcsg-num">Qty</MudTh>
+                        <MudTh Class="upcsg-num">Total</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Item">
+                            @context.ItemName
 
-                                    @* Told plainly, with the reason. Finding out at pickup that
-                                       something isn't coming is a worse way to learn it. *@
-                                    @if (line.Status == OrderLineStatusDto.RefundDue)
-                                    {
-                                        <span class="upcsg-datatable__flag">Being refunded</span>
-                                        <span class="upcsg-line__reason">@line.ShortfallReason</span>
-                                    }
-                                    else if (line.Status == OrderLineStatusDto.Refunded)
-                                    {
-                                        <span class="upcsg-line__refunded">Refunded</span>
-                                    }
-                                </td>
-                                <td>@(string.IsNullOrWhiteSpace(line.Variant) ? "—" : line.Variant)</td>
-                                <td class="upcsg-num">&#8369;@line.UnitPrice.ToString("N2")</td>
-                                <td class="upcsg-num">@line.Quantity</td>
-                                <td class="upcsg-num">&#8369;@line.LineTotal.ToString("N2")</td>
-                            </tr>
-                        }
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="4">@(_order.HasRefundDue || _order.RefundHasBeenSettled ? "You paid" : "Total")</td>
-                            <td class="upcsg-num">&#8369;@((_order.AmountPaid ?? _order.Total).ToString("N2"))</td>
-                        </tr>
+                            @* Told plainly, with the reason. Finding out at pickup that
+                               something isn't coming is a worse way to learn it. *@
+                            @if (context.Status == OrderLineStatusDto.RefundDue)
+                            {
+                                <span class="upcsg-datatable__flag">Being refunded</span>
+                                <span class="upcsg-line__reason">@context.ShortfallReason</span>
+                            }
+                            else if (context.Status == OrderLineStatusDto.Refunded)
+                            {
+                                <span class="upcsg-line__refunded">Refunded</span>
+                            }
+                        </MudTd>
+                        <MudTd DataLabel="Variant">@(string.IsNullOrWhiteSpace(context.Variant) ? "—" : context.Variant)</MudTd>
+                        <MudTd DataLabel="Unit" Class="upcsg-num">&#8369;@context.UnitPrice.ToString("N2")</MudTd>
+                        <MudTd DataLabel="Qty" Class="upcsg-num">@context.Quantity</MudTd>
+                        <MudTd DataLabel="Total" Class="upcsg-num">&#8369;@context.LineTotal.ToString("N2")</MudTd>
+                    </RowTemplate>
+                    <FooterContent>
+                        <MudTFootRow>
+                            <MudTd colspan="4">@(_order.HasRefundDue || _order.RefundHasBeenSettled ? "You paid" : "Total")</MudTd>
+                            <MudTd Class="upcsg-num">&#8369;@((_order.AmountPaid ?? _order.Total).ToString("N2"))</MudTd>
+                        </MudTFootRow>
 
                         @if (_order.HasRefundDue || _order.RefundHasBeenSettled)
                         {
-                            <tr>
-                                <td colspan="4">You're getting</td>
-                                <td class="upcsg-num">&#8369;@_order.FulfilledTotal.ToString("N2")</td>
-                            </tr>
-                            <tr class="upcsg-line--short">
-                                <td colspan="4">
-                                    @(_order.RefundHasBeenSettled ? "Refunded to you" : "Coming back to you")
-                                </td>
-                                <td class="upcsg-num">
+                            <MudTFootRow>
+                                <MudTd colspan="4">You're getting</MudTd>
+                                <MudTd Class="upcsg-num">&#8369;@_order.FulfilledTotal.ToString("N2")</MudTd>
+                            </MudTFootRow>
+                            <MudTFootRow Class="upcsg-line--short">
+                                <MudTd colspan="4">@(_order.RefundHasBeenSettled ? "Refunded to you" : "Coming back to you")</MudTd>
+                                <MudTd Class="upcsg-num">
                                     &#8369;@(((_order.AmountPaid ?? _order.Total) - _order.FulfilledTotal).ToString("N2"))
-                                </td>
-                            </tr>
+                                </MudTd>
+                            </MudTFootRow>
                         }
-                    </tfoot>
-                </MudSimpleTable>
+                    </FooterContent>
+                </MudTable>
 
                 @if (!string.IsNullOrWhiteSpace(_order.Note))
                 {

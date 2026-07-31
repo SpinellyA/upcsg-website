@@ -23,29 +23,52 @@
 
     <AdminNav />
 
-    @if (_loading)
-    {
-        <MudProgressLinear Indeterminate="true" Class="my-8" />
-    }
-    else if (_error is not null)
+    @if (_error is not null)
     {
         <MudAlert Severity="Severity.Error">@_error</MudAlert>
     }
     else
     {
-        <MudTable Items="_items" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true">
+        <MudTable Items="_items"
+                  T="MerchItemDto"
+                  Hover="true"
+                  Class="upcsg-datatable mt-4"
+                  Elevation="0"
+                  Dense="true"
+                  Loading="_loading"
+                  LoadingProgressColor="Color.Primary"
+                  Filter="new Func<MerchItemDto, bool>(Matches)"
+                  AllowUnsorted="false">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_search"
+                              Immediate="true"
+                              DebounceInterval="150"
+                              Placeholder="Search items or variants"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Small"
+                              Variant="Variant.Text"
+                              Clearable="true"
+                              Class="upcsg-datatable__search mt-0" />
+            </ToolBarContent>
             <HeaderContent>
-                <MudTh>Name</MudTh>
-                <MudTh>Price</MudTh>
+                <MudTh><MudTableSortLabel T="MerchItemDto" SortBy="@(i => i.Name)" InitialDirection="SortDirection.Ascending">Name</MudTableSortLabel></MudTh>
+                <MudTh Class="upcsg-num"><MudTableSortLabel T="MerchItemDto" SortBy="@(i => i.PriceFrom)">Price</MudTableSortLabel></MudTh>
                 <MudTh>Variants</MudTh>
-                <MudTh>Stock</MudTh>
+                <MudTh Class="upcsg-num"><MudTableSortLabel T="MerchItemDto" SortBy="@(i => TotalStock(i))">Stock</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="MerchItemDto" SortBy="@(i => i.InStock)">Status</MudTableSortLabel></MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Name">@context.Name</MudTd>
-                <MudTd DataLabel="Price">&#8369;@context.PriceFrom.ToString("N2")@(context.HasPriceRange ? "+" : "")</MudTd>
+                <MudTd DataLabel="Price" Class="upcsg-num">&#8369;@context.PriceFrom.ToString("N2")@(context.HasPriceRange ? "+" : "")</MudTd>
                 <MudTd DataLabel="Variants">@(context.Variants.Count == 0 ? "-" : string.Join(", ", context.Variants.Select(v => v.Name)))</MudTd>
-                <MudTd DataLabel="Stock">
+
+                @* The count matters more than the flag once stock is tracked per variant. *@
+                <MudTd DataLabel="Stock" Class="upcsg-num">
+                    @(context.IsPreorder ? "Preorder" : TotalStock(context).ToString())
+                </MudTd>
+                <MudTd DataLabel="Status">
                     <MudChip T="string" Size="Size.Small" Color="@(context.InStock ? Color.Success : Color.Default)">
                         @(context.InStock ? "In stock" : "Sold out")
                     </MudChip>
@@ -55,16 +78,44 @@
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
                 </MudTd>
             </RowTemplate>
+            <NoRecordsContent>
+                <p class="upcsg-lede my-4">
+                    @(string.IsNullOrWhiteSpace(_search) ? "No merch yet." : $"Nothing matches \"{_search}\".")
+                </p>
+            </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="PageSizes" InfoFormat="{first_item}-{last_item} of {all_items} items" />
+            </PagerContent>
         </MudTable>
     }
 </div>
 
 @code {
+    private static readonly int[] PageSizes = [10, 25, 50, 100];
+
     private List<MerchItemDto> _items = [];
+    private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    // An item with variants holds no stock of its own; the variants carry it.
+    private static int TotalStock(MerchItemDto item) =>
+        item.Variants.Count == 0 ? item.Stock : item.Variants.Sum(v => v.Stock);
+
+    private bool Matches(MerchItemDto item)
+    {
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        var term = _search.Trim();
+
+        return item.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || item.Variants.Any(v => v.Name.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
 
     private async Task LoadAsync()
     {

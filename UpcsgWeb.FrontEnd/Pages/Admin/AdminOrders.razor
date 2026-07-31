@@ -40,22 +40,14 @@
         }
     </div>
 
-    @if (_loading)
-    {
-        <MudProgressLinear Indeterminate="true" Class="my-8" />
-    }
-    else if (_error is not null)
+    @if (_error is not null)
     {
         <MudAlert Severity="Severity.Error">@_error</MudAlert>
     }
-    else if (_orders.Count == 0)
-    {
-        <p class="upcsg-lede mt-6">
-            @(_filter is null ? "The queue is clear — nothing needs an officer right now." : "No orders with that status.")
-        </p>
-    }
     else
     {
+        @* MudTable does the sorting, paging and searching itself — the page only
+           supplies the rows and says which column each label sorts by. *@
         <MudTable Items="_orders"
                   T="OrderDto"
                   Hover="true"
@@ -63,14 +55,37 @@
                   Dense="true"
                   Class="upcsg-datatable mt-4"
                   OnRowClick="OpenOrder"
-                  RowClass="upcsg-datatable__row">
+                  RowClass="upcsg-datatable__row"
+                  Loading="_loading"
+                  LoadingProgressColor="Color.Primary"
+                  Filter="new Func<OrderDto, bool>(Matches)"
+                  AllowUnsorted="false">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_search"
+                              Immediate="true"
+                              DebounceInterval="150"
+                              Placeholder="Search order #, guilder or status"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Small"
+                              Variant="Variant.Text"
+                              Clearable="true"
+                              Class="upcsg-datatable__search mt-0" />
+            </ToolBarContent>
             <HeaderContent>
-                <MudTh>Order</MudTh>
-                <MudTh>Placed</MudTh>
-                <MudTh>Guilder</MudTh>
-                <MudTh Class="upcsg-num">Items</MudTh>
-                <MudTh Class="upcsg-num">Total</MudTh>
-                <MudTh>Status</MudTh>
+                <MudTh>
+                    @* Newest first: the queue is worked from the top. *@
+                    <MudTableSortLabel T="OrderDto" SortBy="@(o => o.Id)" InitialDirection="SortDirection.Descending">
+                        Order
+                    </MudTableSortLabel>
+                </MudTh>
+                <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.PlacedAt)">Placed</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.UserId)">Guilder</MudTableSortLabel></MudTh>
+                <MudTh Class="upcsg-num">
+                    <MudTableSortLabel T="OrderDto" SortBy="@(o => o.Lines.Sum(l => l.Quantity))">Items</MudTableSortLabel>
+                </MudTh>
+                <MudTh Class="upcsg-num"><MudTableSortLabel T="OrderDto" SortBy="@(o => o.Total)">Total</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.Status)">Status</MudTableSortLabel></MudTh>
                 <MudTh Style="width:3rem"></MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -88,14 +103,25 @@
                     <span class="upcsg-statuspill upcsg-statuspill--@OrderStatusDisplay.Slug(context.Status)">
                         @OrderStatusDisplay.Label(context.Status)
                     </span>
+
+                    @if (context.HasRefundDue)
+                    {
+                        <span class="upcsg-datatable__flag">&#8369;@context.RefundDue.ToString("N2") owed back</span>
+                    }
                 </MudTd>
                 <MudTd Class="upcsg-num upcsg-datatable__chevron">&rsaquo;</MudTd>
             </RowTemplate>
+            <NoRecordsContent>
+                <p class="upcsg-lede my-4">
+                    @(string.IsNullOrWhiteSpace(_search)
+                        ? _filter is null ? "The queue is clear — nothing needs an officer right now." : "No orders with that status."
+                        : $"No orders match \"{_search}\".")
+                </p>
+            </NoRecordsContent>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="PageSizes" InfoFormat="{first_item}-{last_item} of {all_items} orders" />
+            </PagerContent>
         </MudTable>
-
-        <p class="upcsg-orderline__meta mt-3">
-            @_orders.Count order(s). Click a row to open it.
-        </p>
     }
 </div>
 
@@ -110,12 +136,32 @@
         OrderStatusDto.Cancelled,
     ];
 
+    private static readonly int[] PageSizes = [10, 25, 50, 100];
+
     private List<OrderDto> _orders = [];
     private OrderStatusDto? _filter;
+    private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    // The status buttons filter server-side; this box narrows what came back.
+    // An officer chasing a specific order usually knows its number or the guilder.
+    private bool Matches(OrderDto order)
+    {
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        var term = _search.Trim().TrimStart('#');
+
+        return order.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)
+            || order.UserId.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)
+            || OrderStatusDisplay.Label(order.Status).Contains(term, StringComparison.OrdinalIgnoreCase)
+            || order.Lines.Any(l => l.ItemName.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
 
     private void OpenOrder(TableRowClickEventArgs<OrderDto> args)
     {

@@ -23,30 +23,52 @@
 
     <AdminNav />
 
-    @if (_loading)
-    {
-        <MudProgressLinear Indeterminate="true" Class="my-8" />
-    }
-    else if (_error is not null)
+    @if (_error is not null)
     {
         <MudAlert Severity="Severity.Error">@_error</MudAlert>
     }
     else
     {
-        <MudTable Items="_members" Hover="true" Class="upcsg-datatable mt-4" Elevation="0" Dense="true"
-                  GroupBy="_groupDefinition">
+        @* Grouping stays: Faculty and ExeCom are different kinds of people, not
+           two values of one column. Sorting applies inside each group. *@
+        <MudTable Items="_members"
+                  T="MemberDto"
+                  Hover="true"
+                  Class="upcsg-datatable mt-4"
+                  Elevation="0"
+                  Dense="true"
+                  GroupBy="_groupDefinition"
+                  Loading="_loading"
+                  LoadingProgressColor="Color.Primary"
+                  Filter="new Func<MemberDto, bool>(Matches)"
+                  AllowUnsorted="false">
+            <ToolBarContent>
+                <MudTextField @bind-Value="_search"
+                              Immediate="true"
+                              DebounceInterval="150"
+                              Placeholder="Search name, role or committee"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Small"
+                              Variant="Variant.Text"
+                              Clearable="true"
+                              Class="upcsg-datatable__search mt-0" />
+            </ToolBarContent>
             <HeaderContent>
-                <MudTh>Order</MudTh>
-                <MudTh>Name</MudTh>
-                <MudTh>Role</MudTh>
-                <MudTh>Committee</MudTh>
+                @* Display order is the running order of the public page, so it leads. *@
+                <MudTh Class="upcsg-num">
+                    <MudTableSortLabel T="MemberDto" SortBy="@(m => m.DisplayOrder)" InitialDirection="SortDirection.Ascending">Order</MudTableSortLabel>
+                </MudTh>
+                <MudTh><MudTableSortLabel T="MemberDto" SortBy="@(m => m.Name)">Name</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="MemberDto" SortBy="@(m => m.Role)">Role</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="MemberDto" SortBy="@(m => m.Committee)">Committee</MudTableSortLabel></MudTh>
                 <MudTh></MudTh>
             </HeaderContent>
             <GroupHeaderTemplate>
                 <MudTh Class="upcsg-adminnav__group" colspan="5">@context.Key</MudTh>
             </GroupHeaderTemplate>
             <RowTemplate>
-                <MudTd DataLabel="Order">@context.DisplayOrder</MudTd>
+                <MudTd DataLabel="Order" Class="upcsg-num">@context.DisplayOrder</MudTd>
                 <MudTd DataLabel="Name">@context.Name</MudTd>
                 <MudTd DataLabel="Role">@context.Role</MudTd>
                 <MudTd DataLabel="Committee">@context.Committee</MudTd>
@@ -55,14 +77,34 @@
                     <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
                 </MudTd>
             </RowTemplate>
+            <NoRecordsContent>
+                <p class="upcsg-lede my-4">
+                    @(string.IsNullOrWhiteSpace(_search) ? "Nobody listed yet." : $"Nobody matches \"{_search}\".")
+                </p>
+            </NoRecordsContent>
         </MudTable>
     }
 </div>
 
 @code {
     private List<MemberDto> _members = [];
+    private string _search = string.Empty;
     private bool _loading = true;
     private string? _error;
+
+    private bool Matches(MemberDto member)
+    {
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        var term = _search.Trim();
+
+        return member.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (member.Role?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (member.Committee?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
+    }
 
     private readonly TableGroupDefinition<MemberDto> _groupDefinition = new()
     {

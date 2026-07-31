@@ -55,6 +55,11 @@ public class Cart : AggregateRoot
             throw new DomainException($"{item.Name} is out of stock.");
         }
 
+        if (item.IsPreorderClosed)
+        {
+            throw new DomainException($"Preorders for {item.Name} have closed.");
+        }
+
         if (variant is not null && !item.HasVariant(variant))
         {
             throw new DomainException($"{item.Name} has no variant '{variant}'.");
@@ -62,6 +67,17 @@ public class Cart : AggregateRoot
 
         var existing = Find(item.Id, variant);
         var newQuantity = (existing?.Quantity ?? 0) + quantity;
+
+        // Checked but NOT reserved. Reserving here would let an abandoned cart sit on the
+        // last hoodie; the real deduction happens when payment is acknowledged. This just
+        // narrows overselling to orders paid inside the same window.
+        if (!item.CanFulfil(variant, newQuantity))
+        {
+            var left = item.StockFor(variant);
+            throw new DomainException(left == 0
+                ? $"{item.Name}{(variant is null ? "" : $" ({variant})")} is sold out."
+                : $"Only {left} of {item.Name}{(variant is null ? "" : $" ({variant})")} left.");
+        }
 
         if (newQuantity > MaxQuantityPerLine)
         {

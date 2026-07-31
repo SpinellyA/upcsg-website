@@ -23,19 +23,25 @@ internal static class TestData
     /// keep reading the way they did. <see cref="HoodieWithPricedSizes"/> covers the case
     /// where they differ.
     /// </summary>
-    public static MerchItem Hoodie(int id = 1, decimal price = 750m, bool inStock = true)
+    /// <summary>
+    /// Stocked generously by default so tests about the lifecycle aren't accidentally
+    /// testing stock. Pass a smaller number to exercise running out.
+    /// </summary>
+    public static MerchItem Hoodie(int id = 1, decimal price = 750m, bool inStock = true, int stock = 100)
     {
         var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover", Money.Of(price));
         AssignId(item, id);
 
         foreach (var (size, index) in new[] { "S", "M", "L" }.Select((s, i) => (s, i)))
         {
-            AssignId(item.AddVariant(size, string.Empty, Money.Of(price)), index + 1);
+            var variant = item.AddVariant(size, string.Empty, Money.Of(price));
+            AssignId(variant, index + 1);
+            item.SetVariantStock(variant.Id, stock);
         }
 
         if (!inStock)
         {
-            item.SetStock(false);
+            item.SetInStock(false);
         }
 
         return item;
@@ -54,11 +60,15 @@ internal static class TestData
         return item;
     }
 
-    public static MerchItem Tote(int id = 2, decimal price = 250m)
+    public static MerchItem Tote(int id = 2, decimal price = 250m, int stock = 100)
     {
         var item = MerchItem.Create("Starlight Tote", "Canvas", Money.Of(price));
         AssignId(item, id);
-        AssignId(item.AddVariant("One size", string.Empty, Money.Of(price)), 10);
+
+        var variant = item.AddVariant("One size", string.Empty, Money.Of(price));
+        AssignId(variant, 10);
+        item.SetVariantStock(variant.Id, stock);
+
         return item;
     }
 

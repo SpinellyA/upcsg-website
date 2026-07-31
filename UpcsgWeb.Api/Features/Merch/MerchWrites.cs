@@ -14,7 +14,7 @@ public static class MerchWrites
     {
         item.UpdateDetails(req.Name, req.Description, Money.Of(req.Price));
         item.ReplacePhotos(req.PhotoUrls);
-        item.SetStock(req.InStock);
+        item.SetInStock(req.InStock);
 
         ApplyVariants(item, req.Variants);
     }

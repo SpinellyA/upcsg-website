@@ -11,7 +11,7 @@ namespace UpcsgWeb.Api.Features.Orders;
 /// Moves an order along its lifecycle. The endpoint picks which method to call; the
 /// aggregate decides whether the move is legal, so the rules live in exactly one place.
 /// </summary>
-public class ChangeOrderStatusEndpoint(IOrderRepository orders, IUnitOfWork uow)
+public class ChangeOrderStatusEndpoint(IOrderRepository orders, IMerchRepository merch, IUnitOfWork uow)
     : Endpoint<ChangeOrderStatusRequest, OrderDto>
 {
     public override void Configure()
@@ -35,7 +35,12 @@ public class ChangeOrderStatusEndpoint(IOrderRepository orders, IUnitOfWork uow)
             switch (req.Status)
             {
                 case OrderStatusDto.Acknowledged:
-                    order.Acknowledge();
+                    // Tracked entities: acknowledging is what deducts their stock, so the
+                    // same unit of work has to save both the order and the merch.
+                    var items = await merch.GetManyAsync(
+                        order.Lines.Select(l => l.MerchItemId), ct);
+
+                    order.Acknowledge(items.ToDictionary(i => i.Id));
                     break;
                 case OrderStatusDto.Released:
                     order.Release();

@@ -173,7 +173,7 @@ public class CheckoutServiceTests
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
 
-        hoodie.SetStock(false);
+        hoodie.SetInStock(false);
 
         var ex = Assert.Throws<DomainException>(() => CheckoutService.Checkout(cart, Catalog(hoodie)));
         Assert.Contains("out of stock", ex.Message, StringComparison.OrdinalIgnoreCase);
@@ -197,7 +197,7 @@ public class CheckoutServiceTests
         var cart = Cart.For(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
-        hoodie.SetStock(false);
+        hoodie.SetInStock(false);
 
         Assert.Throws<DomainException>(() => CheckoutService.Checkout(cart, Catalog(hoodie)));
 
@@ -230,12 +230,17 @@ public class CheckoutServiceTests
 
         var order = CheckoutService.Checkout(cart, Catalog(hoodie));
         order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", "https://cdn/receipt.png"));
-        order.Acknowledge();
+
+        var stockBefore = hoodie.StockFor("M");
+        order.Acknowledge(Catalog(hoodie));
         order.Release();
         order.MarkReceived();
 
         Assert.Equal(OrderStatus.Received, order.Status);
         Assert.True(cart.IsEmpty);
         Assert.NotNull(order.Receipt);
+
+        // Acknowledging is what moves stock, not checkout.
+        Assert.Equal(stockBefore - 1, hoodie.StockFor("M"));
     }
 }

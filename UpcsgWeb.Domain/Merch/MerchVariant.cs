@@ -34,12 +34,51 @@ public class MerchVariant : Entity
 
     public int DisplayOrder { get; private set; }
 
+    /// <summary>
+    /// Units on hand. Deducted when an officer acknowledges payment, not at checkout —
+    /// an unpaid cart holding the last hoodie hostage helps nobody.
+    ///
+    /// Ignored entirely while the item is a preorder: those are produced to demand, so
+    /// there is no count to keep.
+    /// </summary>
+    public int Stock { get; private set; }
+
     internal static MerchVariant Create(string name, string description, Money price, int displayOrder)
     {
         var variant = new MerchVariant();
         variant.Update(name, description, price);
         variant.DisplayOrder = displayOrder;
         return variant;
+    }
+
+    internal void SetStock(int stock)
+    {
+        if (stock < 0)
+        {
+            throw new DomainException("Stock cannot be negative.");
+        }
+
+        Stock = stock;
+    }
+
+    internal void Deduct(int quantity)
+    {
+        if (quantity > Stock)
+        {
+            throw new DomainException($"Only {Stock} of '{Name}' left.");
+        }
+
+        Stock -= quantity;
+    }
+
+    internal void Restock(int quantity)
+    {
+        if (quantity <= 0)
+        {
+            throw new DomainException("Restock quantity must be at least 1.");
+        }
+
+        Stock += quantity;
     }
 
     internal void Update(string name, string description, Money price)

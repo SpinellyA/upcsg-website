@@ -177,7 +177,44 @@ public class Order : AggregateRoot
         ReceiptRejectionReason = reason.Trim();
     }
 
-    public void Acknowledge() => TransitionTo(OrderStatus.Acknowledged);
+    /// <summary>
+    /// Officer confirms the payment landed. This is the moment stock actually moves: the
+    /// first point at which the money is known to be real, and late enough that an
+    /// abandoned unpaid cart never held a unit hostage.
+    ///
+    /// The caller supplies the items so the deduction happens against the live records
+    /// rather than the order's own snapshots — a snapshot cannot tell you what is left.
+    /// Throws if anything on the order can no longer be filled, leaving the order in
+    /// Pending so an officer can restock or refund rather than being handed a half-done
+    /// transition.
+    /// </summary>
+    public void Acknowledge(IReadOnlyDictionary<int, MerchItem> items)
+    {
+        // Check everything before taking anything, so a shortfall on the second line
+        // cannot leave the first line's stock already deducted.
+        foreach (var line in _lines)
+        {
+            if (!items.TryGetValue(line.MerchItemId, out var item))
+            {
+                throw new DomainException($"{line.ItemName} no longer exists, so this order cannot be filled.");
+            }
+
+            if (!item.CanFulfil(line.Variant, line.Quantity))
+            {
+                var left = item.StockFor(line.Variant);
+                throw new DomainException(
+                    $"Not enough {line.ItemName}{(line.Variant is null ? "" : $" ({line.Variant})")} — "
+                    + $"{line.Quantity} ordered, {left} left.");
+            }
+        }
+
+        foreach (var line in _lines)
+        {
+            items[line.MerchItemId].DeductStock(line.Variant, line.Quantity);
+        }
+
+        TransitionTo(OrderStatus.Acknowledged);
+    }
 
     public void Release() => TransitionTo(OrderStatus.Released);
 

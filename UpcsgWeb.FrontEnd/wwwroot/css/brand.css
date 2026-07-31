@@ -603,6 +603,15 @@ h4, h5, h6, .upcsg-heading {
     margin-bottom: 1.75rem;
 }
 
+/* Several buttons in a section head sit together and wrap as a group on narrow
+   screens, rather than one dropping away from the other. */
+.upcsg-section-head__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .upcsg-section-title {
     font-family: var(--upcsg-font-display);
     font-size: clamp(1.75rem, 3.5vw, 2.5rem);
@@ -3693,39 +3702,51 @@ h4, h5, h6, .upcsg-heading {
 
 /* Colour carries meaning here, so each stage reads differently at a glance â€”
    but the label is always present, never colour alone. */
+/* The hue advances along the order's journey and never doubles back, so the
+   sequence can be learned once and then predicted:
+
+     grey (nothing to do) -> amber (an officer is being asked) -> blue (moving)
+     -> teal (nearly there) -> green (done),  with red reserved for stopped.
+
+   Amber and red are the only two that demand attention, and they are the only
+   two that ever mean it. */
+
+/* Waiting on the guilder, not on us. Deliberately colourless, so a queue full
+   of these doesn't look like a queue full of work. */
 .upcsg-statuspill--awaiting {
-    background: rgba(202, 197, 229, 0.12);
-    border-color: rgba(202, 197, 229, 0.4);
-    color: var(--upcsg-periwinkle);
+    background: rgba(158, 167, 190, 0.12);
+    border-color: rgba(158, 167, 190, 0.38);
+    color: #b6bed4;
 }
 
+/* The one stage that needs an officer right now. */
 .upcsg-statuspill--pending {
-    background: rgba(246, 200, 117, 0.16);
-    border-color: rgba(246, 200, 117, 0.5);
-    color: var(--upcsg-liquid-chrome-gold);
+    background: rgba(243, 192, 91, 0.16);
+    border-color: rgba(243, 192, 91, 0.5);
+    color: #f3c05b;
 }
 
 .upcsg-statuspill--confirmed {
-    background: rgba(162, 83, 184, 0.2);
-    border-color: rgba(162, 83, 184, 0.55);
-    color: var(--upcsg-cosmic-lavender);
+    background: rgba(106, 169, 255, 0.16);
+    border-color: rgba(106, 169, 255, 0.5);
+    color: #8cbcff;
 }
 
 .upcsg-statuspill--released {
-    background: rgba(226, 141, 57, 0.16);
-    border-color: rgba(226, 141, 57, 0.5);
-    color: var(--upcsg-solar-flare);
+    background: rgba(69, 201, 192, 0.16);
+    border-color: rgba(69, 201, 192, 0.5);
+    color: #5fd6cd;
 }
 
 .upcsg-statuspill--received {
-    background: rgba(61, 203, 108, 0.14);
-    border-color: rgba(61, 203, 108, 0.45);
+    background: rgba(95, 212, 138, 0.15);
+    border-color: rgba(95, 212, 138, 0.45);
     color: #6ee49a;
 }
 
 .upcsg-statuspill--cancelled {
-    background: rgba(255, 63, 95, 0.12);
-    border-color: rgba(255, 63, 95, 0.4);
+    background: rgba(255, 99, 128, 0.13);
+    border-color: rgba(255, 99, 128, 0.42);
     color: #ff8fa3;
 }
 

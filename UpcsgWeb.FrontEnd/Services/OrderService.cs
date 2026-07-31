@@ -15,6 +15,7 @@ public interface IOrderService
     Task<OrderDto> RejectReceiptAsync(int orderId, string reason);
     Task<OrderDto> SettleRefundAsync(int orderId, string reference);
     Task<OrderDto> RefulfilLineAsync(int orderId, int merchItemId, string? variant);
+    Task<ReleaseConfirmedDto> ReleaseConfirmedAsync();
 }
 
 public class OrderService(HttpClient http, ApiOptions options) : IOrderService
@@ -89,6 +90,21 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
             new RefulfilLineRequest { MerchItemId = merchItemId, Variant = variant }, UpcsgJson.Options);
 
         return await ReadOrThrowAsync(response);
+    }
+
+    public async Task<ReleaseConfirmedDto> ReleaseConfirmedAsync()
+    {
+        EnsureConfigured();
+
+        var response = await http.PostAsync("api/orders/release-confirmed", null);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ApiException(await CartService.DescribeAsync(response));
+        }
+
+        return await response.Content.ReadFromJsonAsync<ReleaseConfirmedDto>(UpcsgJson.Options)
+            ?? throw new ApiException("The API returned no result.");
     }
 
     public async Task<OrderDto> RejectReceiptAsync(int orderId, string reason)

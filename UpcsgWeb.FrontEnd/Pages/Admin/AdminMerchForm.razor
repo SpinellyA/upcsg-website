@@ -222,6 +222,17 @@
         </section>
 
         <div class="upcsg-formbar">
+            @* Deleting happens here, with the whole item on screen, rather than from a
+               one-line table row where all an officer can see is the name. *@
+            @if (!IsNew)
+            {
+                <MudButton Variant="Variant.Text" Color="Color.Error" Class="mr-auto"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           Disabled="_saving" OnClick="DeleteAsync">
+                    Delete item
+                </MudButton>
+            }
+
             @if (_dirty)
             {
                 <span class="upcsg-savebar__dirty">Unsaved changes</span>
@@ -426,5 +437,36 @@
         }
 
         Navigation.NavigateTo("admin/merch");
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Delete item",
+            $"Delete \"{_item.Name}\"? Past orders keep their own copy of the name and price, so history is unaffected.",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            await Admin.DeleteMerchAsync(_item.Id);
+            Snackbar.Add("Deleted.", Severity.Success);
+
+            // Nothing left to edit, and the guard would otherwise ask about unsaved edits
+            // to a record that no longer exists.
+            _dirty = false;
+            Navigation.NavigateTo("admin/merch");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            _saving = false;
+        }
     }
 }

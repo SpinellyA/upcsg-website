@@ -6,6 +6,8 @@
 @using UpcsgWeb.FrontEnd.Components
 @inject IOrderService OrderService
 @inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
 
 <PageTitle>Orders - UPCSG Admin</PageTitle>
 
@@ -15,10 +17,23 @@
             <p class="upcsg-kicker">Guild CMS</p>
             <h1 class="upcsg-title-xl">Orders</h1>
         </div>
-        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
-                   StartIcon="@Icons.Material.Filled.Refresh" OnClick="LoadAsync">
-            Refresh
-        </MudButton>
+        <div class="upcsg-section-head__actions">
+            @* Handover day: a queue of guilders collects at once and marking them off
+               one at a time is the slowest part of the table. *@
+            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                       StartIcon="@Icons.Material.Filled.Outbox"
+                       Disabled="_releasing || ConfirmedCount == 0"
+                       OnClick="ReleaseConfirmedAsync">
+                @(_releasing
+                    ? "Releasing…"
+                    : ConfirmedCount == 0 ? "Nothing to release" : $"Release {ConfirmedCount} confirmed")
+            </MudButton>
+
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
+                       StartIcon="@Icons.Material.Filled.Refresh" Disabled="_releasing" OnClick="LoadAsync">
+                Refresh
+            </MudButton>
+        </div>
     </div>
 
     <AdminNav />
@@ -142,9 +157,70 @@
     private OrderStatusDto? _filter;
     private string _search = string.Empty;
     private bool _loading = true;
+    private bool _releasing;
     private string? _error;
 
+    /// <summary>
+    /// Counted from its own query, not from _orders: the officer may be looking at a
+    /// filtered view, and the button would otherwise claim there is nothing to release
+    /// while confirmed orders sit one tab away.
+    /// </summary>
+    private List<OrderDto> _confirmed = [];
+
+    private int ConfirmedCount => _confirmed.Count;
+
     protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task ReleaseConfirmedAsync()
+    {
+        // Releasing means the goods left the table. Say the number out loud first,
+        // and name the ones that still owe money, because that is the case where an
+        // officer would want to stop and settle up before handing anything over.
+        var owing = _confirmed.Count(o => o.HasRefundDue);
+
+        var detail = $"Mark {ConfirmedCount} confirmed order(s) as released? Do this once the items are actually in the guilders' hands.";
+
+        if (owing > 0)
+        {
+            detail += $"\n\n{owing} of them still owe a refund. Releasing doesn't send that money — you'll still have to settle it.";
+        }
+
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Release confirmed orders", detail, yesText: "Release all", cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _releasing = true;
+
+        try
+        {
+            var result = await OrderService.ReleaseConfirmedAsync();
+
+            Snackbar.Add(
+                result.ReleasedCount == 0
+                    ? "Nothing was released."
+                    : $"Released {result.ReleasedCount} order(s).",
+                result.ReleasedCount == 0 ? Severity.Info : Severity.Success);
+
+            foreach (var skip in result.Skipped)
+            {
+                Snackbar.Add($"Skipped {skip}", Severity.Warning);
+            }
+
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _releasing = false;
+        }
+    }
 
     // The status buttons filter server-side; this box narrows what came back.
     // An officer chasing a specific order usually knows its number or the guilder.
@@ -185,6 +261,9 @@
         try
         {
             _orders = await OrderService.GetQueueAsync(_filter);
+            _confirmed = _filter == OrderStatusDto.Acknowledged
+                ? _orders
+                : await OrderService.GetQueueAsync(OrderStatusDto.Acknowledged);
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
 @using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Components
 
 <MudDialog>
     <DialogContent>
@@ -18,6 +19,15 @@
         <MudTextField @bind-Value="Item.ImageUrl" Label="Image URL" Variant="Variant.Outlined" />
     </DialogContent>
     <DialogActions>
+        @* Delete lives here rather than on the table row: from the row an officer
+           can only see a title, and that isn't enough to be sure. *@
+        @if (Item.Id != 0)
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Error" Class="mr-auto"
+                       StartIcon="@Icons.Material.Filled.DeleteOutline" OnClick="Delete">
+                Delete
+            </MudButton>
+        }
         <MudButton OnClick="Cancel">Cancel</MudButton>
         <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
                    Disabled="string.IsNullOrWhiteSpace(Item.Title)" OnClick="Save">
@@ -39,7 +49,9 @@
             ? Suggested.AsEnumerable()
             : Suggested.Where(c => c.Contains(value, StringComparison.OrdinalIgnoreCase)));
 
-    private void Save() => MudDialog.Close(DialogResult.Ok(Item));
+    private void Save() => MudDialog.Close(DialogResult.Ok(EditDialogAction.Save));
+
+    private void Delete() => MudDialog.Close(DialogResult.Ok(EditDialogAction.Delete));
 
     private void Cancel() => MudDialog.Cancel();
 }

@@ -83,6 +83,20 @@ public class RefulfilLineRequest
     public string? Variant { get; set; }
 }
 
+/// <summary>What a bulk release actually did.</summary>
+public class ReleaseConfirmedDto
+{
+    public int ReleasedCount { get; set; }
+
+    public List<int> ReleasedOrderIds { get; set; } = [];
+
+    /// <summary>
+    /// Orders the domain refused, one line each. Reported rather than swallowed: an
+    /// officer who pressed "release all" needs to know which ones didn't move.
+    /// </summary>
+    public List<string> Skipped { get; set; } = [];
+}
+
 /// <summary>
 /// What a guilder submits. Deliberately carries no price — the server snapshots the
 /// current one, so a client cannot name its own.

@@ -46,7 +46,9 @@
                   Loading="_loading"
                   LoadingProgressColor="Color.Primary"
                   Filter="new Func<EventDto, bool>(Matches)"
-                  AllowUnsorted="false">
+                  AllowUnsorted="false"
+                  OnRowClick="@(args => OpenAsync(args.Item))"
+                  RowClass="upcsg-datatable__row">
             <ToolBarContent>
                 <MudTextField @bind-Value="_search"
                               Immediate="true"
@@ -64,16 +66,13 @@
                 <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.StartDateTime)" InitialDirection="SortDirection.Ascending">When</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.Title)">Title</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.Location)">Location</MudTableSortLabel></MudTh>
-                <MudTh></MudTh>
+                <MudTh Style="width:3rem"></MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="When">@context.StartDateTime.ToLocalTime().ToString("MMM d, h:mm tt")</MudTd>
                 <MudTd DataLabel="Title">@context.Title</MudTd>
                 <MudTd DataLabel="Location">@context.Location</MudTd>
-                <MudTd>
-                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" OnClick="() => EditAsync(context)" />
-                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => DeleteAsync(context)" />
-                </MudTd>
+                <MudTd Class="upcsg-num upcsg-datatable__chevron">&rsaquo;</MudTd>
             </RowTemplate>
             <NoRecordsContent>
                 <p class="upcsg-lede my-4">
@@ -147,6 +146,9 @@
         await LoadAsync();
     }
 
+    /// <summary>Rows are click-to-open; MudTable hands us the item that was clicked.</summary>
+    private Task OpenAsync(EventDto? item) => item is null ? Task.CompletedTask : EditAsync(item);
+
     private async Task EditAsync(EventDto? existing)
     {
         var draft = existing is null
@@ -175,6 +177,12 @@
         var result = await dialog.Result;
         if (result is null || result.Canceled)
         {
+            return;
+        }
+
+        if (result.Data is EditDialogAction.Delete && existing is not null)
+        {
+            await DeleteAsync(existing);
             return;
         }
 

@@ -31,4 +31,12 @@ public class OrderRepository(UpcsgDbContext db) : Repository<Order>(db), IOrderR
             .Where(o => o.Status == status)
             .OrderBy(o => o.PlacedAt)
             .ToListAsync(ct);
+
+    // Query, not ReadQuery: the caller is going to mutate these and expect a save.
+    public async Task<IReadOnlyList<Order>> GetByStatusForUpdateAsync(
+        OrderStatus status, CancellationToken ct = default) =>
+        await Query
+            .Where(o => o.Status == status)
+            .OrderBy(o => o.PlacedAt)
+            .ToListAsync(ct);
 }

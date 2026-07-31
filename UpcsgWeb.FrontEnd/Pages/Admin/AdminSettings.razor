@@ -4,6 +4,7 @@
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IAdminContentService Admin
+@inject IEventService Events
 @inject ISnackbar Snackbar
 
 <PageTitle>Settings - UPCSG Admin</PageTitle>
@@ -117,7 +118,12 @@
                 EventsMonth = _followCurrent ? null : _month,
             });
 
-            Snackbar.Add("Settings saved.", Severity.Success);
+            // The month is cached for the life of the tab, so without this the officer
+            // saves July and the site keeps showing August until a hard reload.
+            Events.ForgetDisplayMonth();
+
+            Snackbar.Add(
+                $"Saved. The events page now shows {ResolvedLabel}.", Severity.Success);
         }
         catch (Exception ex)
         {

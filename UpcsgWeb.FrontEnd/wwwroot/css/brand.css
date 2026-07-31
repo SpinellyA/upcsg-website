@@ -1072,6 +1072,82 @@ h4, h5, h6, .upcsg-heading {
     opacity: 0.85;
 }
 
+/* --- Single-image field ---
+   The one-photo counterpart to the strip: an event poster, a portrait. Sized to
+   the tall crop a poster usually is, and capped so it can't push the form's
+   Save button off the screen. */
+
+.upcsg-posterfield__frame {
+    position: relative;
+    border: 1px solid var(--upcsg-ink-rule);
+    border-radius: 3px;
+    background: rgba(246, 255, 233, 0.04);
+    overflow: hidden;
+}
+
+.upcsg-posterfield__frame img {
+    display: block;
+    width: 100%;
+    max-height: 26rem;
+    object-fit: contain;
+}
+
+.upcsg-posterfield__broken {
+    display: none;
+    padding: 2.5rem 1rem;
+    text-align: center;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-posterfield__frame--broken .upcsg-posterfield__broken {
+    display: block;
+}
+
+.upcsg-posterfield__actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.4rem;
+}
+
+/* Matches the strip's Add slot, so the two fields read as the same control. */
+.upcsg-posterfield__drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    width: 100%;
+    min-height: 11rem;
+    padding: 1.5rem;
+    background: transparent;
+    border: 1px dashed rgba(204, 174, 222, 0.4);
+    border-radius: 3px;
+    color: var(--upcsg-text-muted);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+.upcsg-posterfield__drop:hover:not(:disabled) {
+    border-color: var(--upcsg-highlight);
+    color: var(--upcsg-highlight);
+}
+
+.upcsg-posterfield__plus {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+/* Date and the two times sit on one line where there's room, and stack rather
+   than squeeze on a phone. */
+.upcsg-whenrow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1rem;
+}
+
 /* Horizontal scroll, not wrap: the Add slot stays reachable at the end of the row
    however many photos there are. */
 .upcsg-photostrip__rail {

@@ -1,0 +1,121 @@
+@using UpcsgWeb.FrontEnd.Services
+
+@* One image, uploaded rather than linked. PhotoStrip covers the many-photo case;
+   this is its counterpart for records that carry exactly one — an event poster,
+   a portrait, a hall-of-fame shot. *@
+
+<div class="upcsg-posterfield">
+    @if (!string.IsNullOrWhiteSpace(Url))
+    {
+        <div class="upcsg-posterfield__frame">
+            <img src="@Url" alt="@Alt"
+                 onerror="this.closest('.upcsg-posterfield__frame').classList.add('upcsg-posterfield__frame--broken'); this.remove();" />
+            <span class="upcsg-posterfield__broken">That link didn't load</span>
+        </div>
+
+        <div class="upcsg-posterfield__actions">
+            <MudButton Variant="Variant.Text" Size="Size.Small" Disabled="_busy"
+                       StartIcon="@Icons.Material.Filled.Refresh" OnClick="UploadAsync">
+                Replace
+            </MudButton>
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" Disabled="_busy"
+                       StartIcon="@Icons.Material.Filled.Close" OnClick="ClearAsync">
+                Remove
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <button type="button" class="upcsg-posterfield__drop" disabled="@_busy" @onclick="UploadAsync">
+            <span class="upcsg-posterfield__plus">@(_busy ? "…" : "+")</span>
+            <span>@(_busy ? "Uploading" : EmptyLabel)</span>
+        </button>
+    }
+
+    @if (_status is not null)
+    {
+        <p class="upcsg-photostrip__status">@_status</p>
+    }
+
+    @* Same escape hatch as the strip: something already hosted elsewhere shouldn't
+       have to be downloaded and re-uploaded just to be referenced. *@
+    <MudLink Component="button" Class="upcsg-photostrip__link" @onclick="PasteLinkAsync">
+        or paste a link
+    </MudLink>
+</div>
+
+@code {
+    [Parameter] public string? Url { get; set; }
+    [Parameter] public EventCallback<string?> UrlChanged { get; set; }
+
+    /// <summary>Storage folder: merch, events, members, achievements.</summary>
+    [Parameter, EditorRequired] public string Folder { get; set; } = "events";
+
+    [Parameter] public string Alt { get; set; } = "Uploaded image";
+    [Parameter] public string EmptyLabel { get; set; } = "Upload image";
+
+    [Inject] private IDialogService Dialogs { get; set; } = default!;
+    [Inject] private IMediaUploadService Uploads { get; set; } = default!;
+
+    private bool _busy;
+    private string? _status;
+
+    private async Task UploadAsync()
+    {
+        _busy = true;
+        _status = null;
+
+        try
+        {
+            var result = await Uploads.PickAndUploadAsync(Folder);
+
+            if (result is null)
+            {
+                return; // Picker cancelled.
+            }
+
+            if (result.Error is not null)
+            {
+                _status = result.Error;
+                return;
+            }
+
+            await SetAsync(result.Url);
+
+            _status = result.OriginalBytes > result.SizeBytes
+                ? $"Uploaded — {Kb(result.OriginalBytes)} shrunk to {Kb(result.SizeBytes)}."
+                : $"Uploaded — {Kb(result.SizeBytes)}.";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task PasteLinkAsync()
+    {
+        var parameters = new DialogParameters<PhotoUrlDialog>
+        {
+            { x => x.Url, Url ?? string.Empty },
+        };
+
+        var dialog = await Dialogs.ShowAsync<PhotoUrlDialog>("Use a link", parameters);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: string url } && !string.IsNullOrWhiteSpace(url))
+        {
+            await SetAsync(url.Trim());
+        }
+    }
+
+    private Task ClearAsync() => SetAsync(null);
+
+    private async Task SetAsync(string? url)
+    {
+        Url = url;
+        await UrlChanged.InvokeAsync(url);
+    }
+
+    private static string Kb(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024} KB";
+}

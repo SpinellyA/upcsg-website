@@ -1,0 +1,413 @@
+@page "/admin/events/new"
+@page "/admin/events/{Id:int}"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IEventService Events
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsNew ? "New event" : _item.Title) - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <MudLink Href="admin/events" Class="mb-3 d-inline-block">&larr; All events</MudLink>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Warning">That event no longer exists.</MudAlert>
+    }
+    else
+    {
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Guild CMS</p>
+                <h1 class="upcsg-title-xl">@(IsNew ? "New event" : _item.Title)</h1>
+            </div>
+        </div>
+
+        <AdminNav />
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
+        }
+
+        @* Laid out like the page it produces: poster on the left where the public
+           detail page shows it, the writing on the right. *@
+        <div class="upcsg-merchform mt-4">
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Poster</MudText>
+
+                <SinglePhotoField Url="@_item.PosterUrl"
+                                  UrlChanged="OnPosterChanged"
+                                  Folder="events"
+                                  Alt="Event poster"
+                                  EmptyLabel="Upload poster" />
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    Shown on the event's own page and on the month listing. Without one the
+                    card falls back to the guild crest.
+                </MudText>
+            </MudPaper>
+
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Event</MudText>
+
+                <MudTextField @bind-Value="_item.Title" Immediate="true"
+                              Label="Title" Variant="Variant.Outlined" Required="true"
+                              TextChanged="_ => Touch()" Class="mb-4" />
+
+                <MudTextField @bind-Value="_item.Description" Immediate="true"
+                              Label="Description" Variant="Variant.Outlined" Lines="8"
+                              HelperText="Leave a blank line between paragraphs. The first is the summary shown on cards."
+                              TextChanged="_ => Touch()" Class="mb-4" />
+
+                <MudTextField @bind-Value="_item.Location" Immediate="true"
+                              Label="Location" Variant="Variant.Outlined"
+                              HelperText="Room, building, or the platform if it's online."
+                              TextChanged="_ => Touch()" Class="mb-4" />
+            </MudPaper>
+        </div>
+
+        <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
+            <MudText Typo="Typo.overline" Class="upcsg-panel__title">When</MudText>
+
+            @* Bound explicitly rather than with @bind-*: these need to mark the form
+               dirty as well as store the value, and @bind already owns the Changed
+               callback. *@
+            <div class="upcsg-whenrow">
+                <MudDatePicker Date="_date" Label="Date" Variant="Variant.Outlined"
+                               DateChanged="OnDateChanged" />
+                <MudTimePicker Time="_startTime" Label="Start time" Variant="Variant.Outlined"
+                               TimeChanged="OnStartChanged" />
+                <MudTimePicker Time="_endTime" Label="End time (optional)" Variant="Variant.Outlined"
+                               TimeChanged="OnEndChanged" />
+            </div>
+
+            @* The domain refuses an end before a start, but saying so here beats
+               finding out from a 409 after everything else has been typed. *@
+            @if (EndsBeforeItStarts)
+            {
+                <MudAlert Severity="Severity.Warning" Dense="true" Square="true" Elevation="0" Class="mt-3">
+                    The end time is before the start time. The guild doesn't run overnight
+                    events, so both are treated as the same day.
+                </MudAlert>
+            }
+
+            <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                @if (_date is null)
+                {
+                    <text>Pick a date to see how this will read.</text>
+                }
+                else
+                {
+                    <text>Guilders will see: <strong>@Reads</strong></text>
+                }
+            </MudText>
+
+            @if (!IsNew && _movedMonth)
+            {
+                <MudAlert Severity="Severity.Info" Dense="true" Square="true" Elevation="0" Class="mt-3">
+                    This moves the event to @(_date!.Value.ToString("MMMM yyyy")), so it will
+                    leave the month you opened it from.
+                </MudAlert>
+            }
+        </MudPaper>
+
+        <div class="upcsg-formbar">
+            @if (!IsNew)
+            {
+                <MudButton Variant="Variant.Text" Color="Color.Error" Class="mr-auto"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           Disabled="_saving" OnClick="DeleteAsync">
+                    Delete event
+                </MudButton>
+            }
+
+            @if (_dirty)
+            {
+                <span class="upcsg-savebar__dirty">Unsaved changes</span>
+            }
+
+            <MudButton Variant="Variant.Text" Disabled="_saving" OnClick="Leave">Cancel</MudButton>
+            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                       Disabled="_saving || !CanSave"
+                       OnClick="SaveAsync">
+                @(_saving ? "Saving…" : "Save event")
+            </MudButton>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    /// <summary>
+    /// The month the officer was browsing, carried in the query string so a new event
+    /// starts there and Cancel returns there.
+    /// </summary>
+    [Parameter, SupplyParameterFromQuery] public int? Year { get; set; }
+
+    [Parameter, SupplyParameterFromQuery] public int? Month { get; set; }
+
+    private EventDto _item = new();
+    private bool _loading = true;
+    private bool _notFound;
+    private bool _saving;
+    private bool _dirty;
+    private string? _error;
+
+    private DateTime? _date;
+    private TimeSpan? _startTime;
+    private TimeSpan? _endTime;
+
+    /// <summary>The month this event was in when it was opened, to notice a move.</summary>
+    private DateTime? _originalMonth;
+
+    private bool IsNew => Id is null;
+
+    private bool CanSave => !string.IsNullOrWhiteSpace(_item.Title) && _date is not null;
+
+    private bool EndsBeforeItStarts =>
+        _endTime is { } end && _startTime is { } start && end <= start;
+
+    private bool _movedMonth =>
+        _originalMonth is { } was && _date is { } now &&
+        (now.Year != was.Year || now.Month != was.Month);
+
+    /// <summary>The date line as the public page will render it.</summary>
+    private string Reads
+    {
+        get
+        {
+            var start = _date!.Value.Date.Add(_startTime ?? DefaultStart);
+            var text = start.ToString("dddd, MMMM d, yyyy 'at' h:mm tt");
+
+            return _endTime is { } end && end > (_startTime ?? DefaultStart)
+                ? $"{text} – {_date.Value.Date.Add(end):h:mm tt}"
+                : text;
+        }
+    }
+
+    private static readonly TimeSpan DefaultStart = TimeSpan.FromHours(18);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _notFound = false;
+        _error = null;
+        _dirty = false;
+
+        try
+        {
+            if (Id is { } id)
+            {
+                var found = await Events.GetEventAsync(id);
+
+                if (found is null)
+                {
+                    _notFound = true;
+                }
+                else
+                {
+                    _item = found;
+
+                    // Set immediately before the pickers first receive these values, so
+                    // the callbacks they raise on that render are ignored. Setting it any
+                    // earlier is useless: the loading render clears it again.
+                    _populating = true;
+
+                    // Stored as an instant; edited as the wall-clock time an officer
+                    // would read off a poster.
+                    var localStart = found.StartDateTime.ToLocalTime();
+                    _date = localStart.Date;
+                    _startTime = localStart.TimeOfDay;
+                    _endTime = found.EndDateTime?.ToLocalTime().TimeOfDay;
+                    _originalMonth = localStart.Date;
+                }
+            }
+            else
+            {
+                _item = new EventDto();
+                _populating = true;
+
+                // Default into the month the officer was browsing, not today, or adding
+                // an event while looking at next month would silently land in this one.
+                var year = Year is >= 1 and <= 9999 ? Year.Value : DateTime.Now.Year;
+                var month = Month is >= 1 and <= 12 ? Month.Value : DateTime.Now.Month;
+
+                _date = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Unspecified);
+                _startTime = DefaultStart;
+                _endTime = null;
+                _originalMonth = null;
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    /// <summary>
+    /// True while the form is being populated from the server.
+    ///
+    /// The pickers raise their Changed callbacks when their bound value is first set,
+    /// not only when an officer touches them — so without this, merely opening an event
+    /// marks it dirty, Cancel always asks "discard changes?", and the warning stops
+    /// meaning anything. Cleared once the render that populated them has finished.
+    /// </summary>
+    private bool _populating;
+
+    protected override void OnAfterRender(bool firstRender) => _populating = false;
+
+    private void Touch()
+    {
+        if (!_populating)
+        {
+            _dirty = true;
+        }
+    }
+
+    private void OnDateChanged(DateTime? value)
+    {
+        _date = value;
+        Touch();
+    }
+
+    private void OnStartChanged(TimeSpan? value)
+    {
+        _startTime = value;
+        Touch();
+    }
+
+    private void OnEndChanged(TimeSpan? value)
+    {
+        _endTime = value;
+        Touch();
+    }
+
+    private void OnPosterChanged(string? url)
+    {
+        _item.PosterUrl = url;
+        _dirty = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+
+        try
+        {
+            var date = _date!.Value.Date;
+            var start = date.Add(_startTime ?? DefaultStart);
+
+            // Sent as an explicit instant. A bare wall-clock value is interpreted
+            // against whatever timezone the API host happens to run in, which is how
+            // a 6 PM event can come back reading 2 AM.
+            _item.StartDateTime = DateTime.SpecifyKind(start, DateTimeKind.Local).ToUniversalTime();
+
+            // An end time is assumed to be the same day — the guild doesn't run
+            // overnight events. Anything not after the start is dropped rather than
+            // sent for the domain to reject.
+            _item.EndDateTime = _endTime is { } end && end > start.TimeOfDay
+                ? DateTime.SpecifyKind(date.Add(end), DateTimeKind.Local).ToUniversalTime()
+                : null;
+
+            var saved = await Admin.SaveEventAsync(_item);
+            Snackbar.Add("Saved.", Severity.Success);
+
+            // A new event now has an id; land on its own URL so a reload doesn't
+            // create a second copy.
+            if (IsNew)
+            {
+                Navigation.NavigateTo($"admin/events/{saved.Id}", replace: true);
+                return;
+            }
+
+            _item = saved;
+
+            // Same reason as on load: writing these back re-fires the pickers.
+            _populating = true;
+
+            var localStart = saved.StartDateTime.ToLocalTime();
+            _date = localStart.Date;
+            _startTime = localStart.TimeOfDay;
+            _endTime = saved.EndDateTime?.ToLocalTime().TimeOfDay;
+            _originalMonth = localStart.Date;
+            _dirty = false;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Delete event",
+            $"Delete \"{_item.Title}\"? This removes it from the month listing and its own page.",
+            yesText: "Delete", cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            await Admin.DeleteEventAsync(_item.Id);
+            Snackbar.Add("Deleted.", Severity.Success);
+
+            // Nothing left to edit, and the guard would otherwise ask about unsaved
+            // edits to a record that no longer exists.
+            _dirty = false;
+            Navigation.NavigateTo(BackUrl);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+            _saving = false;
+        }
+    }
+
+    private async Task Leave()
+    {
+        if (_dirty)
+        {
+            var ok = await Dialogs.ShowMessageBoxAsync(
+                "Discard changes?",
+                "This event has edits that haven't been saved.",
+                yesText: "Discard", cancelText: "Keep editing");
+
+            if (ok != true)
+            {
+                return;
+            }
+        }
+
+        Navigation.NavigateTo(BackUrl);
+    }
+
+    /// <summary>Back to the month this event lives in, not whatever month is "now".</summary>
+    private string BackUrl =>
+        _date is { } d ? $"admin/events?year={d.Year}&month={d.Month}" : "admin/events";
+}

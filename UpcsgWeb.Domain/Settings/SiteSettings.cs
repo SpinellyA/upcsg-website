@@ -48,10 +48,24 @@ public class SiteSettings : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// The guild is in Cebu: UTC+8, and the Philippines has no daylight saving, so a
+    /// fixed offset is exact rather than an approximation.
+    ///
+    /// This matters at the turn of a month. Read in UTC, the calendar still says July
+    /// for the first eight hours of August in Cebu — the site would show last month's
+    /// events on the morning of the first, which an officer would reasonably read as
+    /// the setting having failed to save.
+    /// </summary>
+    private static readonly TimeSpan GuildOffset = TimeSpan.FromHours(8);
+
     /// <summary>The month the public events page should render.</summary>
-    public (int Year, int Month) ResolveEventsMonth()
+    public (int Year, int Month) ResolveEventsMonth() => ResolveEventsMonth(DateTime.UtcNow);
+
+    /// <summary>Testable overload: the caller supplies "now" as a UTC instant.</summary>
+    public (int Year, int Month) ResolveEventsMonth(DateTime utcNow)
     {
-        var now = DateTime.UtcNow;
+        var now = utcNow + GuildOffset;
         return (EventsYear ?? now.Year, EventsMonth ?? now.Month);
     }
 }

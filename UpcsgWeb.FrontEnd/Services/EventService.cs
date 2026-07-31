@@ -42,6 +42,8 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
         return _cachedMonth.Value;
     }
 
+    public void ForgetDisplayMonth() => _cachedMonth = null;
+
     public async Task<List<EventDto>> GetThisMonthEventsAsync()
     {
         if (options.IsConfigured)

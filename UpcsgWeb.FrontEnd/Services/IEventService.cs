@@ -18,4 +18,14 @@ public interface IEventService
     /// events page must ask rather than assume DateTime.Now.
     /// </summary>
     Task<(int Year, int Month)> GetDisplayMonthAsync();
+
+    /// <summary>
+    /// Drops the cached month so the next read asks the API again.
+    ///
+    /// The answer is cached because otherwise every page that mentions events re-fetches
+    /// settings — but in WebAssembly a scoped service lives as long as the tab. Without
+    /// this, an officer who changes the month watches the site keep showing the old one
+    /// until they hard-reload, which looks exactly like the setting failing to save.
+    /// </summary>
+    void ForgetDisplayMonth();
 }

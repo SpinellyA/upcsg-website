@@ -4,8 +4,8 @@
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IAdminContentService Admin
-@inject ISnackbar Snackbar
-@inject IDialogService DialogService
+@inject IEventService Events
+@inject NavigationManager Navigation
 
 <PageTitle>Events - UPCSG Admin</PageTitle>
 
@@ -15,8 +15,11 @@
             <p class="upcsg-kicker">Guild CMS</p>
             <h1 class="upcsg-title-xl">Events</h1>
         </div>
+        @* Carries the month being browsed, so a new event lands where the officer is
+           looking rather than in whatever month today falls in. *@
         <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
-                   StartIcon="@Icons.Material.Filled.Add" OnClick="() => EditAsync(null)">
+                   StartIcon="@Icons.Material.Filled.Add"
+                   Href="@($"admin/events/new?year={_year}&month={_month}")">
             New Event
         </MudButton>
     </div>
@@ -47,7 +50,7 @@
                   LoadingProgressColor="Color.Primary"
                   Filter="new Func<EventDto, bool>(Matches)"
                   AllowUnsorted="false"
-                  OnRowClick="@(args => OpenAsync(args.Item))"
+                  OnRowClick="@(args => OpenEvent(args.Item))"
                   RowClass="upcsg-datatable__row">
             <ToolBarContent>
                 <MudTextField @bind-Value="_search"
@@ -110,7 +113,30 @@
             || (item.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    /// <summary>Set when returning from an event's own page, which carries its month.</summary>
+    [Parameter, SupplyParameterFromQuery] public int? Year { get; set; }
+
+    [Parameter, SupplyParameterFromQuery] public int? Month { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Year is >= 1 and <= 9999 && Month is >= 1 and <= 12)
+        {
+            _year = Year.Value;
+            _month = Month.Value;
+        }
+        else
+        {
+            // Open on the month the site is actually publishing, not on today's. An
+            // officer who pinned the calendar to July is working on July; landing them
+            // in August makes the setting look like it didn't take.
+            var (year, month) = await Events.GetDisplayMonthAsync();
+            _year = year;
+            _month = month;
+        }
+
+        await LoadAsync();
+    }
 
     private async Task LoadAsync()
     {
@@ -146,77 +172,15 @@
         await LoadAsync();
     }
 
-    /// <summary>Rows are click-to-open; MudTable hands us the item that was clicked.</summary>
-    private Task OpenAsync(EventDto? item) => item is null ? Task.CompletedTask : EditAsync(item);
-
-    private async Task EditAsync(EventDto? existing)
+    // Editing lives at /admin/events/{id}, like merch: an event carries a poster, a
+    // description of real length and a time range, which is more than a dialog can hold
+    // without becoming a scroll trap. Deleting lives there too, with the whole record
+    // in view. The month travels in the URL so returning lands where the officer was.
+    private void OpenEvent(EventDto? item)
     {
-        var draft = existing is null
-            ? new EventDto
-            {
-                // Default into the month being browsed, not today, or adding an event
-                // while looking at next month would silently land in this one.
-                StartDateTime = new DateTime(_year, _month, 1, 18, 0, 0),
-            }
-            : new EventDto
-            {
-                Id = existing.Id,
-                Title = existing.Title,
-                Description = existing.Description,
-                StartDateTime = existing.StartDateTime.ToLocalTime(),
-                EndDateTime = existing.EndDateTime?.ToLocalTime(),
-                Location = existing.Location,
-                PosterUrl = existing.PosterUrl,
-            };
-
-        var parameters = new DialogParameters<EventEditDialog> { { x => x.Item, draft } };
-        var dialog = await DialogService.ShowAsync<EventEditDialog>(
-            existing is null ? "New event" : $"Edit {existing.Title}", parameters,
-            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
-
-        var result = await dialog.Result;
-        if (result is null || result.Canceled)
+        if (item is not null)
         {
-            return;
-        }
-
-        if (result.Data is EditDialogAction.Delete && existing is not null)
-        {
-            await DeleteAsync(existing);
-            return;
-        }
-
-        try
-        {
-            await Admin.SaveEventAsync(draft);
-            Snackbar.Add("Saved.", Severity.Success);
-            await LoadAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
-    }
-
-    private async Task DeleteAsync(EventDto item)
-    {
-        var confirmed = await DialogService.ShowMessageBoxAsync(
-            "Delete event", $"Delete \"{item.Title}\"?", yesText: "Delete", cancelText: "Cancel");
-
-        if (confirmed != true)
-        {
-            return;
-        }
-
-        try
-        {
-            await Admin.DeleteEventAsync(item.Id);
-            Snackbar.Add("Deleted.", Severity.Success);
-            await LoadAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
+            Navigation.NavigateTo($"admin/events/{item.Id}?year={_year}&month={_month}");
         }
     }
 }

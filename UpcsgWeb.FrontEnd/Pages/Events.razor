@@ -22,160 +22,153 @@
 
 <div class="upcsg-page upcsg-page--after-hero">
 
-    @* ---------- Calendar ---------- *@
-    <section class="upcsg-section upcsg-band">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">The month at a glance</p>
-                <h2 class="upcsg-title-xl">Calendar</h2>
-            </div>
-            @if (_selectedDate is not null)
-            {
-                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" OnClick="ClearSelection">
-                    Clear selection
-                </MudButton>
-            }
-        </div>
-
-        <div class="upcsg-cal__grid" role="grid" aria-label="@_month.ToString("MMMM yyyy") events">
-            @foreach (var dow in DayNames)
-            {
-                <div class="upcsg-cal__dow" role="columnheader">@dow</div>
-            }
-
-            @for (var blank = 0; blank < LeadingBlanks; blank++)
-            {
-                <div class="upcsg-cal__cell--empty"></div>
-            }
-
-            @for (var day = 1; day <= DaysInMonth; day++)
-            {
-                var d = day;
-                var date = new DateTime(_month.Year, _month.Month, d);
-                var dayEvents = EventsOn(date);
-                var isToday = date.Date == DateTime.Today;
-                var isSelected = _selectedDate?.Date == date.Date;
-                var isPast = date.Date < DateTime.Today;
-
-                if (dayEvents.Count == 0)
+    @if (_loading)
+    {
+        <section class="upcsg-section">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="240px" Class="upcsg-skeleton mb-6" />
+            <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                @for (var i = 0; i < 3; i++)
                 {
-                    <div class="upcsg-cal__day upcsg-cal__day--plain @(isToday ? "upcsg-cal__day--today" : null)">
-                        <span class="upcsg-cal__day-num">@d</span>
-                        <span class="upcsg-cal__dots"></span>
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="260px" Class="upcsg-skeleton" />
+                }
+            </div>
+        </section>
+    }
+    else if (_events.Count == 0)
+    {
+        @* The whole page is the empty state when nothing is published — a calendar of
+           thirty blank squares above an empty list says less than one clear sentence. *@
+        <section class="upcsg-section">
+            <Reveal Variant="Reveal.RevealMotion.Fade">
+                <div class="upcsg-empty upcsg-empty--tall">
+                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    <h2 class="upcsg-title-xl">Nothing scheduled yet</h2>
+                    <p>
+                        @_month.ToString("MMMM")'s lineup hasn't been posted. Our socials get it
+                        first, so follow along there and it'll show up here once it's official.
+                    </p>
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="contact">
+                        Get in touch
+                    </MudButton>
+                </div>
+            </Reveal>
+        </section>
+    }
+    else
+    {
+        @* ---------- Next up ---------- *@
+        @if (_next is not null)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="@FeatureKicker" Title="@FeatureTitle" />
+
+                <Reveal Variant="Reveal.RevealMotion.Scale">
+                    <EventCard Event="_next" Variant="EventCard.Density.Feature" ShowStatus="true" />
+                </Reveal>
+            </section>
+        }
+
+        @* ---------- Calendar rail + listing ---------- *@
+        <section class="upcsg-section upcsg-eventslayout">
+
+            @* Sticky so the month stays in reach while the list scrolls past it. This is
+               why the page wrappers clip rather than hide their overflow — hidden would
+               make them scroll containers and kill the stickiness. *@
+            <aside class="upcsg-eventslayout__rail">
+                <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-calcard">
+                    <div class="upcsg-calcard__head">
+                        <p class="upcsg-kicker">
+                            <span class="upcsg-star upcsg-star--tiny"></span> At a glance
+                        </p>
+                        <h2 class="upcsg-calcard__title">@_month.ToString("MMMM")</h2>
                     </div>
-                }
-                else
-                {
-                    <button type="button"
-                            class="upcsg-cal__day upcsg-cal__day--has-events @(isToday ? "upcsg-cal__day--today" : null) @(isSelected ? "upcsg-cal__day--selected" : null) @(isPast ? "upcsg-cal__day--past" : null)"
-                            aria-label="@($"{date:MMMM d}, {dayEvents.Count} event{(dayEvents.Count == 1 ? "" : "s")}")"
-                            @onclick="() => SelectDayAsync(date)">
-                        <span class="upcsg-cal__day-num">@d</span>
-                        <span class="upcsg-cal__dots">
-                            @foreach (var _ in dayEvents)
-                            {
-                                <i class="upcsg-cal__dot"></i>
-                            }
-                        </span>
-                    </button>
-                }
-            }
-        </div>
 
-        <div class="upcsg-cal__legend">
-            <span><i></i> Has events</span>
-            <span><i class="is-today"></i> Today</span>
-            <span>Tap a marked day to jump to it below</span>
-        </div>
-    </section>
-
-    @* ---------- Agenda ---------- *@
-    <section class="upcsg-section">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">
-                    @if (_selectedDate is not null)
-                    {
-                        <text>Showing @_selectedDate.Value.ToString("MMMM d")</text>
-                    }
-                    else
-                    {
-                        <text>@_events.Count events this month</text>
-                    }
-                </p>
-                <h2 class="upcsg-title-xl">Details</h2>
-            </div>
-            @if (_events.Count > 0)
-            {
-                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" OnClick="ToggleAll">
-                    @(AllExpanded ? "Collapse all" : "Expand all")
-                </MudButton>
-            }
-        </div>
-
-        @if (_loading)
-        {
-            <MudProgressLinear Indeterminate="true" Class="my-4" />
-        }
-        else if (_events.Count == 0)
-        {
-            <p class="upcsg-lede">This month's lineup hasn't been posted yet. Check back soon.</p>
-        }
-        else
-        {
-            <div class="upcsg-agenda">
-                @foreach (var evt in _events)
-                {
-                    var isOpen = _expanded.Contains(evt.Id);
-                    var starts = Starts(evt);
-                    var isTarget = _selectedDate?.Date == starts.Date;
-
-                    <div id="@($"event-{evt.Id}")"
-                         class="upcsg-agenda__item @(isOpen ? "upcsg-agenda__item--open" : null) @(isTarget ? "upcsg-agenda__item--target" : null)">
-                        @* aria-expanded must be a literal "true"/"false": Blazor renders a bool as a
-                           present/absent HTML boolean attribute, which ARIA cannot read. *@
-                        <button type="button"
-                                class="upcsg-agenda__head"
-                                aria-expanded="@(isOpen ? "true" : "false")"
-                                aria-controls="@($"event-panel-{evt.Id}")"
-                                @onclick="() => Toggle(evt.Id)">
-                            <span class="upcsg-datechip">
-                                <span class="upcsg-datechip__month">@starts.ToString("MMM")</span>
-                                <span class="upcsg-datechip__day">@starts.Day</span>
-                            </span>
-                            <span>
-                                <p class="upcsg-agenda__title">@evt.Title</p>
-                                <p class="upcsg-agenda__meta">@FormatTime(evt) &middot; @evt.Location</p>
-                            </span>
-                            <span class="upcsg-agenda__chevron">&#9662;</span>
-                        </button>
-
-                        @if (isOpen)
+                    <div class="upcsg-cal__grid" role="grid" aria-label="@_month.ToString("MMMM yyyy") events">
+                        @foreach (var dow in DayNames)
                         {
-                            <div id="@($"event-panel-{evt.Id}")" class="upcsg-agenda__panel">
-                                <div class="upcsg-agenda__panel-body">
-                                    <p class="upcsg-agenda__desc">@evt.Description</p>
-                                    <ul class="upcsg-agenda__facts">
-                                        <li>
-                                            <strong>When</strong>
-                                            @starts.ToString("dddd, MMMM d") &middot; @FormatTime(evt)
-                                        </li>
-                                        <li>
-                                            <strong>Where</strong>
-                                            @evt.Location
-                                        </li>
-                                    </ul>
-                                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="@($"events/{evt.Id}")">
-                                        Open event page
-                                    </MudButton>
+                            <div class="upcsg-cal__dow" role="columnheader">@dow</div>
+                        }
+
+                        @for (var blank = 0; blank < LeadingBlanks; blank++)
+                        {
+                            <div class="upcsg-cal__cell--empty"></div>
+                        }
+
+                        @for (var day = 1; day <= DaysInMonth; day++)
+                        {
+                            var d = day;
+                            var date = new DateTime(_month.Year, _month.Month, d);
+                            var dayEvents = EventsOn(date);
+                            var isToday = date.Date == DateTime.Today;
+                            var isSelected = _selectedDate?.Date == date.Date;
+                            var isPast = date.Date < DateTime.Today;
+
+                            if (dayEvents.Count == 0)
+                            {
+                                <div class="upcsg-cal__day upcsg-cal__day--plain @(isToday ? "upcsg-cal__day--today" : null)">
+                                    <span class="upcsg-cal__day-num">@d</span>
+                                    <span class="upcsg-cal__dots"></span>
                                 </div>
-                            </div>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="upcsg-cal__day upcsg-cal__day--has-events @(isToday ? "upcsg-cal__day--today" : null) @(isSelected ? "upcsg-cal__day--selected" : null) @(isPast ? "upcsg-cal__day--past" : null)"
+                                        aria-label="@($"{date:MMMM d}, {dayEvents.Count} event{(dayEvents.Count == 1 ? "" : "s")}")"
+                                        @onclick="() => SelectDayAsync(date)">
+                                    <span class="upcsg-cal__day-num">@d</span>
+                                    <span class="upcsg-cal__dots">
+                                        @foreach (var _ in dayEvents)
+                                        {
+                                            <i class="upcsg-cal__dot"></i>
+                                        }
+                                    </span>
+                                </button>
+                            }
                         }
                     </div>
+
+                    <div class="upcsg-cal__legend">
+                        <span><i></i> Has events</span>
+                        <span><i class="is-today"></i> Today</span>
+                    </div>
+
+                    @if (_selectedDate is not null)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   FullWidth="true"
+                                   Class="upcsg-ghost-button mt-3"
+                                   OnClick="ClearSelection">
+                            Show all @_events.Count
+                        </MudButton>
+                    }
+                </Reveal>
+            </aside>
+
+            <div class="upcsg-eventslayout__list">
+                <SectionHeading Kicker="@ListKicker" Title="@ListTitle" />
+
+                <div class="upcsg-eventlist">
+                    @foreach (var (evt, i) in Listed.Select((e, i) => (e, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
+                            <div id="@($"event-{evt.Id}")"
+                                 class="@(_selectedDate?.Date == EventTiming.Starts(evt).Date ? "upcsg-eventlist__hit" : null)">
+                                <EventCard Event="evt" ShowStatus="true" />
+                            </div>
+                        </Reveal>
+                    }
+                </div>
+
+                @if (Listed.Count == 0)
+                {
+                    <div class="upcsg-empty">
+                        <p>Nothing on @_selectedDate?.ToString("MMMM d").</p>
+                    </div>
                 }
             </div>
-        }
-    </section>
+        </section>
+    }
 
 </div>
 
@@ -193,7 +186,7 @@
 
     private bool _loading = true;
     private List<EventDto> _events = [];
-    private HashSet<Guid> _expanded = [];
+    private EventDto? _next;
     private DateTime? _selectedDate;
 
     private DateTime FirstOfMonth => new(_month.Year, _month.Month, 1);
@@ -202,7 +195,31 @@
     // Sunday-first grid, matching the local convention.
     private int LeadingBlanks => (int)FirstOfMonth.DayOfWeek;
 
-    private bool AllExpanded => _events.Count > 0 && _expanded.Count == _events.Count;
+    /// <summary>Everything, or just the picked day.</summary>
+    private List<EventDto> Listed => _selectedDate is null
+        ? _events
+        : EventsOn(_selectedDate.Value);
+
+    private string ListKicker => _selectedDate is not null
+        ? _selectedDate.Value.ToString("dddd, MMMM d")
+        : $"{_events.Count} event{(_events.Count == 1 ? "" : "s")} this month";
+
+    private string ListTitle => _selectedDate is not null ? "That day" : "Everything on";
+
+    // Three states, not two. A pinned month whose events have all finished falls back to
+    // the last one, and calling that "Next up / The one to catch" put an invitation over
+    // a card the same page had already badged Finished.
+    private string FeatureKicker =>
+        _next is null ? string.Empty
+        : EventTiming.IsUnderway(_next) ? "On right now"
+        : EventTiming.HasEnded(_next) ? "That was the month"
+        : "Next up";
+
+    private string FeatureTitle =>
+        _next is null ? string.Empty
+        : EventTiming.IsUnderway(_next) ? "Happening today"
+        : EventTiming.HasEnded(_next) ? "How it wrapped up"
+        : "The one to catch";
 
     protected override async Task OnInitializedAsync()
     {
@@ -213,48 +230,19 @@
             .OrderBy(e => e.StartDateTime)
             .ToList();
 
+        // The soonest thing that hasn't finished. Falls back to the last event of the
+        // month so a fully past month still leads with something rather than a hole.
+        _next = _events.FirstOrDefault(e => !EventTiming.HasEnded(e)) ?? _events.LastOrDefault();
+
         _loading = false;
     }
 
-    /// <summary>
-    /// Times arrive as UTC instants and are read here as Cebu wall-clock. Without this a
-    /// 6 PM event reads as 10 AM, and it lands on the wrong calendar day either side of
-    /// midnight.
-    /// </summary>
-    private static DateTime Starts(EventDto evt) => evt.StartDateTime.ToLocalTime();
-
-    private static DateTime? Ends(EventDto evt) => evt.EndDateTime?.ToLocalTime();
-
     private List<EventDto> EventsOn(DateTime date) =>
-        _events.Where(e => Starts(e).Date == date.Date).ToList();
+        [.. _events.Where(e => EventTiming.Starts(e).Date == date.Date)];
 
-    private void Toggle(Guid id)
-    {
-        if (!_expanded.Add(id))
-        {
-            _expanded.Remove(id);
-        }
-    }
+    private void ClearSelection() => _selectedDate = null;
 
-    private void ToggleAll()
-    {
-        if (AllExpanded)
-        {
-            _expanded.Clear();
-        }
-        else
-        {
-            _expanded = _events.Select(e => e.Id).ToHashSet();
-        }
-    }
-
-    private void ClearSelection()
-    {
-        _selectedDate = null;
-        _expanded.Clear();
-    }
-
-    /// <summary>Selecting a day expands that day's events and scrolls to the first.</summary>
+    /// <summary>Picking a day filters the list to it and scrolls the first one into view.</summary>
     private async Task SelectDayAsync(DateTime date)
     {
         var ids = EventsOn(date).Select(e => e.Id).ToList();
@@ -264,14 +252,11 @@
         }
 
         _selectedDate = date;
-        _expanded = ids.ToHashSet();
 
-        // The row container always exists, so this is safe before the panel renders.
+        // The filtered list has to be rendered before there is anything to scroll to.
+        StateHasChanged();
+        await Task.Yield();
+
         await JS.InvokeVoidAsync("upcsgScrollToId", $"event-{ids[0]}");
     }
-
-    private static string FormatTime(EventDto evt) =>
-        Ends(evt) is { } ends
-            ? $"{Starts(evt):h:mm tt} - {ends:h:mm tt}"
-            : Starts(evt).ToString("h:mm tt");
 }

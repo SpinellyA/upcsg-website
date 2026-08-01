@@ -576,57 +576,89 @@
     flex: 1;
 }
 
-/* --- Spotlight: the lead officer ----------------------------------------- */
+/* --- Showcase: full-width profile rows ----------------------------------- */
 
-.upcsg-memberlead { margin-bottom: 1.5rem; }
+.upcsg-membershowcase {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
 
-.upcsg-membercard--spotlight {
+.upcsg-membercard--spotlight,
+.upcsg-membercard--showcase {
     flex-direction: row;
     align-items: stretch;
 }
 
-.upcsg-membercard--spotlight .upcsg-membercard__portrait {
+/* The mirror. row-reverse rather than a reordered DOM, so the portrait stays before
+   the text for a screen reader and for tab order however the row is drawn. */
+.upcsg-membercard--flip { flex-direction: row-reverse; }
+
+.upcsg-membercard--spotlight .upcsg-membercard__portrait,
+.upcsg-membercard--showcase .upcsg-membercard__portrait {
     /* A fixed share of the card, so the portrait keeps its proportion instead of
        stretching to whatever height the bio happens to produce. */
-    flex: 0 0 clamp(9rem, 30%, 17rem);
+    flex: 0 0 clamp(8rem, 26%, 14rem);
     aspect-ratio: auto;
 }
 
-.upcsg-membercard--spotlight .upcsg-membercard__body {
+.upcsg-membercard--spotlight .upcsg-membercard__portrait {
+    flex-basis: clamp(10rem, 32%, 18rem);
+}
+
+.upcsg-membercard--spotlight .upcsg-membercard__body,
+.upcsg-membercard--showcase .upcsg-membercard__body {
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: clamp(1.25rem, 3vw, 2.25rem);
 }
 
-.upcsg-membercard--spotlight .upcsg-membercard__name {
-    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+.upcsg-membercard--showcase .upcsg-membercard__name {
+    font-size: clamp(1.35rem, 2.6vw, 1.8rem);
 }
 
-.upcsg-membercard--spotlight .upcsg-membercard__quote {
+.upcsg-membercard--spotlight .upcsg-membercard__name {
+    font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+}
+
+.upcsg-membercard--spotlight .upcsg-membercard__quote,
+.upcsg-membercard--showcase .upcsg-membercard__quote {
     -webkit-line-clamp: unset;
     line-clamp: unset;
-    font-size: 1.05rem;
+    font-size: 1.02rem;
 }
 
+.upcsg-membercard--spotlight .upcsg-membercard__quote { font-size: 1.15rem; }
+
+/* Four lines is roughly 400 characters at this measure. Today's bios are ~140 and
+   never reach it; a long one clamps here and finishes in the dialog rather than
+   stretching the row past its portrait. */
 .upcsg-membercard__bio {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-top: 0.8rem;
-    font-size: 0.92rem;
-    line-height: 1.6;
+    font-size: 0.94rem;
+    line-height: 1.65;
     color: var(--upcsg-periwinkle);
 }
 
-/* Stacks below the point where a side-by-side portrait leaves the text too narrow
-   to read comfortably. */
+/* Stacks below the point where a side-by-side portrait leaves the text too narrow to
+   read comfortably. The mirror is dropped with it: alternating left and right means
+   nothing in a single column, and row-reverse would put the portrait under its own
+   text for half the roster. */
 @media (max-width: 46rem) {
-    .upcsg-membercard--spotlight { flex-direction: column; }
+    .upcsg-membercard--spotlight,
+    .upcsg-membercard--showcase,
+    .upcsg-membercard--flip {
+        flex-direction: column;
+    }
 
-    .upcsg-membercard--spotlight .upcsg-membercard__portrait {
+    .upcsg-membercard--spotlight .upcsg-membercard__portrait,
+    .upcsg-membercard--showcase .upcsg-membercard__portrait {
         flex: none;
         aspect-ratio: 16 / 10;
     }

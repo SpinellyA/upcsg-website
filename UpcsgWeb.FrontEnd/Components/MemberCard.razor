@@ -9,7 +9,7 @@
    page lay people out by rank without duplicating the card's behaviour three times. *@
 
 <button type="button"
-        class="upcsg-membercard upcsg-membercard--@Variant.ToString().ToLowerInvariant()"
+        class="upcsg-membercard upcsg-membercard--@Variant.ToString().ToLowerInvariant() @(Flip ? "upcsg-membercard--flip" : null)"
         aria-label="@($"Read {Member.Name}'s profile, {Member.Role}")"
         @onclick="OpenAsync">
 
@@ -23,13 +23,16 @@
         <span class="upcsg-membercard__role">@Member.Role</span>
         <span class="upcsg-membercard__name">@Member.Name</span>
 
-        @* The spotlight has room for the quote in full; the row has room for none. *@
+        @* The wide variants have room for the quote in full; the strip has room for none. *@
         @if (Variant != Density.Row && !string.IsNullOrWhiteSpace(Member.Quote))
         {
             <span class="upcsg-membercard__quote">&ldquo;@Member.Quote&rdquo;</span>
         }
 
-        @if (Variant == Density.Spotlight && !string.IsNullOrWhiteSpace(Member.Bio))
+        @* Bios run about 140 characters today and sit comfortably inline. The clamp is
+           for the CMS-authored one that eventually runs to several hundred: it keeps the
+           row's proportions, and the dialog holds the rest. *@
+        @if (ShowsBio && !string.IsNullOrWhiteSpace(Member.Bio))
         {
             <span class="upcsg-membercard__bio">@Member.Bio</span>
         }
@@ -41,10 +44,16 @@
 @code {
     public enum Density
     {
-        /// <summary>The lead officer. Wide, portrait beside the text, quote and bio.</summary>
+        /// <summary>The lead officer. Widest, portrait beside the text, quote and bio.</summary>
         Spotlight,
 
-        /// <summary>The default grid tile: portrait above, role, name, clamped quote.</summary>
+        /// <summary>
+        /// A full-width profile row, portrait beside the text. Alternate <see cref="Flip"/>
+        /// down the roster and the page reads as a showcase rather than a list.
+        /// </summary>
+        Showcase,
+
+        /// <summary>A grid tile: portrait above, role, name, clamped quote.</summary>
         Card,
 
         /// <summary>A compact horizontal strip, for committees too small to fill a row.</summary>
@@ -54,6 +63,11 @@
     [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;
 
     [Parameter] public Density Variant { get; set; } = Density.Card;
+
+    /// <summary>Mirrors the row so consecutive profiles put the portrait on opposite sides.</summary>
+    [Parameter] public bool Flip { get; set; }
+
+    private bool ShowsBio => Variant is Density.Spotlight or Density.Showcase;
 
     /// <summary>
     /// The people the dialog can page through. Supplying the whole ExeCom means a reader

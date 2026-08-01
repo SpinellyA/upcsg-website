@@ -128,35 +128,27 @@
             {
                 <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-committee-rule">
                     <span>@committee.Name</span>
-                    <span class="upcsg-committee-rule__count">@committee.Members.Count</span>
+                    <span class="upcsg-committee-rule__count">@committee.Count</span>
                 </Reveal>
 
-                @* The lead officer is given a spotlight, so the page opens on a person
-                   rather than on a wall of equal tiles. *@
-                @if (committee.Lead is not null)
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-memberlead">
-                        <MemberCard Member="committee.Lead"
-                                    Variant="MemberCard.Density.Spotlight"
-                                    Roster="_allOfficers" />
-                    </Reveal>
-                }
+                @* Each officer gets a full-width profile row, mirrored against the one
+                   before it. The ExeCom never runs to large numbers, so the roster can
+                   afford to showcase people rather than tile them.
 
-                @* A committee too small to fill a grid row reads as an accident when it
-                   is laid out as one. Those render as strips instead. *@
-                @if (committee.Rest.Count > 0)
-                {
-                    <div class="@(committee.UseRows ? "upcsg-memberstrip" : "upcsg-memberpile")">
-                        @foreach (var (member, i) in committee.Rest.Select((m, i) => (m, i)))
-                        {
-                            <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 60)">
-                                <MemberCard Member="member"
-                                            Variant="@(committee.UseRows ? MemberCard.Density.Row : MemberCard.Density.Card)"
-                                            Roster="_allOfficers" />
-                            </Reveal>
-                        }
-                    </div>
-                }
+                   The reveal slides in from the same side the portrait sits on, so the
+                   alternation is something the page does rather than just a static
+                   arrangement. *@
+                <div class="upcsg-membershowcase">
+                    @foreach (var row in committee.Rows)
+                    {
+                        <Reveal Variant="@(row.Flip ? Reveal.RevealMotion.Right : Reveal.RevealMotion.Left)">
+                            <MemberCard Member="row.Member"
+                                        Variant="@(row.IsLead ? MemberCard.Density.Spotlight : MemberCard.Density.Showcase)"
+                                        Flip="row.Flip"
+                                        Roster="_allOfficers" />
+                        </Reveal>
+                    }
+                </div>
             }
         }
     </section>
@@ -181,18 +173,14 @@
 </div>
 
 @code {
-    /// <param name="Lead">Spotlit at the head of the committee, or null if it has none.</param>
-    /// <param name="Rest">Everyone else, as tiles or strips.</param>
-    /// <param name="UseRows">
-    /// Set when the remainder is too short to fill a grid row. Three tiles in a row built
-    /// for four leaves a gap that reads as a missing person.
-    /// </param>
-    private sealed record CommitteeGroup(
-        string Name,
-        List<MemberDto> Members,
-        MemberDto? Lead,
-        List<MemberDto> Rest,
-        bool UseRows);
+    /// <param name="Flip">Mirrors this row against the one before it.</param>
+    /// <param name="IsLead">The most senior officer, rendered a size larger.</param>
+    private sealed record ProfileRow(MemberDto Member, bool Flip, bool IsLead);
+
+    private sealed record CommitteeGroup(string Name, List<ProfileRow> Rows)
+    {
+        public int Count => Rows.Count;
+    }
 
     private List<MemberDto> _faculty = [];
     private List<MemberDto> _allOfficers = [];
@@ -232,21 +220,25 @@
 
         _committees = [];
 
-        foreach (var (group, position) in groups.Select((g, i) => (g, i)))
+        // One running flag across the whole roster, so the alternation never resets at a
+        // committee boundary and leaves two portraits stacked on the same side.
+        var flip = false;
+        var first = true;
+
+        foreach (var group in groups)
         {
-            var inCommittee = group.ToList();
+            var rows = new List<ProfileRow>();
 
-            // Only the most senior committee gets a spotlight. Giving every group one
-            // would restore exactly the flatness it exists to break, at a larger size.
-            var lead = position == 0 ? inCommittee[0] : null;
-            List<MemberDto> rest = lead is null ? inCommittee : [.. inCommittee.Skip(1)];
+            foreach (var member in group)
+            {
+                // Only the single most senior officer is enlarged. Promoting the head of
+                // every committee would flatten the hierarchy again, just at a bigger size.
+                rows.Add(new ProfileRow(member, flip, IsLead: first));
+                flip = !flip;
+                first = false;
+            }
 
-            _committees.Add(new CommitteeGroup(
-                group.Key,
-                inCommittee,
-                lead,
-                rest,
-                UseRows: rest.Count is > 0 and <= 2));
+            _committees.Add(new CommitteeGroup(group.Key, rows));
         }
 
         _loading = false;

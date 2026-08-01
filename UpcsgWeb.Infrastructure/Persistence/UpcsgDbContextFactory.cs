@@ -15,8 +15,19 @@ public class UpcsgDbContextFactory : IDesignTimeDbContextFactory<UpcsgDbContext>
 {
     public UpcsgDbContext CreateDbContext(string[] args)
     {
-        var connection = Environment.GetEnvironmentVariable("UPCSG_CONNECTION")
-            ?? "Host=localhost;Database=upcsg;Username=postgres;Password=postgres";
+        var connection = Environment.GetEnvironmentVariable("UPCSG_CONNECTION");
+
+        if (string.IsNullOrWhiteSpace(connection))
+        {
+            // EF prefers this factory over the API's own configuration, so a silent
+            // localhost fallback here would point `database drop` at the wrong server
+            // while reporting success. Refuse instead.
+            throw new InvalidOperationException(
+                "UPCSG_CONNECTION is not set. Design-time EF commands need the connection "
+                + "string explicitly so they cannot quietly target the wrong database. "
+                + "Read it from the API's user-secrets (ConnectionStrings:Neon) and set it "
+                + "for the command only.");
+        }
 
         var options = new DbContextOptionsBuilder<UpcsgDbContext>()
             .UseNpgsql(connection)

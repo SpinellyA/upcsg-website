@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Features.Dev;
 using UpcsgWeb.Api.Features.Media;
+using UpcsgWeb.Application;
 using UpcsgWeb.Infrastructure;
 using UpcsgWeb.Infrastructure.Persistence;
 using UpcsgWeb.Shared.Contracts;
@@ -31,6 +32,10 @@ if (Encoding.UTF8.GetByteCount(signingKey) < 32)
 }
 
 // --- Services -----------------------------------------------------------------------
+// Application first: Infrastructure's DomainEventDispatcher takes MediatR's IPublisher,
+// so leaving this out makes every repository registration fail to construct.
+builder.Services.AddApplication();
+
 // Persistence is composed behind one call; the API references no EF Core types itself
 // and talks only to the repository interfaces the Domain owns.
 builder.Services.AddInfrastructure(connectionString);

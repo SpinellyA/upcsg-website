@@ -1772,6 +1772,30 @@ h4, h5, h6, .upcsg-heading {
     gap: 0.6rem;
 }
 
+/* Sits above the times it summarises, so it has to read as the loudest line in
+   the panel without shouting over the event title in the hero. */
+.upcsg-eventfacts__countdown {
+    margin: 0 0 1rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: var(--upcsg-highlight);
+}
+
+/* MudAlert brings its own severity palette, which fights the panel. */
+.upcsg-eventfacts__online.mud-alert {
+    background: rgba(246, 255, 233, 0.05);
+    border: 1px solid var(--upcsg-ink-rule);
+    color: var(--upcsg-text-muted);
+    font-size: 0.8rem;
+    line-height: 1.55;
+}
+
+.upcsg-eventfacts__online .mud-alert-icon .mud-icon-root {
+    color: var(--upcsg-text-muted);
+}
+
 /* ------------------------------------------------------------------ *
    Contact
 

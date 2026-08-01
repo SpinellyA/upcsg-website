@@ -1,5 +1,4 @@
 @page "/events/{Id:int}"
-@using System.Text
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
@@ -85,6 +84,10 @@ else
                         <span class="upcsg-eventfacts__weekday">@Starts.ToString("ddd")</span>
                     </div>
 
+                    @* The one thing someone opening this page actually wants to know,
+                       said before the times they'd otherwise have to subtract. *@
+                    <p class="upcsg-eventfacts__countdown">@Countdown</p>
+
                     <dl class="upcsg-eventfacts__list">
                         <div>
                             <dt>Starts</dt>
@@ -117,17 +120,39 @@ else
                         </div>
                     </dl>
 
+                    @* Directions beat a calendar file: a freshie's real problem is finding
+                       the room, and their phone already knows the date once they've read
+                       it. An online event has nowhere to walk to, so it leads with share
+                       instead of a map to a building that isn't the venue. *@
                     <div class="upcsg-eventfacts__actions">
-                        <MudButton Variant="Variant.Filled" FullWidth="true" Class="upcsg-cta-button"
-                                   StartIcon="@Icons.Material.Outlined.CalendarMonth"
-                                   OnClick="DownloadIcsAsync">
-                            Add to calendar
-                        </MudButton>
-                        <MudButton Variant="Variant.Outlined" FullWidth="true" Class="upcsg-ghost-button"
-                                   StartIcon="@Icons.Material.Outlined.Link"
-                                   OnClick="CopyLinkAsync">
-                            Copy link
-                        </MudButton>
+                        @if (IsOnline)
+                        {
+                            <MudAlert Severity="Severity.Normal" Dense="true" Square="true" Elevation="0"
+                                      Icon="@Icons.Material.Outlined.Videocam"
+                                      Class="upcsg-eventfacts__online">
+                                Runs online. The joining link goes out in the guild channels
+                                closer to the day.
+                            </MudAlert>
+
+                            <MudButton Variant="Variant.Filled" FullWidth="true" Class="upcsg-cta-button"
+                                       StartIcon="@Icons.Material.Outlined.Share"
+                                       OnClick="ShareAsync">
+                                Share this event
+                            </MudButton>
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled" FullWidth="true" Class="upcsg-cta-button"
+                                       StartIcon="@Icons.Material.Outlined.Directions"
+                                       Href="@DirectionsUrl" Target="_blank" rel="noopener">
+                                Get directions
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" FullWidth="true" Class="upcsg-ghost-button"
+                                       StartIcon="@Icons.Material.Outlined.Share"
+                                       OnClick="ShareAsync">
+                                Share this event
+                            </MudButton>
+                        }
                     </div>
                 </div>
             </aside>
@@ -246,63 +271,86 @@ else
         return minutes == 0 ? $"{hours} hr" : $"{hours} hr {minutes} min";
     }
 
-    private async Task CopyLinkAsync()
-    {
-        var url = Navigation.Uri;
-        var copied = await JS.InvokeAsync<bool>("upcsgCopyText", url);
+    /// <summary>
+    /// Words that mean "there is nowhere to walk to". Checked against the location the
+    /// officers type, since the record has no separate flag for it.
+    /// </summary>
+    private static readonly string[] OnlineWords =
+        ["online", "google meet", "meet.google", "zoom", "discord", "virtual", "webinar", "stream"];
 
-        Snackbar.Add(
-            copied ? "Link copied." : "Couldn't copy — you can copy it from the address bar.",
-            copied ? Severity.Success : Severity.Warning);
+    private bool IsOnline => _event is not null
+        && OnlineWords.Any(w => _event.Location.Contains(w, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Hands the location to the reader's own maps app. Deliberately a search rather
+    /// than a pinned coordinate: the guild writes room names, not addresses, and a
+    /// search for "CS Laboratory 2" lands closer than a wrong pin would.
+    /// </summary>
+    private string DirectionsUrl =>
+        $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(_event?.Location ?? string.Empty)}";
+
+    /// <summary>How far off it is, in the terms someone would actually say it.</summary>
+    private string Countdown
+    {
+        get
+        {
+            if (IsUnderway)
+            {
+                return "Happening now";
+            }
+
+            if (HasEnded)
+            {
+                var since = DateTime.Now - (Ends ?? Starts);
+                return since.TotalDays >= 1
+                    ? $"Finished {Describe(since)} ago"
+                    : "Finished earlier today";
+            }
+
+            var until = Starts - DateTime.Now;
+
+            return until.TotalMinutes < 60
+                ? $"Starts in {Math.Max(1, (int)until.TotalMinutes)} min"
+                : $"Starts in {Describe(until)}";
+        }
     }
 
-    private async Task DownloadIcsAsync()
+    private static string Describe(TimeSpan span)
     {
-        if (_event is null)
+        var days = (int)span.TotalDays;
+
+        if (days >= 14)
         {
-            return;
+            return $"{days / 7} weeks";
         }
 
-        var name = $"upcsg-event-{_event.Id}.ics";
-        await JS.InvokeVoidAsync("upcsgDownloadFile", name, "text/calendar", BuildIcs(_event));
+        if (days >= 1)
+        {
+            return days == 1 ? "a day" : $"{days} days";
+        }
+
+        var hours = (int)span.TotalHours;
+        return hours <= 1 ? "an hour" : $"{hours} hours";
     }
 
-    /// <summary>
-    /// Minimal RFC 5545 VEVENT. Times are written as local wall-clock without a TZID:
-    /// the record carries no timezone, and stamping one we don't know would be worse
-    /// than letting the calendar app assume the reader's own.
-    /// </summary>
-    private static string BuildIcs(EventDto evt)
+    private async Task ShareAsync()
     {
-        var starts = evt.StartDateTime.ToLocalTime();
-        var ends = evt.EndDateTime?.ToLocalTime() ?? starts.AddHours(1);
+        // The phone's own share sheet is how this actually reaches a groupchat;
+        // copying the link is the desktop fallback.
+        var result = await JS.InvokeAsync<string>("upcsgShare", _event?.Title ?? "UPCSG event", Navigation.Uri);
 
-        var ics = new StringBuilder();
-        ics.Append("BEGIN:VCALENDAR\r\n");
-        ics.Append("VERSION:2.0\r\n");
-        ics.Append("PRODID:-//UPCSG//Guild Website//EN\r\n");
-        ics.Append("BEGIN:VEVENT\r\n");
-        ics.Append($"UID:upcsg-event-{evt.Id}@upcsg\r\n");
-        ics.Append($"DTSTAMP:{DateTime.UtcNow:yyyyMMdd'T'HHmmss'Z'}\r\n");
-        ics.Append($"DTSTART:{starts:yyyyMMdd'T'HHmmss}\r\n");
-        ics.Append($"DTEND:{ends:yyyyMMdd'T'HHmmss}\r\n");
-        ics.Append($"SUMMARY:{IcsEscape(evt.Title)}\r\n");
-        ics.Append($"LOCATION:{IcsEscape(evt.Location)}\r\n");
-        ics.Append($"DESCRIPTION:{IcsEscape(evt.Description)}\r\n");
-        ics.Append("END:VEVENT\r\n");
-        ics.Append("END:VCALENDAR\r\n");
-
-        return ics.ToString();
+        switch (result)
+        {
+            case "shared":
+                break;
+            case "copied":
+                Snackbar.Add("Link copied.", Severity.Success);
+                break;
+            case "cancelled":
+                break;
+            default:
+                Snackbar.Add("Couldn't share — you can copy the link from the address bar.", Severity.Warning);
+                break;
+        }
     }
-
-    /// <summary>
-    /// Backslash, semicolon and comma are field separators in iCalendar, and a raw newline
-    /// ends the property. Unescaped, a description with a comma silently truncates the entry.
-    /// </summary>
-    private static string IcsEscape(string value) => value
-        .Replace("\\", "\\\\")
-        .Replace(";", "\\;")
-        .Replace(",", "\\,")
-        .Replace("\r\n", "\\n")
-        .Replace("\n", "\\n");
 }

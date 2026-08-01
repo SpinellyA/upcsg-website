@@ -122,17 +122,26 @@
             }
         };
 
-        // Hands a generated file (an .ics, today) to the browser as a download. The object
-        // URL is revoked immediately so nothing accumulates as a guilder opens more events.
-        window.upcsgDownloadFile = (filename, mime, content) => {
-            const url = URL.createObjectURL(new Blob([content], { type: mime }));
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
+        // Hands the event to the phone's own share sheet, which is how a student
+        // actually passes something to a groupchat. Returns what happened so the page
+        // can word its confirmation honestly: 'shared', 'copied', 'cancelled', 'failed'.
+        //
+        // navigator.share needs a secure context and a user gesture, and is absent on
+        // most desktops, so copying the link is the fallback rather than an error.
+        window.upcsgShare = async (title, url) => {
+            if (navigator.share) {
+                try {
+                    await navigator.share({ title, url });
+                    return 'shared';
+                } catch (err) {
+                    // The user dismissing the sheet is not a failure worth reporting.
+                    if (err && err.name === 'AbortError') {
+                        return 'cancelled';
+                    }
+                }
+            }
+
+            return (await window.upcsgCopyText(url)) ? 'copied' : 'failed';
         };
 
         // navigator.clipboard needs a secure context. Pages is HTTPS, but the local dev

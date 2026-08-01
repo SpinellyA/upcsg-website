@@ -95,24 +95,14 @@ else
                     @Countdown
                 </span>
 
-                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
-                    @if (!IsOnline)
-                    {
-                        <MudButton Variant="@(HasEnded ? Variant.Outlined : Variant.Filled)"
-                                   Class="@(HasEnded ? "upcsg-ghost-button px-6" : "upcsg-cta-button px-6")"
-                                   StartIcon="@Icons.Material.Outlined.Directions"
-                                   Href="@DirectionsUrl" Target="_blank" rel="noopener">
-                            Get directions
-                        </MudButton>
-                    }
-
-                    <MudButton Variant="@(IsOnline && !HasEnded ? Variant.Filled : Variant.Outlined)"
-                               Class="@(IsOnline && !HasEnded ? "upcsg-cta-button px-6" : "upcsg-ghost-button px-6")"
-                               StartIcon="@Icons.Material.Outlined.Share"
-                               OnClick="ShareAsync">
-                        Share
-                    </MudButton>
-                </MudStack>
+                @* Share is the only action left, so it carries the filled treatment while
+                   the event is still ahead and steps back once it's over. *@
+                <MudButton Variant="@(HasEnded ? Variant.Outlined : Variant.Filled)"
+                           Class="@(HasEnded ? "upcsg-ghost-button px-6" : "upcsg-cta-button px-6")"
+                           StartIcon="@Icons.Material.Outlined.Share"
+                           OnClick="ShareAsync">
+                    Share
+                </MudButton>
             </MudStack>
 
             @if (IsOnline)
@@ -174,7 +164,10 @@ else
                         var when = other.StartDateTime.ToLocalTime();
 
                         <MudItem xs="12" sm="6" md="4">
-                            <MudPaper Elevation="0" Class="upcsg-surface upcsg-othercard"
+                            @* Flat ink rather than the gradient surface: these are a quiet
+                               index at the foot of the page, and three more glowing cards
+                               after the article competed with it. *@
+                            <MudPaper Elevation="0" Class="upcsg-othercard"
                                       @onclick="@(() => Navigation.NavigateTo($"events/{other.Id}"))">
                                 <span class="upcsg-datechip">
                                     <span class="upcsg-datechip__month">@when.ToString("MMM")</span>
@@ -279,14 +272,6 @@ else
 
     private bool IsOnline => _event is not null
         && OnlineWords.Any(w => _event.Location.Contains(w, StringComparison.OrdinalIgnoreCase));
-
-    /// <summary>
-    /// Hands the location to the reader's own maps app. Deliberately a search rather
-    /// than a pinned coordinate: the guild writes room names, not addresses, and a
-    /// search for "CS Laboratory 2" lands closer than a wrong pin would.
-    /// </summary>
-    private string DirectionsUrl =>
-        $"https://www.google.com/maps/search/?api=1&query={Uri.EscapeDataString(_event?.Location ?? string.Empty)}";
 
     /// <summary>How far off it is, in the terms someone would actually say it.</summary>
     private string Countdown

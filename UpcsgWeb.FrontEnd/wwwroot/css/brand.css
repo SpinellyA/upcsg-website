@@ -1712,19 +1712,28 @@ h4, h5, h6, .upcsg-heading {
 
 /* --- Other events this month --- */
 
-.upcsg-othercard {
+/* Flat ink, the treatment the records use, rather than the gradient content
+   surface: this is a quiet index at the foot of the page, and three more glowing
+   cards straight after the article competed with the article itself.
+
+   Compound with .mud-paper so it beats MudBlazor's own background and shadow. */
+.upcsg-othercard.mud-paper {
     display: flex;
     align-items: center;
     gap: 0.9rem;
     height: 100%;
     padding: 1rem;
+    background: var(--upcsg-ink-panel);
+    border: 1px solid var(--upcsg-ink-rule);
+    border-radius: 4px;
+    box-shadow: none;
     cursor: pointer;
-    transition: border-color 0.25s ease, transform 0.25s ease;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
-.upcsg-othercard:hover {
-    transform: translateY(-2px);
-    border-color: var(--upcsg-cosmic-lavender);
+.upcsg-othercard.mud-paper:hover {
+    background: var(--upcsg-ink-hover);
+    border-color: rgba(204, 174, 222, 0.45);
 }
 
 .upcsg-othercard__title {

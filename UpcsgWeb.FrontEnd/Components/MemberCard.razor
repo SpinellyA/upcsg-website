@@ -1,0 +1,55 @@
+@using UpcsgWeb.Shared.Contracts
+@inject IDialogService Dialogs
+
+@* One officer, as a card in a roster grid.
+
+   Replaces the full-width alternating profile row the About page used to give every
+   person. With eleven officers that was eleven screen-high blocks in the same shape,
+   ten of them showing an initials plate where a portrait should be — the roster read as
+   a list of missing photographs. A grid shows the whole ExeCom at once, and the bio
+   moves into a dialog so the page stays scannable. *@
+
+@* The whole card is the target, so without an explicit label a screen reader reads the
+   button as the role, the name and the entire quote run together. *@
+<button type="button"
+        class="upcsg-membercard"
+        aria-label="@($"Read {Member.Name}'s profile, {Member.Role}")"
+        @onclick="OpenAsync">
+    <CosmicImage Src="@Member.PhotoUrl"
+                 Alt="@Member.Name"
+                 Seed="@Member.Name"
+                 ShowInitials="true"
+                 Class="upcsg-membercard__portrait" />
+
+    <span class="upcsg-membercard__body">
+        <span class="upcsg-membercard__role">@Member.Role</span>
+        <span class="upcsg-membercard__name">@Member.Name</span>
+
+        @if (!string.IsNullOrWhiteSpace(Member.Quote))
+        {
+            <span class="upcsg-membercard__quote">&ldquo;@Member.Quote&rdquo;</span>
+        }
+    </span>
+
+    <span class="upcsg-membercard__more" aria-hidden="true">Read profile &rarr;</span>
+</button>
+
+@code {
+    [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;
+
+    private Task OpenAsync()
+    {
+        var parameters = new DialogParameters<MemberDialog> { { d => d.Member, Member } };
+
+        return Dialogs.ShowAsync<MemberDialog>(
+            Member.Name,
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true,
+                CloseButton = true,
+                BackdropClick = true,
+            });
+    }
+}

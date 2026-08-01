@@ -36,6 +36,18 @@
     transform: none;
 }
 
+/* The --left and --right entrances start 32px outside their column, which pushes the
+   document 16px wider than the viewport. That is not a flicker: an element only loses
+   the offset once it has been scrolled to, so the horizontal scrollbar sits there from
+   load until the reader has reached the last one.
+
+   clip, not hidden: hidden would make this a scroll container and break position:sticky
+   for every descendant. */
+.upcsg-main,
+.upcsg-page {
+    overflow-x: clip;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .upcsg-motion .upcsg-reveal {
         opacity: 1;
@@ -404,6 +416,20 @@
     background-color: rgba(82, 38, 87, 0.35) !important;
 }
 
+/* Cards sit inside a Reveal wrapper, so the wrapper is the grid item and the card is
+   only as tall as its own text. Roles and quotes vary in length, so a row ended up with
+   cards of four different heights and ragged bottom edges. Making the wrapper a flex
+   container passes the stretched row height through to the card itself. */
+.upcsg-cardgrid > .upcsg-reveal,
+.upcsg-memberpile > .upcsg-reveal {
+    display: flex;
+}
+
+.upcsg-cardgrid > .upcsg-reveal > *,
+.upcsg-memberpile > .upcsg-reveal > * {
+    flex: 1;
+}
+
 /* Feature band: text one side, a large plate the other. Alternating the sides is what
    gives the page a rhythm the old stack of identical bands never had. */
 .upcsg-feature {
@@ -499,6 +525,250 @@
     aspect-ratio: 1;
     background: radial-gradient(circle, rgba(162, 83, 184, 0.5), transparent 62%);
     pointer-events: none;
+}
+
+/* --- Member roster ------------------------------------------------------- */
+
+/* auto-fill, not auto-fit. auto-fit collapses the empty tracks and stretches what is
+   left, so the Representatives committee — which has exactly one member — would render
+   as a single card spanning the full page width. auto-fill keeps the column rhythm and
+   lets a short row simply end. */
+.upcsg-memberpile {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.upcsg-membercard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 0;
+    border: var(--upcsg-hairline);
+    border-radius: var(--upcsg-radius);
+    background: linear-gradient(180deg, rgba(82, 38, 87, 0.42), rgba(22, 17, 58, 0.72));
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.upcsg-membercard:hover,
+.upcsg-membercard:focus-visible {
+    transform: translateY(-6px);
+    border-color: rgba(204, 174, 222, 0.45);
+    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+}
+
+.upcsg-membercard__portrait {
+    aspect-ratio: 4 / 5;
+    border-radius: 0;
+    width: 100%;
+}
+
+.upcsg-membercard__body {
+    display: block;
+    padding: 1rem 1.1rem 0.4rem;
+    flex: 1;
+}
+
+.upcsg-membercard__role {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-membercard__name {
+    display: block;
+    margin-top: 0.3rem;
+    font-family: var(--upcsg-font-display);
+    font-size: 1.25rem;
+    line-height: 1.25;
+    color: var(--upcsg-honeydew-white);
+}
+
+/* Two lines of the quote, then it stops. Free-text from the CMS varies wildly in
+   length and unclamped it would make every card in the row a different height. */
+.upcsg-membercard__quote {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.6rem;
+    font-family: var(--upcsg-font-subheading);
+    font-style: italic;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-membercard__more {
+    display: block;
+    padding: 0.7rem 1.1rem 1.1rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--upcsg-cosmic-lavender);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.upcsg-membercard:hover .upcsg-membercard__more,
+.upcsg-membercard:focus-visible .upcsg-membercard__more {
+    opacity: 1;
+    transform: none;
+}
+
+/* Keyboard users never trigger :hover, so the affordance has to be visible whenever
+   the card is focused — and on touch, where hover does not exist at all. */
+@media (hover: none) {
+    .upcsg-membercard__more { opacity: 1; transform: none; }
+}
+
+/* Committee divider: a rule with the name sitting on it. */
+.upcsg-committee-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin: 0 0 1.5rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-committee-rule::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(204, 174, 222, 0.4), transparent);
+}
+
+.upcsg-committee-rule__count {
+    order: 1;
+    padding: 0.1rem 0.55rem;
+    border: var(--upcsg-hairline);
+    border-radius: 999px;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: var(--upcsg-periwinkle);
+}
+
+/* --- Member dialog ------------------------------------------------------- */
+
+.upcsg-memberdialog {
+    display: flex;
+    align-items: center;
+    gap: 1.1rem;
+    margin-bottom: 1.25rem;
+}
+
+.upcsg-memberdialog__portrait {
+    width: 5.5rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.upcsg-memberdialog__role {
+    margin: 0;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-memberdialog__name {
+    margin: 0.15rem 0 0.5rem;
+    font-family: var(--upcsg-font-display);
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-memberdialog__chip { margin: 0 !important; }
+
+.upcsg-memberdialog__quote {
+    margin: 0 0 1rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--upcsg-galactic-orchid);
+    font-family: var(--upcsg-font-subheading);
+    font-style: italic;
+    font-size: 1.02rem;
+    line-height: 1.5;
+    color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-memberdialog__bio {
+    margin: 0;
+    line-height: 1.65;
+    color: var(--upcsg-periwinkle);
+}
+
+/* --- Quote plate (About identity section) -------------------------------- */
+
+.upcsg-quoteplate {
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    align-content: center;
+    aspect-ratio: 4 / 5;
+    padding: clamp(1.75rem, 4vw, 3rem);
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    background:
+        radial-gradient(120% 90% at 20% 15%, rgba(162, 83, 184, 0.55), transparent 60%),
+        linear-gradient(150deg, var(--upcsg-deep-amethyst), var(--upcsg-dark-ultramarine));
+    box-shadow: var(--upcsg-shadow-lg);
+}
+
+.upcsg-quoteplate__mark {
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(4rem, 12vw, 7rem);
+    line-height: 0.7;
+    color: var(--upcsg-liquid-chrome-gold);
+    opacity: 0.55;
+}
+
+.upcsg-quoteplate__text {
+    position: relative;
+    z-index: 1;
+    margin: 0.5rem 0 0;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.25rem, 2.6vw, 1.9rem);
+    line-height: 1.35;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-quoteplate__burst {
+    position: absolute;
+    right: -18%;
+    bottom: -22%;
+    width: 62%;
+    opacity: 0.22;
+    pointer-events: none;
+}
+
+.upcsg-statrow--spread {
+    justify-content: space-around;
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
 }
 
 /* Hero drift: --scroll-depth is published by motion.js, so the parallax is described

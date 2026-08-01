@@ -239,10 +239,13 @@
     /// </summary>
     private DateTime _month = DateTime.Now;
 
+    // Only things the site itself evidences. An earlier version of this list carried a
+    // founding year that I had no source for — an invented fact on the org's own front
+    // page is worse than a shorter ticker.
     private static readonly string[] Ticker =
     [
         "Academic support", "Competitive programming", "Industry nights", "General assemblies",
-        "Merch drops", "Study groups", "Hackathons", "UP Cebu", "Since 1997",
+        "Merch drops", "Study groups", "Hackathons", "UP Cebu",
     ];
 
     protected override async Task OnInitializedAsync()

@@ -1,0 +1,52 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* The full profile behind a roster card. MudDialog rather than an inline expander: an
+   expanding card reflows the grid underneath it, so every other officer jumps down the
+   page as you read one of them. *@
+
+<MudDialog>
+    <DialogContent>
+        <div class="upcsg-memberdialog">
+            <CosmicImage Src="@Member.PhotoUrl"
+                         Alt="@Member.Name"
+                         Seed="@Member.Name"
+                         ShowInitials="true"
+                         Eager="true"
+                         Class="upcsg-memberdialog__portrait" />
+
+            <div>
+                <p class="upcsg-memberdialog__role">@Member.Role</p>
+                <h3 class="upcsg-memberdialog__name">@Member.Name</h3>
+
+                @if (!string.IsNullOrWhiteSpace(Member.Committee))
+                {
+                    <MudChip T="string" Size="Size.Small" Class="upcsg-memberdialog__chip">
+                        @Member.Committee
+                    </MudChip>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Member.Quote))
+        {
+            <blockquote class="upcsg-memberdialog__quote">&ldquo;@Member.Quote&rdquo;</blockquote>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Member.Bio))
+        {
+            <p class="upcsg-memberdialog__bio">@Member.Bio</p>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;
+
+    private void Close() => MudDialog.Close();
+}

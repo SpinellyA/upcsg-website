@@ -21,105 +21,171 @@
     </div>
 </section>
 
+<Marquee Items="@Ticker" DurationSeconds="52" Class="upcsg-marquee--hero" />
+
 <div class="upcsg-page upcsg-page--after-hero">
 
-    @* ---------- Identity: asymmetric quote + prose ---------- *@
-    <section class="upcsg-section upcsg-narrative">
-        <blockquote class="upcsg-pullquote">
-            Computer science is not just an industry of machines, but a canvas of
-            endless creative expression.
-        </blockquote>
-        <div class="upcsg-narrative__body">
-            <p class="upcsg-kicker">Our identity</p>
-            <p>
+    @* ---------- Identity: the pull quote gets its own plate ---------- *@
+    <section class="upcsg-section upcsg-feature">
+        <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__visual">
+            <div class="upcsg-quoteplate">
+                <span class="upcsg-quoteplate__mark" aria-hidden="true">&ldquo;</span>
+                <blockquote class="upcsg-quoteplate__text">
+                    Computer science is not just an industry of machines, but a canvas of
+                    endless creative expression.
+                </blockquote>
+                <img class="upcsg-quoteplate__burst" src="img/starburst.png" alt="" aria-hidden="true" />
+            </div>
+        </Reveal>
+
+        <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__body" Delay="120">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Our identity</p>
+            <h2 class="upcsg-title-xl">Built and run by students</h2>
+            <p class="upcsg-lede">
                 UPCSG exists to support guilders through their degree and beyond &mdash; academic
                 support, competitions, industry nights, and the socials that hold it all together.
-                Everything here is built and run by students.
             </p>
-            <p>
+            <p class="upcsg-lede">
                 This academic year we're building on our minimalist visual identity rather than
                 replacing it, expanding our tech-futuristic edge toward the intersection of
                 technology and artistry. Our theme takes its cue from Van Gogh's
                 <em>Starry Night</em> &mdash; layered over a clean, functional structure, its high
-                contrast stands for the truth that engineering solutions is its own form of modern art.
+                contrast stands for the truth that engineering solutions is its own form of
+                modern art.
             </p>
-        </div>
+        </Reveal>
     </section>
 
-    @* ---------- Faculty ---------- *@
-    <section class="upcsg-section">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">Your guiding light</p>
-                <h2 class="upcsg-title-xl">Faculty</h2>
-            </div>
-        </div>
+    @* ---------- The roster at a glance ---------- *@
+    @if (_execCount > 0)
+    {
+        <section class="upcsg-section upcsg-band">
+            <Reveal Variant="Reveal.RevealMotion.Up">
+                <div class="upcsg-statrow upcsg-statrow--spread">
+                    <StatCounter Value="_execCount" Label="Officers serving" />
+                    <StatCounter Value="_committees.Count" Label="Committees" />
 
-        @foreach (var row in _facultyRows)
+                    @* Only when there are advisers to count. A stat reading "0 Faculty
+                       advisers" draws the eye straight to a gap in the roster, which is
+                       the opposite of what a figures band is for. *@
+                    @if (_facultyCount > 0)
+                    {
+                        <StatCounter Value="_facultyCount" Label="Faculty advisers" />
+                    }
+                </div>
+            </Reveal>
+        </section>
+    }
+
+    @* ---------- Faculty: only when there are any ----------
+
+       This section used to render its heading unconditionally. The roster currently holds
+       no faculty at all, so the live page showed "Your guiding light / Faculty" above
+       nothing — a heading advertising an empty space. *@
+    @if (_faculty.Count > 0)
+    {
+        <section class="upcsg-section">
+            <SectionHeading Kicker="Your guiding light" Title="Faculty" />
+
+            <div class="upcsg-memberpile">
+                @foreach (var (member, i) in _faculty.Select((m, i) => (m, i)))
+                {
+                    <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                        <MemberCard Member="member" />
+                    </Reveal>
+                }
+            </div>
+        </section>
+    }
+
+    @* ---------- Executive committee, grouped by committee ---------- *@
+    <section class="upcsg-section">
+        <SectionHeading Kicker="Know your officers"
+                        Title="Executive Committee"
+                        Lede="Elected guilders who represent the membership, run the committees, and keep the guild's programs moving. Open anyone's card for their full profile." />
+
+        @if (_loading)
         {
-            <PersonProfile Member="row.Member" Flip="row.Flip" />
+            <div class="upcsg-memberpile">
+                @for (var i = 0; i < 6; i++)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="320px" Class="upcsg-skeleton" />
+                }
+            </div>
         }
-    </section>
-
-    @* ---------- Executive committee ---------- *@
-    <section class="upcsg-section">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">Know your officers</p>
-                <h2 class="upcsg-title-xl">Executive Committee</h2>
-            </div>
-            <span class="upcsg-subheading">@_execCount serving this year</span>
-        </div>
-
-        @foreach (var committee in _committees)
+        else if (_committees.Count == 0)
         {
-            <div class="upcsg-committee-head"><span>@committee.Name</span></div>
-
-            @foreach (var row in committee.Rows)
+            <Reveal Variant="Reveal.RevealMotion.Fade">
+                <div class="upcsg-empty">
+                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    <p>This year's officers haven't been published yet.</p>
+                </div>
+            </Reveal>
+        }
+        else
+        {
+            @foreach (var committee in _committees)
             {
-                <PersonProfile Member="row.Member" Flip="row.Flip" />
+                <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-committee-rule">
+                    <span>@committee.Name</span>
+                    <span class="upcsg-committee-rule__count">@committee.Members.Count</span>
+                </Reveal>
+
+                <div class="upcsg-memberpile">
+                    @foreach (var (member, i) in committee.Members.Select((m, i) => (m, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 60)">
+                            <MemberCard Member="member" />
+                        </Reveal>
+                    }
+                </div>
             }
         }
     </section>
 
-    @* ---------- Closing CTA ---------- *@
-    <section class="upcsg-section upcsg-band upcsg-cta-band">
-        <p class="upcsg-kicker">Want in?</p>
-        <h2 class="upcsg-title-xl">Become a guilder</h2>
-        <p class="upcsg-lede">
-            Membership is open to all Computer Science majors at UP Cebu, with drives at the
-            start of each semester.
-        </p>
-        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
-            Get in Touch
-        </MudButton>
+    @* ---------- Closing CTA: same treatment as the home page's ---------- *@
+    <section class="upcsg-section upcsg-closing">
+        <div class="upcsg-flare upcsg-closing__flare"></div>
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Want in?</p>
+            <h2 class="upcsg-title-xl">Become a guilder</h2>
+            <p class="upcsg-lede">
+                Membership is open to all Computer Science majors at UP Cebu, with drives at the
+                start of each semester.
+            </p>
+            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
+                Get in Touch
+            </MudButton>
+        </Reveal>
     </section>
 
 </div>
 
 @code {
-    private sealed record ProfileRow(MemberDto Member, bool Flip);
-    private sealed record CommitteeGroup(string Name, List<ProfileRow> Rows);
+    private sealed record CommitteeGroup(string Name, List<MemberDto> Members);
 
-    private List<ProfileRow> _facultyRows = [];
+    private List<MemberDto> _faculty = [];
     private List<CommitteeGroup> _committees = [];
     private int _execCount;
+    private int _facultyCount;
+    private bool _loading = true;
+
+    private static readonly string[] Ticker =
+    [
+        "Academic support", "Competitions", "Industry nights", "Committees",
+        "Socials", "Mentoring", "UP Cebu", "Computer Science",
+    ];
 
     protected override async Task OnInitializedAsync()
     {
         var members = await MemberService.GetMembersAsync();
 
-        // One running flag across the whole roster, so the alternation never breaks
-        // at a section or committee boundary.
-        var flip = false;
-
-        foreach (var member in members
+        _faculty = [.. members
             .Where(m => m.Category == MemberCategory.Faculty)
-            .OrderBy(m => m.DisplayOrder))
-        {
-            _facultyRows.Add(new ProfileRow(member, flip));
-            flip = !flip;
-        }
+            .OrderBy(m => m.DisplayOrder)];
+
+        _facultyCount = _faculty.Count;
 
         var exeCom = members
             .Where(m => m.Category == MemberCategory.ExeCom)
@@ -129,16 +195,10 @@
         _execCount = exeCom.Count;
 
         // GroupBy keeps first-seen key order, so committees follow DisplayOrder.
-        foreach (var group in exeCom.GroupBy(m => m.Committee ?? "Other"))
-        {
-            var rows = new List<ProfileRow>();
-            foreach (var member in group)
-            {
-                rows.Add(new ProfileRow(member, flip));
-                flip = !flip;
-            }
+        _committees = [.. exeCom
+            .GroupBy(m => string.IsNullOrWhiteSpace(m.Committee) ? "Other" : m.Committee)
+            .Select(g => new CommitteeGroup(g.Key, [.. g]))];
 
-            _committees.Add(new CommitteeGroup(group.Key, rows));
-        }
+        _loading = false;
     }
 }

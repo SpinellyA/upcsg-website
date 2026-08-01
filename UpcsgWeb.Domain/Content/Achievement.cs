@@ -16,9 +16,9 @@ public class Achievement : AggregateRoot
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    public static Achievement Record(string title, string description, int year, string? category)
+    public static Achievement Create(string title, string description, int year, string? category)
     {
-        var achievement = new Achievement();
+        var achievement = new Achievement { Id = Guid.CreateVersion7() };
         achievement.Update(title, description, year, category, null);
         return achievement;
     }

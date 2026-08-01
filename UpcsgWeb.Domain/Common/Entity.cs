@@ -3,15 +3,18 @@ namespace UpcsgWeb.Domain.Common;
 /// <summary>
 /// Identity-based equality: two entities are the same if their ids match.
 ///
-/// Transient entities (Id == 0, not yet persisted) fall back to reference equality.
-/// Without that, a new entity isn't equal to itself, and List.Remove silently fails
-/// to find it — which is exactly how removing an unsaved cart line would break.
+/// Ids are version-7 GUIDs assigned by the domain in Create, not by the database. An
+/// entity therefore has identity the moment it exists, so a child added to an aggregate
+/// can be compared, found and removed before anything is saved — which database-assigned
+/// integers could not do, and which is exactly how removing an unsaved line used to
+/// break. Version 7 is time-ordered, so it still indexes well as a primary key.
 /// </summary>
 public abstract class Entity
 {
-    public int Id { get; protected set; }
+    public Guid Id { get; protected set; }
 
-    private bool IsTransient => Id == 0;
+    /// <summary>Only EF's parameterless constructor should ever leave this unset.</summary>
+    private bool IsTransient => Id == Guid.Empty;
 
     public override bool Equals(object? obj)
     {

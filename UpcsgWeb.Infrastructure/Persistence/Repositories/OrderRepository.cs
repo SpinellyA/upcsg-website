@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Orders;
 
 namespace UpcsgWeb.Infrastructure.Persistence.Repositories;
@@ -13,7 +13,7 @@ public class OrderRepository(UpcsgDbContext db) : Repository<Order>(db), IOrderR
     protected override IQueryable<Order> ApplyDefaultOrder(IQueryable<Order> query) =>
         query.OrderByDescending(o => o.PlacedAt);
 
-    public async Task<IReadOnlyList<Order>> GetForUserAsync(int userId, CancellationToken ct = default) =>
+    public async Task<IReadOnlyList<Order>> GetForUserAsync(Guid userId, CancellationToken ct = default) =>
         await ReadQuery
             .Where(o => o.UserId == userId)
             .OrderByDescending(o => o.PlacedAt)

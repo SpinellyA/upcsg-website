@@ -11,6 +11,9 @@ public class GuildEventConfiguration : IEntityTypeConfiguration<GuildEvent>
         builder.ToTable("Events");
         builder.HasKey(e => e.Id);
 
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(e => e.Id).ValueGeneratedNever();
+
         builder.Property(e => e.Title).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Location).HasMaxLength(200);
         builder.Property(e => e.Description).HasMaxLength(4000);

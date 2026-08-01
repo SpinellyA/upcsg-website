@@ -12,6 +12,9 @@ public class MerchVariantConfiguration : IEntityTypeConfiguration<MerchVariant>
         builder.ToTable("MerchVariants");
         builder.HasKey(v => v.Id);
 
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(v => v.Id).ValueGeneratedNever();
+
         builder.Property(v => v.Name).HasMaxLength(120).IsRequired();
         builder.Property(v => v.Description).HasMaxLength(2000);
 

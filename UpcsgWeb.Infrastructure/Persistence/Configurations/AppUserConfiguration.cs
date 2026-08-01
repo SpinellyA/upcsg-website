@@ -11,6 +11,9 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.ToTable("Users");
         builder.HasKey(u => u.Id);
 
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(u => u.Id).ValueGeneratedNever();
+
         builder.Property(u => u.GoogleSubject).HasMaxLength(100).IsRequired();
         builder.Property(u => u.Email).HasMaxLength(320).IsRequired();
         builder.Property(u => u.Name).HasMaxLength(200).IsRequired();

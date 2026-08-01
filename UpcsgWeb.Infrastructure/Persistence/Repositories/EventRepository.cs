@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Content;
 
 namespace UpcsgWeb.Infrastructure.Persistence.Repositories;

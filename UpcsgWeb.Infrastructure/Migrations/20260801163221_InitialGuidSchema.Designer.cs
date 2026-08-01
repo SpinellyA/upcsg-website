@@ -13,8 +13,8 @@ using UpcsgWeb.Infrastructure.Persistence;
 namespace UpcsgWeb.Infrastructure.Migrations
 {
     [DbContext(typeof(UpcsgDbContext))]
-    [Migration("20260727135131_SiteSettings")]
-    partial class SiteSettings
+    [Migration("20260801163221_InitialGuidSchema")]
+    partial class InitialGuidSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,17 +28,14 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Carts.Cart", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -50,17 +47,14 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Carts.CartLine", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("CartId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("MerchItemId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MerchItemId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -78,11 +72,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Content.Achievement", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Category")
                         .HasMaxLength(100)
@@ -120,11 +111,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Content.GuildEvent", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -166,11 +154,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Content.Member", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Bio")
                         .HasMaxLength(4000)
@@ -221,11 +206,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Merch.MerchItem", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -235,11 +217,13 @@ namespace UpcsgWeb.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<string>("ImageUrl")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
                     b.Property<bool>("InStock")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsOnSale")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPreorder")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
@@ -247,26 +231,72 @@ namespace UpcsgWeb.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<DateTime?>("PreorderClosesAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("SalePercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.PrimitiveCollection<List<string>>("_variants")
+                    b.PrimitiveCollection<List<string>>("_photoUrls")
                         .IsRequired()
                         .HasColumnType("text[]")
-                        .HasColumnName("Variants");
+                        .HasColumnName("PhotoUrls");
 
                     b.HasKey("Id");
 
                     b.ToTable("MerchItems", (string)null);
                 });
 
-            modelBuilder.Entity("UpcsgWeb.Domain.Orders.Order", b =>
+            modelBuilder.Entity("UpcsgWeb.Domain.Merch.MerchVariant", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("DisplayOrder")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("MerchItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<int>("Stock")
+                        .HasColumnType("integer");
+
+                    b.PrimitiveCollection<List<string>>("_photoUrls")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("PhotoUrls");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MerchItemId", "DisplayOrder");
+
+                    b.HasIndex("MerchItemId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("MerchVariants", (string)null);
+                });
+
+            modelBuilder.Entity("UpcsgWeb.Domain.Orders.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CancellationReason")
                         .HasMaxLength(500)
@@ -283,6 +313,13 @@ namespace UpcsgWeb.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("RefundReference")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("RefundSettledAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -291,8 +328,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -305,25 +342,31 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Orders.OrderLine", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ItemName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("MerchItemId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MerchItemId")
+                        .HasColumnType("uuid");
 
-                    b.Property<int>("OrderId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ShortfallReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Variant")
                         .HasMaxLength(100)
@@ -340,11 +383,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Settings.SiteSettings", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("EventsMonth")
                         .HasColumnType("integer");
@@ -362,11 +402,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
             modelBuilder.Entity("UpcsgWeb.Domain.Users.AppUser", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -421,8 +458,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
                 {
                     b.OwnsOne("UpcsgWeb.Domain.ValueObjects.Money", "Price", b1 =>
                         {
-                            b1.Property<int>("MerchItemId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("MerchItemId")
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(10, 2)
@@ -447,15 +484,74 @@ namespace UpcsgWeb.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("UpcsgWeb.Domain.Merch.MerchVariant", b =>
+                {
+                    b.HasOne("UpcsgWeb.Domain.Merch.MerchItem", null)
+                        .WithMany("_variants")
+                        .HasForeignKey("MerchItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("UpcsgWeb.Domain.ValueObjects.Money", "Price", b1 =>
+                        {
+                            b1.Property<Guid>("MerchVariantId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("numeric(10,2)")
+                                .HasColumnName("PriceAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("PriceCurrency");
+
+                            b1.HasKey("MerchVariantId");
+
+                            b1.ToTable("MerchVariants");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MerchVariantId");
+                        });
+
+                    b.Navigation("Price")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("UpcsgWeb.Domain.Orders.Order", b =>
                 {
+                    b.OwnsOne("UpcsgWeb.Domain.ValueObjects.Money", "AmountPaid", b1 =>
+                        {
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(10, 2)
+                                .HasColumnType("numeric(10,2)")
+                                .HasColumnName("AmountPaidAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("AmountPaidCurrency");
+
+                            b1.HasKey("OrderId");
+
+                            b1.ToTable("Orders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("OrderId");
+                        });
+
                     b.OwnsOne("UpcsgWeb.Domain.Orders.PaymentReceipt", "Receipt", b1 =>
                         {
-                            b1.Property<int>("OrderId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("OrderId")
+                                .HasColumnType("uuid");
 
                             b1.Property<string>("ReferenceNumber")
-                                .IsRequired()
                                 .HasMaxLength(50)
                                 .HasColumnType("character varying(50)")
                                 .HasColumnName("ReceiptReference");
@@ -477,6 +573,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
                                 .HasForeignKey("OrderId");
                         });
 
+                    b.Navigation("AmountPaid");
+
                     b.Navigation("Receipt");
                 });
 
@@ -490,8 +588,8 @@ namespace UpcsgWeb.Infrastructure.Migrations
 
                     b.OwnsOne("UpcsgWeb.Domain.ValueObjects.Money", "UnitPrice", b1 =>
                         {
-                            b1.Property<int>("OrderLineId")
-                                .HasColumnType("integer");
+                            b1.Property<Guid>("OrderLineId")
+                                .HasColumnType("uuid");
 
                             b1.Property<decimal>("Amount")
                                 .HasPrecision(10, 2)
@@ -519,6 +617,11 @@ namespace UpcsgWeb.Infrastructure.Migrations
             modelBuilder.Entity("UpcsgWeb.Domain.Carts.Cart", b =>
                 {
                     b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("UpcsgWeb.Domain.Merch.MerchItem", b =>
+                {
+                    b.Navigation("_variants");
                 });
 
             modelBuilder.Entity("UpcsgWeb.Domain.Orders.Order", b =>

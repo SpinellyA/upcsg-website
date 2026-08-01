@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Infrastructure.Persistence.Repositories;
@@ -30,7 +30,7 @@ public abstract class Repository<T>(UpcsgDbContext db) : IRepository<T>
     /// <summary>Default list order. Override where the domain has a natural one.</summary>
     protected virtual IQueryable<T> ApplyDefaultOrder(IQueryable<T> query) => query.OrderBy(e => e.Id);
 
-    public virtual async Task<T?> GetByIdAsync(int id, CancellationToken ct = default) =>
+    public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         await Query.FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public virtual async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default) =>

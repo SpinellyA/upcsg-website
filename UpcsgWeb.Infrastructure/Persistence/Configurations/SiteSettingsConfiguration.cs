@@ -10,5 +10,8 @@ public class SiteSettingsConfiguration : IEntityTypeConfiguration<SiteSettings>
     {
         builder.ToTable("SiteSettings");
         builder.HasKey(s => s.Id);
+
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(s => s.Id).ValueGeneratedNever();
     }
 }

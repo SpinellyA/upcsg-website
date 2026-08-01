@@ -1,21 +1,29 @@
 using Microsoft.EntityFrameworkCore;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Carts;
+using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Content;
 using UpcsgWeb.Domain.Merch;
 using UpcsgWeb.Domain.Orders;
 using UpcsgWeb.Domain.Settings;
 using UpcsgWeb.Domain.Users;
+using UpcsgWeb.Infrastructure.Persistence.Repositories;
 
 namespace UpcsgWeb.Infrastructure.Persistence;
 
 /// <summary>
 /// The DbContext doubles as the unit of work — its change tracker already is one, so
 /// wrapping it in another transaction object would add indirection without adding
-/// behaviour. Implementing IUnitOfWork keeps that fact behind a domain-owned interface.
+/// behaviour. It also serves the read side, so a query handler can project without
+/// going near a repository.
+///
+/// Both faces sit behind application-owned interfaces, so nothing above this layer
+/// ever sees EF Core.
 /// </summary>
-public class UpcsgDbContext(DbContextOptions<UpcsgDbContext> options)
-    : DbContext(options), IUnitOfWork
+public class UpcsgDbContext(
+    DbContextOptions<UpcsgDbContext> options,
+    IDomainEventDispatcher? dispatcher = null)
+    : DbContext(options), IUnitOfWork, IApplicationDbContext
 {
     public DbSet<Cart> Carts => Set<Cart>();
     public DbSet<Order> Orders => Set<Order>();
@@ -26,6 +34,55 @@ public class UpcsgDbContext(DbContextOptions<UpcsgDbContext> options)
     public DbSet<Achievement> Achievements => Set<Achievement>();
     public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
 
+    // --- IUnitOfWork -------------------------------------------------------------------
+    //
+    // Built lazily and cached so every repository in a request shares this context, which
+    // is what lets their staged changes commit together.
+
+    private ICartRepository? _cartRepository;
+    private IOrderRepository? _orderRepository;
+    private IMerchRepository? _merchRepository;
+    private IUserRepository? _userRepository;
+    private IEventRepository? _eventRepository;
+    private IMemberRepository? _memberRepository;
+    private IAchievementRepository? _achievementRepository;
+    private ISiteSettingsRepository? _siteSettingsRepository;
+
+    ICartRepository IUnitOfWork.Carts => _cartRepository ??= new CartRepository(this);
+    IOrderRepository IUnitOfWork.Orders => _orderRepository ??= new OrderRepository(this);
+    IMerchRepository IUnitOfWork.Merch => _merchRepository ??= new MerchRepository(this);
+    IUserRepository IUnitOfWork.Users => _userRepository ??= new UserRepository(this);
+    IEventRepository IUnitOfWork.Events => _eventRepository ??= new EventRepository(this);
+    IMemberRepository IUnitOfWork.Members => _memberRepository ??= new MemberRepository(this);
+    IAchievementRepository IUnitOfWork.Achievements => _achievementRepository ??= new AchievementRepository(this);
+    ISiteSettingsRepository IUnitOfWork.SiteSettings => _siteSettingsRepository ??= new SiteSettingsRepository(this);
+
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UpcsgDbContext).Assembly);
+
+    /// <summary>
+    /// Saves, then publishes whatever the aggregates raised.
+    ///
+    /// The order is the whole point. Dispatching first would let a handler act on a
+    /// change that then failed to commit; dispatching after means every event describes
+    /// something that actually happened. Events are collected before the save because
+    /// clearing them is part of dispatch.
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var roots = ChangeTracker
+            .Entries<AggregateRoot>()
+            .Select(entry => entry.Entity)
+            .Where(root => root.DomainEvents.Count > 0)
+            .ToList();
+
+        var written = await base.SaveChangesAsync(cancellationToken);
+
+        if (dispatcher is not null && roots.Count > 0)
+        {
+            await dispatcher.DispatchAsync(roots, cancellationToken);
+        }
+
+        return written;
+    }
 }

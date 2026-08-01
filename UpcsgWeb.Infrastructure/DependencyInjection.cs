@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Abstractions;
 using UpcsgWeb.Infrastructure.Media;
 using UpcsgWeb.Infrastructure.Persistence;
@@ -24,6 +25,14 @@ public static class DependencyInjection
         // staged changes commit together when the unit of work saves.
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<UpcsgDbContext>());
 
+        // The read side of the same context. Query handlers project from it directly
+        // rather than loading aggregates they have no intention of saving.
+        services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<UpcsgDbContext>());
+
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+        // Still registered individually: handlers reach them through IUnitOfWork, but
+        // anything that only reads one aggregate can take the repository on its own.
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IMerchRepository, MerchRepository>();

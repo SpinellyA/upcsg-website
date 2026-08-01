@@ -11,6 +11,9 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.ToTable("Members");
         builder.HasKey(m => m.Id);
 
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(m => m.Id).ValueGeneratedNever();
+
         builder.Property(m => m.Name).HasMaxLength(200).IsRequired();
         builder.Property(m => m.Role).HasMaxLength(150).IsRequired();
         builder.Property(m => m.Committee).HasMaxLength(150);

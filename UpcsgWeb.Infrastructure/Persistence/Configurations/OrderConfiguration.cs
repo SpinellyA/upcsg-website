@@ -12,6 +12,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.ToTable("Orders");
         builder.HasKey(o => o.Id);
 
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(o => o.Id).ValueGeneratedNever();
+
         // Stored as text. An int ordinal would silently remap every existing row if a
         // stage were ever inserted into the middle of the enum.
         builder.Property(o => o.Status)

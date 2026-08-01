@@ -11,6 +11,9 @@ public class OrderLineConfiguration : IEntityTypeConfiguration<OrderLine>
         builder.ToTable("OrderLines");
         builder.HasKey(l => l.Id);
 
+        // Create assigns the id, so the store must never substitute one.
+        builder.Property(l => l.Id).ValueGeneratedNever();
+
         builder.Property(l => l.ItemName).HasMaxLength(200).IsRequired();
         builder.Property(l => l.Variant).HasMaxLength(100);
         builder.Property(l => l.Quantity).IsRequired();

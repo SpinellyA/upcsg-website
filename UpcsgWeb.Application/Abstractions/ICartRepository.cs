@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Carts;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 public interface ICartRepository : IRepository<Cart>
 {

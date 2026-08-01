@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Settings;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 public interface ISiteSettingsRepository : IRepository<SiteSettings>
 {

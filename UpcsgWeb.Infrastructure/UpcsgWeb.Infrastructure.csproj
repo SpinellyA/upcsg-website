@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UpcsgWeb.Domain\UpcsgWeb.Domain.csproj" />
+    <ProjectReference Include="..\UpcsgWeb.Application\UpcsgWeb.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

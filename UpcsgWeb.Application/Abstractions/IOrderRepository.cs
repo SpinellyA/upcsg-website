@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Orders;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 public interface IOrderRepository : IRepository<Order>
 {

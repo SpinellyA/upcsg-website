@@ -22,6 +22,7 @@
     <ProjectReference Include="..\UpcsgWeb.Shared\UpcsgWeb.Shared.csproj" />
     <ProjectReference Include="..\UpcsgWeb.Domain\UpcsgWeb.Domain.csproj" />
     <ProjectReference Include="..\UpcsgWeb.Infrastructure\UpcsgWeb.Infrastructure.csproj" />
+    <ProjectReference Include="..\UpcsgWeb.Application\UpcsgWeb.Application.csproj" />
   </ItemGroup>
 
 </Project>

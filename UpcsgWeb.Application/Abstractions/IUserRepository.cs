@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Users;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 public interface IUserRepository : IRepository<AppUser>
 {

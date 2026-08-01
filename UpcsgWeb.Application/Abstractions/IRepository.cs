@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Common;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 /// <summary>
 /// The CRUD every aggregate needs. Specific repositories inherit this and add only the
@@ -18,7 +18,7 @@ namespace UpcsgWeb.Domain.Abstractions;
 public interface IRepository<T> where T : AggregateRoot
 {
     /// <summary>Tracked, so the result can be mutated and saved.</summary>
-    Task<T?> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     /// <summary>Read-only; not tracked.</summary>
     Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default);

@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Content;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 public interface IEventRepository : IRepository<GuildEvent>
 {

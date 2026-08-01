@@ -1,6 +1,6 @@
 using UpcsgWeb.Domain.Content;
 
-namespace UpcsgWeb.Domain.Abstractions;
+namespace UpcsgWeb.Application.Abstractions;
 
 /// <summary>
 /// Nothing beyond the generic CRUD: the About page orders the roster itself, and

@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="UpcsgWeb.Api/UpcsgWeb.Api.csproj" Id="00f9058d-0475-4d55-97d3-a425018c3a6f" />
+  <Project Path="UpcsgWeb.Application/UpcsgWeb.Application.csproj" />
   <Project Path="UpcsgWeb.Domain.Tests/UpcsgWeb.Domain.Tests.csproj" />
   <Project Path="UpcsgWeb.Domain/UpcsgWeb.Domain.csproj" />
   <Project Path="UpcsgWeb.FrontEnd/UpcsgWeb.FrontEnd.csproj" />

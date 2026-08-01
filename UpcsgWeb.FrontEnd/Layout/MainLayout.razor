@@ -48,10 +48,16 @@
                              ListClass="pa-0"
                              AriaLabel="Your account"
                              Class="ml-2">
-                        @* Named so MudMenu's own context doesn't shadow the AuthorizeView
+                        @* Custom activator content is not wired for you — MudBlazor only
+                           auto-wires its own default button — so the avatar has to call
+                           the menu context itself. Without this the wrapper's keyboard
+                           handler works and clicking does nothing at all.
+
+                           Named context so MudMenu's own doesn't shadow the AuthorizeView
                            one this markup needs. *@
                         <ActivatorContent Context="menu">
-                            <MudAvatar Class="upcsg-useravatar" Size="Size.Medium">
+                            <MudAvatar Class="upcsg-useravatar" Size="Size.Medium"
+                                       @onclick="@menu.ToggleAsync">
                                 @Initials(context.User.Identity?.Name)
                             </MudAvatar>
                         </ActivatorContent>

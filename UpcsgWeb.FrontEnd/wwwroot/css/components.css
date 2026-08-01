@@ -1,0 +1,513 @@
+/* ==========================================================================
+   Reusable presentation kit
+   --------------------------------------------------------------------------
+   Styles for the components under Components/ that any public page can reuse.
+   Kept out of brand.css, which is already 4,000 lines of page-specific rules
+   and is where this would immediately get lost.
+
+   Everything here reads tokens from brand.css :root and defines no colours of
+   its own, so a palette change still happens in exactly one place.
+   ========================================================================== */
+
+/* --- Reveal: scroll-triggered entrances ---------------------------------- */
+
+/* The hidden starting state is deliberately scoped to .upcsg-motion, which the
+   inline script in index.html sets only when the browser supports the observer,
+   and removes again if the module fails to load. Unscoped, a blocked script would
+   leave every section below the hero permanently invisible — the animation is
+   decoration, so its absence must cost nothing. */
+.upcsg-motion .upcsg-reveal {
+    opacity: 0;
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+}
+
+.upcsg-motion .upcsg-reveal--up { transform: translateY(28px); }
+.upcsg-motion .upcsg-reveal--fade { transform: none; }
+.upcsg-motion .upcsg-reveal--scale { transform: scale(0.95); }
+.upcsg-motion .upcsg-reveal--left { transform: translateX(-32px); }
+.upcsg-motion .upcsg-reveal--right { transform: translateX(32px); }
+
+.upcsg-motion .upcsg-reveal.is-revealed {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-motion .upcsg-reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* --- CosmicImage --------------------------------------------------------- */
+
+.upcsg-cosmic {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    border-radius: var(--upcsg-radius);
+    background: rgba(22, 17, 58, 0.6);
+    isolation: isolate;
+}
+
+.upcsg-cosmic__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* The generated plate. Two brand hues on an angle, with a soft light source so it
+   reads as depth rather than as a flat swatch. */
+.upcsg-cosmic--plate {
+    background-image:
+        radial-gradient(120% 90% at 22% 18%, rgba(246, 255, 233, 0.22), transparent 55%),
+        linear-gradient(
+            var(--plate-angle, 45deg),
+            var(--plate-a, #53257E),
+            var(--plate-b, #290087));
+}
+
+/* Grain over the gradient. Flat gradients look like placeholders; a little noise
+   reads as a printed plate. Pure CSS so it costs no request. */
+.upcsg-cosmic--plate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        repeating-linear-gradient(
+            115deg,
+            rgba(246, 255, 233, 0.05) 0 1px,
+            transparent 1px 4px);
+    opacity: 0.55;
+    pointer-events: none;
+}
+
+.upcsg-cosmic__mark {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+}
+
+.upcsg-cosmic__crest {
+    width: 42%;
+    max-width: 5.5rem;
+    opacity: 0.75;
+    filter: drop-shadow(0 4px 18px rgba(6, 3, 24, 0.5));
+}
+
+.upcsg-cosmic__initials {
+    font-family: var(--upcsg-font-heading);
+    font-weight: 700;
+    font-size: clamp(1.1rem, 4cqi, 2.4rem);
+    letter-spacing: 0.06em;
+    color: var(--upcsg-honeydew-white);
+    text-shadow: 0 2px 14px rgba(6, 3, 24, 0.55);
+}
+
+/* Sized from the plate's own width, so one component works at 44px in a face pile
+   and at 400px in a hero without a size parameter. */
+.upcsg-cosmic { container-type: inline-size; }
+
+.upcsg-cosmic__badge {
+    position: absolute;
+    top: 0.7rem;
+    left: 0.7rem;
+    z-index: 2;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(6, 3, 24, 0.72);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(246, 255, 233, 0.16);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-cosmic__overlay {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 1.4rem 1.1rem 1rem;
+    background: linear-gradient(to top, rgba(6, 3, 24, 0.9), transparent);
+}
+
+/* --- SectionHeading ------------------------------------------------------ */
+
+.upcsg-sechead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.upcsg-sechead__text { max-width: 46rem; }
+
+.upcsg-sechead__lede { margin-top: 0.85rem; margin-bottom: 0; }
+
+.upcsg-sechead__action { flex-shrink: 0; }
+
+.upcsg-title-xl--center { text-align: center; }
+
+.upcsg-star--tiny {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-right: 0.4rem;
+    vertical-align: baseline;
+}
+
+/* --- StatCounter --------------------------------------------------------- */
+
+.upcsg-stat__suffix { font-size: 0.6em; vertical-align: super; }
+
+.upcsg-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* --- EventCard ----------------------------------------------------------- */
+
+.upcsg-eventcard {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    background: linear-gradient(180deg, rgba(82, 38, 87, 0.5), rgba(22, 17, 58, 0.75));
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.upcsg-eventcard:hover,
+.upcsg-eventcard:focus-visible {
+    transform: translateY(-6px);
+    border-color: rgba(204, 174, 222, 0.45);
+    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+}
+
+.upcsg-eventcard__poster {
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+}
+
+.upcsg-eventcard--compact .upcsg-eventcard__poster { display: none; }
+
+.upcsg-eventcard__body {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+}
+
+.upcsg-eventcard__text { flex: 1; min-width: 0; }
+
+.upcsg-eventcard__title {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-eventcard__meta {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-eventcard__arrow {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    color: var(--upcsg-liquid-chrome-gold);
+    transition: transform 0.3s ease;
+}
+
+.upcsg-eventcard:hover .upcsg-eventcard__arrow { transform: translateX(5px); }
+
+/* --- MerchCard ----------------------------------------------------------- */
+
+.upcsg-merchcard {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.upcsg-merchcard:hover,
+.upcsg-merchcard:focus-visible { transform: translateY(-6px); }
+
+.upcsg-merchcard__thumb {
+    aspect-ratio: 1;
+    border: var(--upcsg-hairline);
+    transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.upcsg-merchcard:hover .upcsg-merchcard__thumb {
+    border-color: rgba(246, 200, 117, 0.5);
+    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+}
+
+.upcsg-merchcard__body { padding: 0.9rem 0.2rem 0; }
+
+.upcsg-merchcard__name {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
+    font-size: 0.98rem;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-merchcard__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.upcsg-merchcard__from { color: var(--upcsg-periwinkle); font-size: 0.8rem; }
+.upcsg-merchcard__now { color: var(--upcsg-liquid-chrome-gold); font-weight: 600; }
+.upcsg-merchcard__was { color: var(--upcsg-periwinkle); text-decoration: line-through; font-size: 0.82rem; }
+.upcsg-merchcard__gone { color: var(--upcsg-periwinkle); }
+
+/* --- FacePile ------------------------------------------------------------ */
+
+.upcsg-facepile {
+    display: flex;
+    align-items: center;
+    padding-left: 0.6rem;
+}
+
+.upcsg-facepile__face,
+.upcsg-facepile__more {
+    width: clamp(2.6rem, 6vw, 3.4rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    margin-left: -0.6rem;
+    border: 2px solid var(--upcsg-midnight-indigo);
+    box-shadow: var(--upcsg-shadow-sm);
+
+    /* Later faces sit on top of earlier ones, so the row overlaps in reading order
+       instead of the last one being buried. */
+    z-index: calc(20 - var(--face-index, 0));
+    position: relative;
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.upcsg-facepile__face:hover {
+    transform: translateY(-6px) scale(1.08);
+    z-index: 30;
+}
+
+.upcsg-facepile__more {
+    display: grid;
+    place-items: center;
+    background: rgba(82, 38, 87, 0.9);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--upcsg-periwinkle);
+}
+
+/* --- Marquee ------------------------------------------------------------- */
+
+.upcsg-marquee {
+    overflow: hidden;
+    padding: 1.1rem 0;
+    border-top: var(--upcsg-hairline);
+    border-bottom: var(--upcsg-hairline);
+
+    /* Fades at both ends so items enter and leave instead of being clipped. */
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.upcsg-marquee__track {
+    display: flex;
+    width: max-content;
+    animation: upcsg-marquee-scroll var(--marquee-duration, 40s) linear infinite;
+}
+
+.upcsg-marquee__run { display: flex; align-items: center; }
+
+.upcsg-marquee__item {
+    padding: 0 1.1rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-marquee__sep { flex-shrink: 0; opacity: 0.6; }
+
+.upcsg-marquee:hover .upcsg-marquee__track { animation-play-state: paused; }
+
+@keyframes upcsg-marquee-scroll {
+    from { transform: translateX(0); }
+
+    /* Exactly half: the track holds two identical runs, so at -50% the second sits
+       where the first began and the loop has no seam. */
+    to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-marquee__track { animation: none; }
+}
+
+.upcsg-marquee--hero {
+    border-top: none;
+    background: linear-gradient(180deg, rgba(22, 17, 58, 0.9), rgba(22, 17, 58, 0));
+}
+
+/* --- Page layout: grids, features, empties ------------------------------- */
+
+.upcsg-cardgrid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+/* auto-fit rather than a fixed count: with two merch items the row fills the width
+   instead of leaving two dead columns, which is the state the store is usually in. */
+.upcsg-cardgrid--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
+.upcsg-cardgrid--4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+
+.upcsg-skeleton {
+    border-radius: var(--upcsg-radius);
+    background-color: rgba(82, 38, 87, 0.35) !important;
+}
+
+/* Feature band: text one side, a large plate the other. Alternating the sides is what
+   gives the page a rhythm the old stack of identical bands never had. */
+.upcsg-feature {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+}
+
+.upcsg-feature--reverse .upcsg-feature__visual { order: -1; }
+
+/* Below the breakpoint the plate always follows the text, whichever side it takes on
+   desktop — a picture above its own heading reads as belonging to the section before. */
+@media (max-width: 62rem) {
+    .upcsg-feature--reverse .upcsg-feature__visual { order: 0; }
+}
+
+.upcsg-feature__plate {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    box-shadow: var(--upcsg-shadow-lg);
+}
+
+.upcsg-feature__plate-role {
+    margin: 0;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-feature__plate-name {
+    margin: 0.2rem 0 0;
+    font-family: var(--upcsg-font-display);
+    font-size: 1.5rem;
+    line-height: 1.2;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-statrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    margin-top: 2.25rem;
+    padding-top: 1.75rem;
+    border-top: var(--upcsg-hairline);
+}
+
+.upcsg-empty {
+    display: grid;
+    justify-items: center;
+    gap: 1rem;
+    padding: 3.5rem 1.5rem;
+    border: 1px dashed rgba(246, 255, 233, 0.16);
+    border-radius: var(--upcsg-radius);
+    text-align: center;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-empty img { width: 3.5rem; opacity: 0.4; }
+.upcsg-empty p { margin: 0; max-width: 32rem; }
+
+/* Closing CTA: centred, with its own glow, so the page ends on a swell rather than on
+   another band identical to the four above it. */
+.upcsg-closing {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    background: radial-gradient(120% 140% at 50% 0%, rgba(82, 38, 87, 0.75), rgba(22, 17, 58, 0.4));
+}
+
+.upcsg-closing__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 0.4rem;
+    padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem;
+}
+
+.upcsg-closing__inner .upcsg-lede { max-width: 40rem; margin-bottom: 1.75rem; }
+
+.upcsg-closing__flare {
+    position: absolute;
+    top: -40%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(38rem, 90%);
+    aspect-ratio: 1;
+    background: radial-gradient(circle, rgba(162, 83, 184, 0.5), transparent 62%);
+    pointer-events: none;
+}
+
+/* Hero drift: --scroll-depth is published by motion.js, so the parallax is described
+   here rather than by a script writing inline styles every frame. */
+.upcsg-hero__inner {
+    transform: translateY(calc(var(--scroll-depth, 0) * 42px));
+    opacity: calc(1 - var(--scroll-depth, 0) * 0.85);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-hero__inner { transform: none; opacity: 1; }
+}

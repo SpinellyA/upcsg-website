@@ -1,0 +1,147 @@
+@* The one answer to "show this picture, or something deliberate if there isn't one."
+
+   Most guild content has no photo yet: one officer in eleven, one event in five, no Hall
+   of Fame entries at all. A grey box at that ratio makes the whole site look unfinished,
+   so the empty state gets a real design — a nebula plate derived from the subject's own
+   name, plus the crest and its initials.
+
+   Deriving the gradient from the name matters: the same officer is the same colour on
+   every page and across reloads, so it reads as their plate rather than as random noise.
+   Random colours would shimmer on each render and look like a bug. *@
+
+<div class="upcsg-cosmic @(HasImage ? null : "upcsg-cosmic--plate") @Class"
+     style="@PlateStyle @Style">
+
+    @if (HasImage)
+    {
+        @* CMS-supplied URLs go stale. onerror is cleared on the first failure so a
+           missing fallback cannot loop, and the plate underneath is already painted —
+           a dead link degrades to the designed empty state, not to a hole. *@
+        <img class="upcsg-cosmic__img"
+             src="@Src"
+             alt="@Alt"
+             loading="@(Eager ? "eager" : "lazy")"
+             decoding="async"
+             onerror="this.onerror=null; this.remove();" />
+    }
+    else
+    {
+        <span class="upcsg-cosmic__mark" aria-hidden="true">
+            @if (ShowInitials && !string.IsNullOrWhiteSpace(Seed))
+            {
+                <span class="upcsg-cosmic__initials">@Initials(Seed)</span>
+            }
+            else
+            {
+                <img class="upcsg-cosmic__crest" src="img/upcsg-crest.png" alt="" />
+            }
+        </span>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(Badge))
+    {
+        <span class="upcsg-cosmic__badge">@Badge</span>
+    }
+
+    @if (Overlay is not null)
+    {
+        <div class="upcsg-cosmic__overlay">@Overlay</div>
+    }
+</div>
+
+@code {
+    /// <summary>The photo to show. Blank or dead falls through to the plate.</summary>
+    [Parameter] public string? Src { get; set; }
+
+    [Parameter] public string? Alt { get; set; }
+
+    /// <summary>
+    /// What the plate's colours are derived from — usually the subject's name or title.
+    /// Also the source of the initials.
+    /// </summary>
+    [Parameter] public string? Seed { get; set; }
+
+    /// <summary>Initials suit people; the crest suits everything else.</summary>
+    [Parameter] public bool ShowInitials { get; set; }
+
+    /// <summary>Corner label: a year, a price, a status.</summary>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>Content laid over the bottom of the image, e.g. a title on a poster.</summary>
+    [Parameter] public RenderFragment? Overlay { get; set; }
+
+    /// <summary>Set on above-the-fold images so they are not lazy-loaded.</summary>
+    [Parameter] public bool Eager { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public string? Style { get; set; }
+
+    private bool HasImage => !string.IsNullOrWhiteSpace(Src);
+
+    // Brand hues only. Picking freely from the colour wheel would produce plates that
+    // are individually pretty and collectively off-brand.
+    private static readonly string[] Hues =
+    [
+        "#A253B8", // galactic orchid
+        "#53257E", // deep amethyst
+        "#290087", // dark ultramarine
+        "#522657", // stellar plum
+        "#E28D39", // solar flare
+        "#984D24", // burnt nova
+        "#CCAEDE", // cosmic lavender
+        "#F6C875", // liquid chrome gold
+    ];
+
+    private string PlateStyle
+    {
+        get
+        {
+            if (HasImage)
+            {
+                return string.Empty;
+            }
+
+            var hash = StableHash(Seed ?? "upcsg");
+
+            // Two different hues, and an angle off the axis so the plate has direction.
+            var first = Hues[hash % Hues.Length];
+            var second = Hues[(hash / Hues.Length + 3) % Hues.Length];
+            var angle = 20 + (hash % 8) * 20;
+
+            return $"--plate-a: {first}; --plate-b: {second}; --plate-angle: {angle}deg;";
+        }
+    }
+
+    /// <summary>
+    /// FNV-1a rather than string.GetHashCode: .NET randomises string hashing per process,
+    /// so the built-in one would give an officer a different colour on every page load.
+    /// </summary>
+    private static int StableHash(string value)
+    {
+        unchecked
+        {
+            var hash = 2166136261;
+
+            foreach (var c in value)
+            {
+                hash = (hash ^ c) * 16777619;
+            }
+
+            return (int)(hash & 0x7FFFFFFF);
+        }
+    }
+
+    // Skips honorifics so "Dr. Juana Dela Cruz" reads JD rather than DJ.
+    private static string Initials(string name)
+    {
+        var parts = name
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(p => char.IsLetter(p[0]) && !p.EndsWith('.'))
+            .ToArray();
+
+        return parts.Length == 0
+            ? "?"
+            : string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    }
+}

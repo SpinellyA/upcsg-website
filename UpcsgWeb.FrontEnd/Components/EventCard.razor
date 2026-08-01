@@ -1,0 +1,45 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* One event, as a poster card. Used by the home strip and the events page, so the two
+   cannot drift.
+
+   Times are read as Cebu wall-clock. Stored instants are UTC, and rendering them raw put
+   a 6 PM event at 10 AM — and on the wrong day either side of midnight. *@
+
+<a class="upcsg-eventcard @(Compact ? "upcsg-eventcard--compact" : null)"
+   href="@($"events/{Event.Id}")">
+
+    <CosmicImage Src="@Event.PosterUrl"
+                 Alt="@Event.Title"
+                 Seed="@Event.Title"
+                 Class="upcsg-eventcard__poster" />
+
+    <span class="upcsg-eventcard__body">
+        <span class="upcsg-datechip">
+            <span class="upcsg-datechip__month">@Starts.ToString("MMM")</span>
+            <span class="upcsg-datechip__day">@Starts.Day</span>
+        </span>
+
+        <span class="upcsg-eventcard__text">
+            <span class="upcsg-eventcard__title">@Event.Title</span>
+            <span class="upcsg-eventcard__meta">
+                @Starts.ToString("h:mm tt")
+                @if (!string.IsNullOrWhiteSpace(Event.Location))
+                {
+                    <text> &middot; @Event.Location</text>
+                }
+            </span>
+        </span>
+
+        <span class="upcsg-eventcard__arrow" aria-hidden="true">&rarr;</span>
+    </span>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public EventDto Event { get; set; } = default!;
+
+    /// <summary>Drops the poster, for dense lists where the row is the point.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    private DateTime Starts => Event.StartDateTime.ToLocalTime();
+}

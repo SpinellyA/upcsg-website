@@ -1,0 +1,32 @@
+@* A slow horizontal ticker, used as a rule between sections.
+
+   Items are rendered twice and the track is translated by exactly half its width, which
+   is what makes the loop seamless — at -50% the second copy sits precisely where the
+   first started, so there is no jump to hide.
+
+   The duplicate is aria-hidden: it is the same words again, and a screen reader should
+   read the list once. *@
+
+<div class="upcsg-marquee @Class" role="presentation">
+    <div class="upcsg-marquee__track" style="--marquee-duration: @(DurationSeconds)s;">
+        @for (var pass = 0; pass < 2; pass++)
+        {
+            <div class="upcsg-marquee__run" aria-hidden="@(pass == 1 ? "true" : null)">
+                @foreach (var item in Items)
+                {
+                    <span class="upcsg-marquee__item">@item</span>
+                    <span class="upcsg-star upcsg-star--tiny upcsg-marquee__sep" aria-hidden="true"></span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<string> Items { get; set; } = [];
+
+    /// <summary>One full pass. Slow on purpose: this is texture, not something to read.</summary>
+    [Parameter] public int DurationSeconds { get; set; } = 40;
+
+    [Parameter] public string? Class { get; set; }
+}

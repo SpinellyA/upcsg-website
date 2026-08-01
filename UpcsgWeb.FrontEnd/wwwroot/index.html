@@ -12,10 +12,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300..800;1,300..800&family=Playfair+Display:ital,wght@0,500..900;1,500..900&family=Poppins:wght@400;500;600;700;800&family=Noto+Serif:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
     <link rel="stylesheet" href="css/brand.css" />
+    <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="img/favicon-crest.png" />
     <link href="UpcsgWeb.FrontEnd.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
+
+    <!--
+      Scroll animations are opt-in, not opt-out.
+
+      Elements wrapped in <Reveal> start at opacity 0 and are only shown once the observer
+      reaches them, so if the motion module never runs, every section below the hero stays
+      invisible — a blank page, not a missing flourish. The hidden state is therefore
+      scoped to .upcsg-motion, which is only set here when the browser can actually honour
+      it, and withdrawn again if the module fails to load.
+
+      Inline and before the stylesheet is used so the class is present on the first paint;
+      adding it later would show the content and then hide it, which flashes.
+    -->
+    <script>
+        (function () {
+            if (!('IntersectionObserver' in window)) {
+                return; // Old browser: content stays plainly visible.
+            }
+
+            document.documentElement.classList.add('upcsg-motion');
+
+            // Blocked by an extension, 404, or a syntax error in the module: back out and
+            // let everything show. Generous, because a slow connection is not a failure.
+            window.setTimeout(function () {
+                if (!window.__upcsgMotionReady) {
+                    document.documentElement.classList.remove('upcsg-motion');
+                }
+            }, 6000);
+        })();
+    </script>
 </head>
 
 <body>

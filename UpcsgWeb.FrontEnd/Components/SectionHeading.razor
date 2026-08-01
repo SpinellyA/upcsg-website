@@ -1,0 +1,44 @@
+@* Kicker, title, optional lede and a trailing action.
+
+   This exact block was hand-written in six places on the home page alone and again on
+   every other public page. One component means a change to the section rhythm is one
+   edit, and no two sections can drift apart by accident. *@
+
+<Reveal Variant="Reveal.RevealMotion.Up" Class="@($"upcsg-sechead {Class}")">
+    <div class="upcsg-sechead__text">
+        @if (!string.IsNullOrWhiteSpace(Kicker))
+        {
+            <p class="upcsg-kicker">
+                <span class="upcsg-star upcsg-star--tiny" aria-hidden="true"></span>
+                @Kicker
+            </p>
+        }
+
+        <h2 class="upcsg-title-xl @(Centered ? "upcsg-title-xl--center" : null)">@Title</h2>
+
+        @if (!string.IsNullOrWhiteSpace(Lede))
+        {
+            <p class="upcsg-lede upcsg-sechead__lede">@Lede</p>
+        }
+    </div>
+
+    @if (Action is not null)
+    {
+        <div class="upcsg-sechead__action">@Action</div>
+    }
+</Reveal>
+
+@code {
+    [Parameter] public string? Kicker { get; set; }
+
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    [Parameter] public string? Lede { get; set; }
+
+    /// <summary>Action sits to the right on desktop, and under the title on mobile.</summary>
+    [Parameter] public RenderFragment? Action { get; set; }
+
+    [Parameter] public bool Centered { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+}

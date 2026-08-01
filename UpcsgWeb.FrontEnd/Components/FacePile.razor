@@ -1,0 +1,40 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* An overlapping row of officer portraits.
+
+   Turns "11 officers serving" from a number into eleven faces. With one real photograph
+   between them the plates carry the row, which is exactly what CosmicImage is for — each
+   officer keeps their own colour, so the strip reads as a group of people rather than as
+   a row of failed images. *@
+
+<div class="upcsg-facepile">
+    @foreach (var (member, index) in Shown.Select((m, i) => (m, i)))
+    {
+        <MudTooltip Text="@($"{member.Name} — {member.Role}")" Placement="Placement.Top">
+            <CosmicImage Src="@member.PhotoUrl"
+                         Alt="@member.Name"
+                         Seed="@member.Name"
+                         ShowInitials="true"
+                         Class="upcsg-facepile__face"
+                         Style="@($"--face-index: {index};")" />
+        </MudTooltip>
+    }
+
+    @if (Remaining > 0)
+    {
+        <span class="upcsg-facepile__more" style="@($"--face-index: {Shown.Count};")">
+            +@Remaining
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<MemberDto> Members { get; set; } = [];
+
+    /// <summary>Beyond this the row stops being faces and starts being a smear.</summary>
+    [Parameter] public int Max { get; set; } = 8;
+
+    private List<MemberDto> Shown => [.. Members.Take(Max)];
+
+    private int Remaining => Math.Max(0, Members.Count - Max);
+}

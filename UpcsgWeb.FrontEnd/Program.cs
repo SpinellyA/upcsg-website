@@ -69,4 +69,8 @@ builder.Services.AddScoped<IAdminContentService, AdminContentService>();
 // Image uploads: signs, sends and confirms. Needs HttpClient and JS interop only.
 builder.Services.AddScoped<IMediaUploadService, MediaUploadService>();
 
+// Scroll-triggered animation. Singleton so the JS module is imported once for the whole
+// app instead of once per animated component.
+builder.Services.AddSingleton<MotionInterop>();
+
 await builder.Build().RunAsync();

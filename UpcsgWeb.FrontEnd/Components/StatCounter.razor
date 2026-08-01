@@ -1,0 +1,47 @@
+@using UpcsgWeb.FrontEnd.Services
+@inject MotionInterop Motion
+
+@* A number that counts up when it scrolls into view.
+
+   The value is rendered server-side too, so the figure is correct with JavaScript off and
+   correct for screen readers, which would otherwise announce whatever mid-animation
+   number happened to be in the DOM. The animation only overwrites what is already right. *@
+
+<div class="upcsg-stat">
+    <p class="upcsg-stat__value upcsg-gradient-text">
+        <span @ref="_element" aria-hidden="true">@Value</span>
+        <span class="upcsg-visually-hidden">@Value</span>
+        @if (!string.IsNullOrWhiteSpace(Suffix))
+        {
+            <span class="upcsg-stat__suffix">@Suffix</span>
+        }
+    </p>
+    <p class="upcsg-stat__label">@Label</p>
+</div>
+
+@code {
+    private ElementReference _element;
+    private bool _started;
+
+    [Parameter] public int Value { get; set; }
+
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+
+    /// <summary>A trailing mark such as "+" that should not be part of the count.</summary>
+    [Parameter] public string? Suffix { get; set; }
+
+    [Parameter] public int DurationMs { get; set; } = 1100;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Counts start once, on the first render that has a real value. Values arrive
+        // from the API after the first paint, so firstRender alone would animate to zero.
+        if (_started || Value <= 0)
+        {
+            return;
+        }
+
+        _started = true;
+        await Motion.CountUpAsync(_element, Value, DurationMs);
+    }
+}

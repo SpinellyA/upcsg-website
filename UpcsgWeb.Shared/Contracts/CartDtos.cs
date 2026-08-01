@@ -49,11 +49,14 @@ public class CheckoutRequest
     public string? Note { get; set; }
 }
 
-/// <summary>GCash proof, submitted after checkout to move the order into the queue.</summary>
+/// <summary>
+/// GCash proof, submitted after checkout to move the order into the queue.
+/// The screenshot is what's required; the reference is a convenience.
+/// </summary>
 public class SubmitReceiptRequest
 {
-    public string ReferenceNumber { get; set; } = string.Empty;
     public string? ScreenshotUrl { get; set; }
+    public string? ReferenceNumber { get; set; }
 }
 
 /// <summary>Officer bouncing a receipt back to the guilder.</summary>
@@ -64,7 +67,10 @@ public class RejectReceiptRequest
 
 public class PaymentReceiptDto
 {
-    public string ReferenceNumber { get; set; } = string.Empty;
     public string? ScreenshotUrl { get; set; }
+
+    /// <summary>Null on receipts where the guilder only sent the screenshot.</summary>
+    public string? ReferenceNumber { get; set; }
+
     public DateTimeOffset SubmittedAt { get; set; }
 }

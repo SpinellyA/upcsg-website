@@ -1,4 +1,4 @@
-using UpcsgWeb.Domain.Carts;
+﻿using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Merch;
 using UpcsgWeb.Domain.Orders;
@@ -17,7 +17,7 @@ public class OrderLifecycleTests
         return order;
     }
 
-    private static PaymentReceipt Receipt() => PaymentReceipt.Submit("0001234567890", null);
+    private static PaymentReceipt Receipt() => PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890");
 
     // --- Initial state ---------------------------------------------------------------
 
@@ -74,7 +74,7 @@ public class OrderLifecycleTests
     public void SubmittingReceiptRecordsIt()
     {
         var order = AwaitingPaymentOrder(out var item);
-        order.SubmitReceipt(PaymentReceipt.Submit("  0009876543210  ", "https://cdn/x.png"));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/x.png", "  0009876543210  "));
 
         Assert.NotNull(order.Receipt);
         Assert.Equal("0009876543210", order.Receipt!.ReferenceNumber);
@@ -82,8 +82,34 @@ public class OrderLifecycleTests
     }
 
     [Fact]
-    public void ReceiptRequiresAReferenceNumber() =>
-        Assert.Throws<DomainException>(() => PaymentReceipt.Submit("   ", null));
+    public void ReceiptRequiresAScreenshot() =>
+        Assert.Throws<DomainException>(() => PaymentReceipt.FromScreenshot("   ", "0001234567890"));
+
+    [Fact]
+    public void ReceiptDoesNotRequireAReferenceNumber()
+    {
+        // The screenshot already shows the reference. Making a guilder retype it off
+        // their own screen only adds a way to get it wrong.
+        var receipt = PaymentReceipt.FromScreenshot("https://cdn/receipt.png");
+
+        Assert.Null(receipt.ReferenceNumber);
+        Assert.Equal("https://cdn/receipt.png", receipt.ScreenshotUrl);
+    }
+
+    [Fact]
+    public void ABlankReferenceIsStoredAsNoReferenceAtAll()
+    {
+        // Otherwise every screenshot-only receipt would carry an empty string that the
+        // officer's view has to special-case anyway.
+        var receipt = PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "   ");
+
+        Assert.Null(receipt.ReferenceNumber);
+    }
+
+    [Fact]
+    public void AnOverlongReferenceIsStillRefused() =>
+        Assert.Throws<DomainException>(() =>
+            PaymentReceipt.FromScreenshot("https://cdn/receipt.png", new string('9', 51)));
 
     [Fact]
     public void EmptyOrderCannotBePaidFor()
@@ -114,7 +140,7 @@ public class OrderLifecycleTests
         order.SubmitReceipt(Receipt());
         order.RejectReceipt("Unreadable screenshot");
 
-        order.SubmitReceipt(PaymentReceipt.Submit("0001111111111", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001111111111"));
 
         Assert.Equal(OrderStatus.Pending, order.Status);
         Assert.Null(order.ReceiptRejectionReason);
@@ -303,7 +329,7 @@ public class RefundDueTests
         var order = Order.Place(UserId);
         order.AddLine(hoodie, "M", 2);        // 1500, only 1 available
         order.AddLine(tote, "One size", 1);   //  250
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         return order;
     }
@@ -352,7 +378,7 @@ public class RefundDueTests
         var hoodie = Hoodie(stock: 0);
         var order = Order.Place(UserId);
         order.AddLine(hoodie, "M", 1);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         // Acknowledging an order that delivers nothing is just a cancellation wearing a
         // different hat, and it would leave the guilder waiting for goods that never come.
@@ -390,10 +416,10 @@ public class RefundDueTests
         var order = Order.Place(UserId);
         order.AddLine(hoodie, "M", 3);
         order.AddLine(tote, "One size", 1);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
         order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
 
-        // A partial restock is not enough — lines are filled whole or not at all.
+        // A partial restock is not enough â€” lines are filled whole or not at all.
         hoodie.Restock("M", 1);
 
         var ex = Assert.Throws<DomainException>(
@@ -585,7 +611,7 @@ public class MerchStockTests
         var item = Hoodie(stock: 5);
         var order = Order.Place(UserId);
         order.AddLine(item, "M", 2);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         order.Acknowledge(Catalog(item));
 
@@ -601,7 +627,7 @@ public class MerchStockTests
         var item = Hoodie(stock: 1);
         var order = Order.Place(UserId);
         order.AddLine(item, "M", 1);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         // Somebody else's order was acknowledged first.
         item.DeductStock("M", 1);
@@ -624,7 +650,7 @@ public class MerchStockTests
         var order = Order.Place(UserId);
         order.AddLine(hoodie, "M", 1);
         order.AddLine(tote, "One size", 1);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         Assert.Throws<DomainException>(() => order.Acknowledge(Catalog(hoodie, tote)));
 
@@ -724,7 +750,7 @@ public class MerchPreorderTests
         var item = Preorder();
         var order = Order.Place(UserId);
         order.AddLine(item, "M", 3);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         order.Acknowledge(Catalog(item));
 

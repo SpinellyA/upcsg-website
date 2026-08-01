@@ -5,7 +5,11 @@
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
-<MudDialogProvider />
+@* FullWidth by default: without it a dialog shrinks to fit its content, so the
+   paste-a-link box came out 417px with a 367px field to hold a URL, while the
+   message boxes next to it were 600. Set here rather than at each call site so
+   every dialog in the app agrees. *@
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <MudSnackbarProvider />
 
 <MudLayout>

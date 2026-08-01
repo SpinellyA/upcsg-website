@@ -7,7 +7,7 @@ public interface IOrderService
 {
     Task<List<OrderDto>> GetMineAsync();
     Task<OrderDto?> GetAsync(int id);
-    Task<OrderDto> SubmitReceiptAsync(int orderId, string reference, string? screenshotUrl);
+    Task<OrderDto> SubmitReceiptAsync(int orderId, string screenshotUrl, string? reference);
 
     // Officer actions
     Task<List<OrderDto>> GetQueueAsync(OrderStatusDto? status);
@@ -36,14 +36,14 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
             : null;
     }
 
-    public async Task<OrderDto> SubmitReceiptAsync(int orderId, string reference, string? screenshotUrl)
+    public async Task<OrderDto> SubmitReceiptAsync(int orderId, string screenshotUrl, string? reference)
     {
         EnsureConfigured();
 
         var response = await http.PostAsJsonAsync($"api/orders/{orderId}/receipt", new SubmitReceiptRequest
         {
-            ReferenceNumber = reference,
             ScreenshotUrl = screenshotUrl,
+            ReferenceNumber = reference,
         }, UpcsgJson.Options);
 
         return await ReadOrThrowAsync(response);

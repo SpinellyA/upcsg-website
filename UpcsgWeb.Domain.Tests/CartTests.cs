@@ -1,4 +1,4 @@
-using UpcsgWeb.Domain.Carts;
+﻿using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Orders;
 using UpcsgWeb.Domain.ValueObjects;
@@ -229,7 +229,7 @@ public class CheckoutServiceTests
         cart.AddItem(hoodie, "M", 1);
 
         var order = CheckoutService.Checkout(cart, Catalog(hoodie));
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", "https://cdn/receipt.png"));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         var stockBefore = hoodie.StockFor("M");
         order.Acknowledge(Catalog(hoodie));

@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Merch;
 using UpcsgWeb.Domain.Orders;
@@ -12,7 +12,7 @@ internal static class TestData
 
     /// <summary>
     /// Ids are database-assigned, so tests set them directly to simulate a persisted
-    /// item — Cart.AddItem and Order.AddLine both reject an item with no id.
+    /// item â€” Cart.AddItem and Order.AddLine both reject an item with no id.
     /// </summary>
     public static void AssignId(Entity entity, int id) =>
         typeof(Entity).GetProperty(nameof(Entity.Id))!
@@ -47,7 +47,7 @@ internal static class TestData
         return item;
     }
 
-    /// <summary>Sizes that cost different amounts — the case PriceFor has to get right.</summary>
+    /// <summary>Sizes that cost different amounts â€” the case PriceFor has to get right.</summary>
     public static MerchItem HoodieWithPricedSizes(int id = 1)
     {
         var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover", Money.Of(750m));
@@ -81,7 +81,7 @@ internal static class TestData
         item = Hoodie();
         var order = Order.Place(UserId);
         order.AddLine(item, "M", 1);
-        order.SubmitReceipt(PaymentReceipt.Submit("0001234567890", null));
+        order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
         return order;
     }
 }

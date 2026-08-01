@@ -148,7 +148,11 @@
                             <div>
                                 <MudText Typo="Typo.overline" Class="upcsg-fact__key">Reference</MudText>
                                 <MudText Typo="Typo.body2" Class="upcsg-fact__mono">
-                                    @_order.Receipt.ReferenceNumber
+                                    @* Optional now: the screenshot is the proof, so say
+                                       plainly that none was typed rather than showing a gap. *@
+                                    @(string.IsNullOrWhiteSpace(_order.Receipt.ReferenceNumber)
+                                        ? "Not given — see screenshot"
+                                        : _order.Receipt.ReferenceNumber)
                                 </MudText>
                             </div>
                             <div>

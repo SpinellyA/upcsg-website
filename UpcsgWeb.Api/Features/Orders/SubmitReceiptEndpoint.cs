@@ -44,7 +44,7 @@ public class SubmitReceiptEndpoint(IOrderRepository orders, IUnitOfWork uow)
 
         try
         {
-            var receipt = PaymentReceipt.Submit(req.ReferenceNumber, req.ScreenshotUrl);
+            var receipt = PaymentReceipt.FromScreenshot(req.ScreenshotUrl, req.ReferenceNumber);
             order.SubmitReceipt(receipt);
         }
         catch (DomainException ex)

@@ -47,8 +47,12 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
                 .HasColumnName("ReceiptReference")
                 .HasMaxLength(PaymentReceipt.MaxReferenceLength);
 
+            // Required by the aggregate for new receipts, but left nullable in the
+            // database: receipts submitted before the screenshot became the proof have
+            // no image, and they still have to load.
             receipt.Property(r => r.ScreenshotUrl)
                 .HasColumnName("ReceiptScreenshotUrl")
+                .IsRequired(false)
                 .HasMaxLength(500);
 
             receipt.Property(r => r.SubmittedAt)

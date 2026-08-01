@@ -143,15 +143,9 @@
                 {
                     <h2 class="upcsg-checkout__title">Send your GCash receipt</h2>
                     <p class="upcsg-checkout__fineprint mb-4">
-                        Pay &#8369;@_order.Total.ToString("0.00") to the guild's GCash number, then enter the
-                        reference number from your receipt. Officers only see your order once this is in.
+                        Pay &#8369;@_order.Total.ToString("0.00") to the guild's GCash number, then send
+                        the screenshot. Officers only see your order once this is in.
                     </p>
-
-                    <MudTextField @bind-Value="_reference"
-                                  Label="GCash reference number"
-                                  Variant="Variant.Outlined"
-                                  Required="true"
-                                  Class="mb-3" />
 
                     @* The screenshot is uploaded, not linked. Asking a student to host an
                        image somewhere and paste a URL is asking them to get it wrong. *@
@@ -183,7 +177,7 @@
                                        StartIcon="@Icons.Material.Filled.PhotoCamera"
                                        Disabled="_uploading || _busy"
                                        OnClick="UploadScreenshotAsync">
-                                @(_uploading ? "Uploading…" : "Attach screenshot (optional)")
+                                @(_uploading ? "Uploading…" : "Attach your GCash screenshot")
                             </MudButton>
                         }
                     </div>
@@ -199,15 +193,23 @@
                     }
 
                     <p class="upcsg-checkout__fineprint mt-3 mb-4">
-                        Only officers verifying your payment can see this. It's optional, but a
-                        screenshot gets your order confirmed faster than a reference number alone.
+                        Only officers verifying your payment can see this. The screenshot already
+                        shows the amount, the time and the reference, so it's all we need.
                     </p>
+
+                    @* Optional: the screenshot carries the reference already. It's here
+                       because typing it makes an officer's search of the GCash log quicker,
+                       not because anyone should be retyping digits off their own screen. *@
+                    <MudTextField @bind-Value="_reference"
+                                  Label="Reference number (optional)"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-4" />
 
                     <MudButton Variant="Variant.Filled"
                                Size="Size.Large"
                                FullWidth="true"
                                Class="upcsg-cta-button"
-                               Disabled="_busy || _uploading || string.IsNullOrWhiteSpace(_reference)"
+                               Disabled="_busy || _uploading || string.IsNullOrWhiteSpace(_screenshotUrl)"
                                OnClick="SubmitReceiptAsync">
                         Submit Receipt
                     </MudButton>
@@ -215,10 +217,13 @@
                 else if (_order.Receipt is not null)
                 {
                     <h2 class="upcsg-checkout__title">Payment</h2>
-                    <div class="upcsg-checkout__row">
-                        <span>Reference</span>
-                        <span>@_order.Receipt.ReferenceNumber</span>
-                    </div>
+                    @if (!string.IsNullOrWhiteSpace(_order.Receipt.ReferenceNumber))
+                    {
+                        <div class="upcsg-checkout__row">
+                            <span>Reference</span>
+                            <span>@_order.Receipt.ReferenceNumber</span>
+                        </div>
+                    }
                     <div class="upcsg-checkout__row">
                         <span>Submitted</span>
                         <span>@_order.Receipt.SubmittedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
@@ -316,7 +321,7 @@
 
         try
         {
-            _order = await OrderService.SubmitReceiptAsync(Id, _reference, _screenshotUrl);
+            _order = await OrderService.SubmitReceiptAsync(Id, _screenshotUrl!, _reference);
             Snackbar.Add("Receipt submitted. An officer will verify it shortly.", Severity.Success);
         }
         catch (Exception ex)

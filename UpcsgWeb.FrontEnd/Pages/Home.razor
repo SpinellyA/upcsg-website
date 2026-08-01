@@ -50,7 +50,7 @@
     <section id="explore" class="upcsg-section upcsg-band">
         <div class="upcsg-section-head">
             <div>
-                <p class="upcsg-kicker">@DateTime.Now.ToString("MMMM yyyy")</p>
+                <p class="upcsg-kicker">@_month.ToString("MMMM yyyy")</p>
                 <h2 class="upcsg-title-xl">Upcoming Events</h2>
             </div>
             <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="events">View All Events</MudButton>
@@ -65,14 +65,16 @@
             <div class="upcsg-eventlist">
                 @foreach (var evt in _events.Take(3))
                 {
+                    var starts = Starts(evt);
+
                     <a class="upcsg-eventrow" href="@($"events/{evt.Id}")">
                         <span class="upcsg-datechip">
-                            <span class="upcsg-datechip__month">@evt.StartDateTime.ToString("MMM")</span>
-                            <span class="upcsg-datechip__day">@evt.StartDateTime.Day</span>
+                            <span class="upcsg-datechip__month">@starts.ToString("MMM")</span>
+                            <span class="upcsg-datechip__day">@starts.Day</span>
                         </span>
                         <span>
                             <p class="upcsg-eventrow__title">@evt.Title</p>
-                            <p class="upcsg-eventrow__meta">@evt.StartDateTime.ToString("h:mm tt") &middot; @evt.Location</p>
+                            <p class="upcsg-eventrow__meta">@starts.ToString("h:mm tt") &middot; @evt.Location</p>
                         </span>
                         <span class="upcsg-eventrow__arrow">&rarr;</span>
                     </a>
@@ -204,8 +206,20 @@
     private AchievementDto? _latestAchievement;
     private int _execCount;
 
+    /// <summary>
+    /// The month being published, so the strip's heading matches the events under it.
+    /// Reading DateTime.Now here put an August heading over July's events.
+    /// </summary>
+    private DateTime _month = DateTime.Now;
+
+    /// <summary>Stored as a UTC instant; shown as Cebu wall-clock.</summary>
+    private static DateTime Starts(EventDto evt) => evt.StartDateTime.ToLocalTime();
+
     protected override async Task OnInitializedAsync()
     {
+        var (year, month) = await EventService.GetDisplayMonthAsync();
+        _month = new DateTime(year, month, 1);
+
         _events = (await EventService.GetThisMonthEventsAsync())
             .OrderBy(e => e.StartDateTime)
             .ToList();

@@ -113,7 +113,11 @@
             }
         </div>
 
-        @if (_events.Count == 0)
+        @if (_loading)
+        {
+            <MudProgressLinear Indeterminate="true" Class="my-4" />
+        }
+        else if (_events.Count == 0)
         {
             <p class="upcsg-lede">This month's lineup hasn't been posted yet. Check back soon.</p>
         }
@@ -123,7 +127,8 @@
                 @foreach (var evt in _events)
                 {
                     var isOpen = _expanded.Contains(evt.Id);
-                    var isTarget = _selectedDate?.Date == evt.StartDateTime.Date;
+                    var starts = Starts(evt);
+                    var isTarget = _selectedDate?.Date == starts.Date;
 
                     <div id="@($"event-{evt.Id}")"
                          class="upcsg-agenda__item @(isOpen ? "upcsg-agenda__item--open" : null) @(isTarget ? "upcsg-agenda__item--target" : null)">
@@ -135,8 +140,8 @@
                                 aria-controls="@($"event-panel-{evt.Id}")"
                                 @onclick="() => Toggle(evt.Id)">
                             <span class="upcsg-datechip">
-                                <span class="upcsg-datechip__month">@evt.StartDateTime.ToString("MMM")</span>
-                                <span class="upcsg-datechip__day">@evt.StartDateTime.Day</span>
+                                <span class="upcsg-datechip__month">@starts.ToString("MMM")</span>
+                                <span class="upcsg-datechip__day">@starts.Day</span>
                             </span>
                             <span>
                                 <p class="upcsg-agenda__title">@evt.Title</p>
@@ -153,7 +158,7 @@
                                     <ul class="upcsg-agenda__facts">
                                         <li>
                                             <strong>When</strong>
-                                            @evt.StartDateTime.ToString("dddd, MMMM d") &middot; @FormatTime(evt)
+                                            @starts.ToString("dddd, MMMM d") &middot; @FormatTime(evt)
                                         </li>
                                         <li>
                                             <strong>Where</strong>
@@ -177,7 +182,16 @@
 @code {
     private static readonly string[] DayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    private readonly DateTime _month = DateTime.Today;
+    /// <summary>
+    /// The month being published, which officers can pin ahead of the real calendar.
+    ///
+    /// Not DateTime.Today: the events came from the configured month all along, but the
+    /// heading and the calendar grid were built from today's date, so pinning July left
+    /// an August page with July's events listed under it.
+    /// </summary>
+    private DateTime _month = DateTime.Today;
+
+    private bool _loading = true;
     private List<EventDto> _events = [];
     private HashSet<int> _expanded = [];
     private DateTime? _selectedDate;
@@ -192,13 +206,27 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var (year, month) = await EventService.GetDisplayMonthAsync();
+        _month = new DateTime(year, month, 1);
+
         _events = (await EventService.GetThisMonthEventsAsync())
             .OrderBy(e => e.StartDateTime)
             .ToList();
+
+        _loading = false;
     }
 
+    /// <summary>
+    /// Times arrive as UTC instants and are read here as Cebu wall-clock. Without this a
+    /// 6 PM event reads as 10 AM, and it lands on the wrong calendar day either side of
+    /// midnight.
+    /// </summary>
+    private static DateTime Starts(EventDto evt) => evt.StartDateTime.ToLocalTime();
+
+    private static DateTime? Ends(EventDto evt) => evt.EndDateTime?.ToLocalTime();
+
     private List<EventDto> EventsOn(DateTime date) =>
-        _events.Where(e => e.StartDateTime.Date == date.Date).ToList();
+        _events.Where(e => Starts(e).Date == date.Date).ToList();
 
     private void Toggle(int id)
     {
@@ -243,7 +271,7 @@
     }
 
     private static string FormatTime(EventDto evt) =>
-        evt.EndDateTime is null
-            ? evt.StartDateTime.ToString("h:mm tt")
-            : $"{evt.StartDateTime:h:mm tt} - {evt.EndDateTime:h:mm tt}";
+        Ends(evt) is { } ends
+            ? $"{Starts(evt):h:mm tt} - {ends:h:mm tt}"
+            : Starts(evt).ToString("h:mm tt");
 }

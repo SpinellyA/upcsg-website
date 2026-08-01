@@ -23,6 +23,7 @@ public class Cart : AggregateRoot
             throw new DomainException("A cart must belong to a user.");
         }
 
+        Id = Guid.CreateVersion7();
         UserId = userId;
         UpdatedAt = DateTime.UtcNow;
     }

@@ -1,4 +1,4 @@
-@page "/orders/{Id:int}"
+@page "/orders/{Id:guid}"
 @attribute [Authorize]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -249,7 +249,7 @@
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     /// <summary>Mirrors MediaKeys.ReceiptsFolder on the API — the only folder a guilder may write to.</summary>
     private const string ReceiptsFolder = "receipts";

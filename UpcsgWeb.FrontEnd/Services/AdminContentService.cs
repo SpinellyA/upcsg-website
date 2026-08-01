@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
@@ -11,19 +11,19 @@ public interface IAdminContentService
 {
     Task<List<MerchItemDto>> GetMerchAsync();
     Task<MerchItemDto> SaveMerchAsync(MerchItemDto item);
-    Task DeleteMerchAsync(int id);
+    Task DeleteMerchAsync(Guid id);
 
     Task<List<EventDto>> GetEventsAsync(int year, int month);
     Task<EventDto> SaveEventAsync(EventDto item);
-    Task DeleteEventAsync(int id);
+    Task DeleteEventAsync(Guid id);
 
     Task<List<MemberDto>> GetMembersAsync();
     Task<MemberDto> SaveMemberAsync(MemberDto item);
-    Task DeleteMemberAsync(int id);
+    Task DeleteMemberAsync(Guid id);
 
     Task<List<AchievementDto>> GetAchievementsAsync();
     Task<AchievementDto> SaveAchievementAsync(AchievementDto item);
-    Task DeleteAchievementAsync(int id);
+    Task DeleteAchievementAsync(Guid id);
 
     Task<SiteSettingsDto> GetSettingsAsync();
     Task<SiteSettingsDto> SaveSettingsAsync(UpdateSiteSettingsRequest request);
@@ -42,7 +42,7 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
     public Task<MerchItemDto> SaveMerchAsync(MerchItemDto item) =>
         SaveAsync(item, "api/merch", item.Id);
 
-    public Task DeleteMerchAsync(int id) => DeleteAsync($"api/merch/{id}");
+    public Task DeleteMerchAsync(Guid id) => DeleteAsync($"api/merch/{id}");
 
     // --- Events ---------------------------------------------------------------------
 
@@ -55,7 +55,7 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
     public Task<EventDto> SaveEventAsync(EventDto item) =>
         SaveAsync(item, "api/events", item.Id);
 
-    public Task DeleteEventAsync(int id) => DeleteAsync($"api/events/{id}");
+    public Task DeleteEventAsync(Guid id) => DeleteAsync($"api/events/{id}");
 
     // --- Members --------------------------------------------------------------------
 
@@ -68,7 +68,7 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
     public Task<MemberDto> SaveMemberAsync(MemberDto item) =>
         SaveAsync(item, "api/members", item.Id);
 
-    public Task DeleteMemberAsync(int id) => DeleteAsync($"api/members/{id}");
+    public Task DeleteMemberAsync(Guid id) => DeleteAsync($"api/members/{id}");
 
     // --- Achievements ---------------------------------------------------------------
 
@@ -81,7 +81,7 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
     public Task<AchievementDto> SaveAchievementAsync(AchievementDto item) =>
         SaveAsync(item, "api/achievements", item.Id);
 
-    public Task DeleteAchievementAsync(int id) => DeleteAsync($"api/achievements/{id}");
+    public Task DeleteAchievementAsync(Guid id) => DeleteAsync($"api/achievements/{id}");
 
     // --- Settings -------------------------------------------------------------------
 
@@ -106,12 +106,12 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
 
     // --- Shared -------------------------------------------------------------------
 
-    /// <summary>Id of zero means create; anything else updates in place.</summary>
-    private async Task<T> SaveAsync<T>(T payload, string collectionUrl, int id)
+    /// <summary>An empty id means create; anything else updates in place.</summary>
+    private async Task<T> SaveAsync<T>(T payload, string collectionUrl, Guid id)
     {
         EnsureConfigured();
 
-        var response = id == 0
+        var response = id == Guid.Empty
             ? await http.PostAsJsonAsync(collectionUrl, payload, UpcsgJson.Options)
             : await http.PutAsJsonAsync($"{collectionUrl}/{id}", payload, UpcsgJson.Options);
 

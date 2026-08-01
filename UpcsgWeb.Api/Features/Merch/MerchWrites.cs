@@ -35,7 +35,7 @@ public static class MerchWrites
     /// </summary>
     private static void ApplyVariants(DomainMerchItem item, List<MerchVariantDto> submitted)
     {
-        var keptIds = submitted.Where(v => v.Id != 0).Select(v => v.Id).ToHashSet();
+        var keptIds = submitted.Where(v => v.Id != Guid.Empty).Select(v => v.Id).ToHashSet();
 
         foreach (var existing in item.Variants.Where(v => !keptIds.Contains(v.Id)).ToList())
         {
@@ -44,7 +44,7 @@ public static class MerchWrites
 
         foreach (var dto in submitted)
         {
-            if (dto.Id == 0)
+            if (dto.Id == Guid.Empty)
             {
                 item.AddVariant(dto.Name, dto.Description, Money.Of(dto.Price), dto.PhotoUrls, dto.Stock);
             }
@@ -57,7 +57,7 @@ public static class MerchWrites
 
         // The order the officer arranged them in is the order guilders see.
         var ordered = submitted
-            .Where(v => v.Id != 0)
+            .Where(v => v.Id != Guid.Empty)
             .Select(v => v.Id)
             .ToList();
 

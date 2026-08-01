@@ -1,6 +1,6 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
@@ -8,13 +8,13 @@ public class DeleteMerchEndpoint(IMerchRepository merch, IUnitOfWork uow) : Endp
 {
     public override void Configure()
     {
-        Delete("/merch/{id:int}");
+        Delete("/merch/{id:guid}");
         Policies(AuthPolicies.ExeCom);
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var item = await merch.GetByIdAsync(Route<int>("id"), ct);
+        var item = await merch.GetByIdAsync(Route<Guid>("id"), ct);
         if (item is null)
         {
             await Send.NotFoundAsync(ct);

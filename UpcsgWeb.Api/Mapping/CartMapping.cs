@@ -11,7 +11,7 @@ public static class CartMapping
     /// Prices are read live on purpose — a cart is not a price lock, and showing a
     /// stale figure here would mean the checkout total silently disagrees with it.
     /// </summary>
-    public static CartDto ToDto(this Cart cart, IReadOnlyDictionary<int, MerchItem> items)
+    public static CartDto ToDto(this Cart cart, IReadOnlyDictionary<Guid, MerchItem> items)
     {
         var lines = new List<CartLineDto>();
 

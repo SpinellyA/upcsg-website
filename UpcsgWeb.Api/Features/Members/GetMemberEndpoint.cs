@@ -1,6 +1,6 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Members;
@@ -15,13 +15,13 @@ public class GetMemberEndpoint(IMemberRepository members)
 {
     public override void Configure()
     {
-        Get("/members/{id:int}");
+        Get("/members/{id:guid}");
         AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var found = await members.GetByIdAsync(Route<int>("id"), ct);
+        var found = await members.GetByIdAsync(Route<Guid>("id"), ct);
 
         if (found is null)
         {

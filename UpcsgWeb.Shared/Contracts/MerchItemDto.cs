@@ -3,7 +3,7 @@ namespace UpcsgWeb.Shared.Contracts;
 public class MerchVariantDto
 {
     /// <summary>Zero for a variant the CMS has added but not yet saved.</summary>
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -20,7 +20,7 @@ public class MerchVariantDto
 
 public class MerchItemDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 

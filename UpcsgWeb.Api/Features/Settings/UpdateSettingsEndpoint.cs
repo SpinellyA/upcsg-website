@@ -1,6 +1,6 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 

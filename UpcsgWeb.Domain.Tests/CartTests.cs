@@ -1,4 +1,4 @@
-﻿using UpcsgWeb.Domain.Carts;
+using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Orders;
 using UpcsgWeb.Domain.ValueObjects;
@@ -11,7 +11,7 @@ public class CartTests
     [Fact]
     public void NewCartIsEmpty()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         Assert.True(cart.IsEmpty);
         Assert.Equal(0, cart.TotalItems);
     }
@@ -19,7 +19,7 @@ public class CartTests
     [Fact]
     public void AddingSameItemAndVariantTopsUpTheLine()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
 
         cart.AddItem(hoodie, "M", 1);
@@ -32,7 +32,7 @@ public class CartTests
     [Fact]
     public void DifferentVariantsAreSeparateLines()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
 
         cart.AddItem(hoodie, "M", 1);
@@ -45,28 +45,28 @@ public class CartTests
     [Fact]
     public void RejectsOutOfStockItem()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         Assert.Throws<DomainException>(() => cart.AddItem(Hoodie(inStock: false), "M", 1));
     }
 
     [Fact]
     public void RejectsUnknownVariant()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         Assert.Throws<DomainException>(() => cart.AddItem(Hoodie(), "XXL", 1));
     }
 
     [Fact]
     public void RejectsNonPositiveQuantity()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         Assert.Throws<DomainException>(() => cart.AddItem(Hoodie(), "M", 0));
     }
 
     [Fact]
     public void EnforcesPerLineCap()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
 
         Assert.Throws<DomainException>(() =>
@@ -76,7 +76,7 @@ public class CartTests
     [Fact]
     public void CapAppliesToTheRunningTotalNotJustOneCall()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
 
         cart.AddItem(hoodie, "M", Cart.MaxQuantityPerLine);
@@ -87,7 +87,7 @@ public class CartTests
     [Fact]
     public void SettingQuantityToZeroRemovesTheLine()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 3);
 
@@ -99,8 +99,8 @@ public class CartTests
     [Fact]
     public void UpdatingAnAbsentLineFails()
     {
-        var cart = Cart.For(UserId);
-        Assert.Throws<DomainException>(() => cart.SetQuantity(99, null, 1));
+        var cart = Cart.Create(UserId);
+        Assert.Throws<DomainException>(() => cart.SetQuantity(Guid.CreateVersion7(), null, 1));
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class CheckoutServiceTests
     [Fact]
     public void CheckoutProducesAnOrderAwaitingPayment()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 2);
 
@@ -136,7 +136,7 @@ public class CheckoutServiceTests
     [Fact]
     public void CheckoutEmptiesTheCart()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
 
@@ -149,7 +149,7 @@ public class CheckoutServiceTests
     [Fact]
     public void CheckoutSnapshotsThePriceAtThatMoment()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie(price: 750m);
         cart.AddItem(hoodie, "M", 1);
 
@@ -162,14 +162,14 @@ public class CheckoutServiceTests
     [Fact]
     public void EmptyCartCannotBeCheckedOut()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         Assert.Throws<DomainException>(() => CheckoutService.Checkout(cart, Catalog()));
     }
 
     [Fact]
     public void ItemThatSoldOutWhileInTheCartBlocksCheckout()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
 
@@ -182,7 +182,7 @@ public class CheckoutServiceTests
     [Fact]
     public void ItemDeletedWhileInTheCartBlocksCheckout()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
 
@@ -194,7 +194,7 @@ public class CheckoutServiceTests
     [Fact]
     public void FailedCheckoutLeavesTheCartIntact()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
         hoodie.SetInStock(false);
@@ -208,7 +208,7 @@ public class CheckoutServiceTests
     [Fact]
     public void MultipleLinesCarryThroughWithCorrectTotal()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie(price: 750m);
         var tote = Tote(price: 250m);
 
@@ -224,7 +224,7 @@ public class CheckoutServiceTests
     [Fact]
     public void EndToEnd_CartToReceivedOrder()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
 

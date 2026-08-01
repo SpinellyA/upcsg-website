@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -16,14 +16,14 @@ public class ChangeOrderStatusEndpoint(IOrderRepository orders, IMerchRepository
 {
     public override void Configure()
     {
-        Patch("/orders/{id:int}/status");
+        Patch("/orders/{id:guid}/status");
         Policies(AuthPolicies.ExeCom);
         Summary(s => s.Summary = "Advance or cancel an order (officers only).");
     }
 
     public override async Task HandleAsync(ChangeOrderStatusRequest req, CancellationToken ct)
     {
-        var order = await orders.GetByIdAsync(Route<int>("id"), ct);
+        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
         if (order is null)
         {
             await Send.NotFoundAsync(ct);

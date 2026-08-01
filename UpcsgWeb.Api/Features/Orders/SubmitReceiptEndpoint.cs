@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Orders;
 using UpcsgWeb.Shared.Contracts;
@@ -14,7 +14,7 @@ public class SubmitReceiptEndpoint(IOrderRepository orders, IUnitOfWork uow)
 {
     public override void Configure()
     {
-        Post("/orders/{id:int}/receipt");
+        Post("/orders/{id:guid}/receipt");
         Summary(s => s.Summary = "Attach a GCash receipt to an order awaiting payment.");
     }
 
@@ -27,7 +27,7 @@ public class SubmitReceiptEndpoint(IOrderRepository orders, IUnitOfWork uow)
             return;
         }
 
-        var order = await orders.GetByIdAsync(Route<int>("id"), ct);
+        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
         if (order is null)
         {
             await Send.NotFoundAsync(ct);

@@ -21,7 +21,7 @@ public enum OrderLineStatusDto
 
 public class OrderLineDto
 {
-    public int MerchItemId { get; set; }
+    public Guid MerchItemId { get; set; }
     public string ItemName { get; set; } = string.Empty;
     public string? Variant { get; set; }
     public decimal UnitPrice { get; set; }
@@ -38,8 +38,8 @@ public class OrderLineDto
 
 public class OrderDto
 {
-    public int Id { get; set; }
-    public int UserId { get; set; }
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
     public OrderStatusDto Status { get; set; }
     public DateTimeOffset PlacedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
@@ -79,7 +79,7 @@ public class SettleRefundRequest
 /// <summary>Officer fills a previously short line after a restock.</summary>
 public class RefulfilLineRequest
 {
-    public int MerchItemId { get; set; }
+    public Guid MerchItemId { get; set; }
     public string? Variant { get; set; }
 }
 
@@ -88,7 +88,7 @@ public class ReleaseConfirmedDto
 {
     public int ReleasedCount { get; set; }
 
-    public List<int> ReleasedOrderIds { get; set; } = [];
+    public List<Guid> ReleasedOrderIds { get; set; } = [];
 
     /// <summary>
     /// Orders the domain refused, one line each. Reported rather than swallowed: an
@@ -109,7 +109,7 @@ public class PlaceOrderRequest
 
 public class PlaceOrderLine
 {
-    public int MerchItemId { get; set; }
+    public Guid MerchItemId { get; set; }
     public string? Variant { get; set; }
     public int Quantity { get; set; } = 1;
 }

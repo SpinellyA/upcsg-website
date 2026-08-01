@@ -1,4 +1,4 @@
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Merch;
 
@@ -15,7 +15,7 @@ internal static class CartOps
 {
     /// <summary>Loads the guilder's cart, creating an empty one on first use.</summary>
     public static async Task<Cart> GetOrCreateAsync(
-        ICartRepository carts, int userId, CancellationToken ct)
+        ICartRepository carts, Guid userId, CancellationToken ct)
     {
         var existing = await carts.GetForUserAsync(userId, ct);
         if (existing is not null)
@@ -23,18 +23,18 @@ internal static class CartOps
             return existing;
         }
 
-        var created = Cart.For(userId);
+        var created = Cart.Create(userId);
         carts.Add(created);
         return created;
     }
 
     /// <summary>Resolves every merch item the cart references in a single query.</summary>
-    public static async Task<IReadOnlyDictionary<int, MerchItem>> ResolveItemsAsync(
+    public static async Task<IReadOnlyDictionary<Guid, MerchItem>> ResolveItemsAsync(
         Cart cart, IMerchRepository merch, CancellationToken ct)
     {
         if (cart.IsEmpty)
         {
-            return new Dictionary<int, MerchItem>();
+            return new Dictionary<Guid, MerchItem>();
         }
 
         var items = await merch.GetManyAsync(cart.Lines.Select(l => l.MerchItemId), ct);

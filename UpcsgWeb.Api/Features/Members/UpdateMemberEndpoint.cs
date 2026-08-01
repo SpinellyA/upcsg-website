@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -12,14 +12,14 @@ public class UpdateMemberEndpoint(IMemberRepository members, IUnitOfWork uow)
 {
     public override void Configure()
     {
-        Put("/members/{id:int}");
+        Put("/members/{id:guid}");
         Policies(AuthPolicies.ExeCom);
     }
 
     public override async Task HandleAsync(MemberDto req, CancellationToken ct)
     {
         // Route id wins over the body, so a mismatched payload can't retarget the write.
-        var member = await members.GetByIdAsync(Route<int>("id"), ct);
+        var member = await members.GetByIdAsync(Route<Guid>("id"), ct);
         if (member is null)
         {
             await Send.NotFoundAsync(ct);

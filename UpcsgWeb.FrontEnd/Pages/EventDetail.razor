@@ -1,4 +1,4 @@
-﻿@page "/events/{Id:int}"
+@page "/events/{Id:guid}"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
@@ -189,7 +189,7 @@ else
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private EventDto? _event;
     private List<EventDto> _others = [];

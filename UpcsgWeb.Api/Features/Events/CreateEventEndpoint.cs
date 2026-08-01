@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Content;
 using UpcsgWeb.Shared.Contracts;
@@ -22,7 +22,7 @@ public class CreateEventEndpoint(IEventRepository events, IUnitOfWork uow)
         GuildEvent created;
         try
         {
-            created = GuildEvent.Schedule(
+            created = GuildEvent.Create(
                 req.Title, req.Description, req.StartDateTime, req.EndDateTime, req.Location, req.PosterUrl);
         }
         catch (DomainException ex)

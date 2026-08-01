@@ -1,6 +1,6 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Orders;
 using UpcsgWeb.Shared.Contracts;
@@ -29,7 +29,7 @@ public class ReleaseConfirmedEndpoint(IOrderRepository orders, IUnitOfWork uow)
     {
         var confirmed = await orders.GetByStatusForUpdateAsync(OrderStatus.Acknowledged, ct);
 
-        var released = new List<int>();
+        var released = new List<Guid>();
         var skipped = new List<string>();
 
         foreach (var order in confirmed)

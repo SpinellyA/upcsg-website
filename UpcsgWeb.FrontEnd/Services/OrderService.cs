@@ -6,15 +6,15 @@ namespace UpcsgWeb.FrontEnd.Services;
 public interface IOrderService
 {
     Task<List<OrderDto>> GetMineAsync();
-    Task<OrderDto?> GetAsync(int id);
-    Task<OrderDto> SubmitReceiptAsync(int orderId, string screenshotUrl, string? reference);
+    Task<OrderDto?> GetAsync(Guid id);
+    Task<OrderDto> SubmitReceiptAsync(Guid orderId, string screenshotUrl, string? reference);
 
     // Officer actions
     Task<List<OrderDto>> GetQueueAsync(OrderStatusDto? status);
-    Task<OrderDto> ChangeStatusAsync(int orderId, OrderStatusDto status, string? reason, bool allowShortfall = false);
-    Task<OrderDto> RejectReceiptAsync(int orderId, string reason);
-    Task<OrderDto> SettleRefundAsync(int orderId, string reference);
-    Task<OrderDto> RefulfilLineAsync(int orderId, int merchItemId, string? variant);
+    Task<OrderDto> ChangeStatusAsync(Guid orderId, OrderStatusDto status, string? reason, bool allowShortfall = false);
+    Task<OrderDto> RejectReceiptAsync(Guid orderId, string reason);
+    Task<OrderDto> SettleRefundAsync(Guid orderId, string reference);
+    Task<OrderDto> RefulfilLineAsync(Guid orderId, Guid merchItemId, string? variant);
     Task<ReleaseConfirmedDto> ReleaseConfirmedAsync();
 }
 
@@ -26,7 +26,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
         return await http.GetFromJsonAsync<List<OrderDto>>("api/orders/mine", UpcsgJson.Options) ?? [];
     }
 
-    public async Task<OrderDto?> GetAsync(int id)
+    public async Task<OrderDto?> GetAsync(Guid id)
     {
         EnsureConfigured();
 
@@ -36,7 +36,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
             : null;
     }
 
-    public async Task<OrderDto> SubmitReceiptAsync(int orderId, string screenshotUrl, string? reference)
+    public async Task<OrderDto> SubmitReceiptAsync(Guid orderId, string screenshotUrl, string? reference)
     {
         EnsureConfigured();
 
@@ -58,7 +58,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
         return await http.GetFromJsonAsync<List<OrderDto>>(url, UpcsgJson.Options) ?? [];
     }
 
-    public async Task<OrderDto> ChangeStatusAsync(int orderId, OrderStatusDto status, string? reason, bool allowShortfall = false)
+    public async Task<OrderDto> ChangeStatusAsync(Guid orderId, OrderStatusDto status, string? reason, bool allowShortfall = false)
     {
         EnsureConfigured();
 
@@ -72,7 +72,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
         return await ReadOrThrowAsync(response);
     }
 
-    public async Task<OrderDto> SettleRefundAsync(int orderId, string reference)
+    public async Task<OrderDto> SettleRefundAsync(Guid orderId, string reference)
     {
         EnsureConfigured();
 
@@ -82,7 +82,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
         return await ReadOrThrowAsync(response);
     }
 
-    public async Task<OrderDto> RefulfilLineAsync(int orderId, int merchItemId, string? variant)
+    public async Task<OrderDto> RefulfilLineAsync(Guid orderId, Guid merchItemId, string? variant)
     {
         EnsureConfigured();
 
@@ -107,7 +107,7 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
             ?? throw new ApiException("The API returned no result.");
     }
 
-    public async Task<OrderDto> RejectReceiptAsync(int orderId, string reason)
+    public async Task<OrderDto> RejectReceiptAsync(Guid orderId, string reason)
     {
         EnsureConfigured();
 

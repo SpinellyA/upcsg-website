@@ -1,11 +1,11 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
 public class MemberService(HttpClient http, ApiOptions options) : IMemberService
 {
-    public async Task<MemberDto?> GetMemberAsync(int id)
+    public async Task<MemberDto?> GetMemberAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
@@ -33,7 +33,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
         [
             new MemberDto
             {
-                Id = 1,
+                Id = new Guid("00000000-0000-0000-0000-000000000001"),
                 Name = "Dr. Juana Dela Cruz",
                 Role = "Faculty Adviser",
                 Category = MemberCategory.Faculty,
@@ -46,7 +46,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 2,
+                Id = new Guid("00000000-0000-0000-0000-000000000002"),
                 Name = "Alex Santos",
                 Role = "President",
                 Category = MemberCategory.ExeCom,
@@ -60,7 +60,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 3,
+                Id = new Guid("00000000-0000-0000-0000-000000000003"),
                 Name = "Bea Reyes",
                 Role = "Vice President - Internal",
                 Category = MemberCategory.ExeCom,
@@ -73,7 +73,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 4,
+                Id = new Guid("00000000-0000-0000-0000-000000000004"),
                 Name = "Carlo Mendoza",
                 Role = "Vice President - External",
                 Category = MemberCategory.ExeCom,
@@ -86,7 +86,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 5,
+                Id = new Guid("00000000-0000-0000-0000-000000000005"),
                 Name = "Diane Uy",
                 Role = "Secretary",
                 Category = MemberCategory.ExeCom,
@@ -99,7 +99,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 6,
+                Id = new Guid("00000000-0000-0000-0000-000000000006"),
                 Name = "Erik Villanueva",
                 Role = "Treasurer",
                 Category = MemberCategory.ExeCom,
@@ -112,7 +112,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 7,
+                Id = new Guid("00000000-0000-0000-0000-000000000007"),
                 Name = "Faith Ong",
                 Role = "Committee Head",
                 Category = MemberCategory.ExeCom,
@@ -125,7 +125,7 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             },
             new MemberDto
             {
-                Id = 8,
+                Id = new Guid("00000000-0000-0000-0000-000000000008"),
                 Name = "Gio Pascual",
                 Role = "Committee Head",
                 Category = MemberCategory.ExeCom,

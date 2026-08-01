@@ -1,4 +1,4 @@
-@page "/hall-of-fame/{Id:int}"
+@page "/hall-of-fame/{Id:guid}"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
@@ -139,7 +139,7 @@ else
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     private AchievementDto? _entry;
     private List<AchievementDto> _more = [];

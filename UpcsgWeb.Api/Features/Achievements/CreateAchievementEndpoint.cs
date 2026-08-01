@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 using DomainAchievement = UpcsgWeb.Domain.Content.Achievement;
@@ -22,7 +22,7 @@ public class CreateAchievementEndpoint(IAchievementRepository achievements, IUni
         DomainAchievement achievement;
         try
         {
-            achievement = DomainAchievement.Record(req.Title, req.Description, req.Year, req.Category);
+            achievement = DomainAchievement.Create(req.Title, req.Description, req.Year, req.Category);
             achievement.Update(req.Title, req.Description, req.Year, req.Category, req.ImageUrl);
         }
         catch (DomainException ex)

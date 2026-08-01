@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -12,14 +12,14 @@ public class UpdateEventEndpoint(IEventRepository events, IUnitOfWork uow)
 {
     public override void Configure()
     {
-        Put("/events/{id:int}");
+        Put("/events/{id:guid}");
         Policies(AuthPolicies.ExeCom);
     }
 
     public override async Task HandleAsync(EventDto req, CancellationToken ct)
     {
         // Route id wins over the body, so a mismatched payload can't retarget the write.
-        var existing = await events.GetByIdAsync(Route<int>("id"), ct);
+        var existing = await events.GetByIdAsync(Route<Guid>("id"), ct);
         if (existing is null)
         {
             await Send.NotFoundAsync(ct);

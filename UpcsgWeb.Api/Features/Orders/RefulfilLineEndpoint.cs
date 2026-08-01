@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -19,14 +19,14 @@ public class RefulfilLineEndpoint(IOrderRepository orders, IMerchRepository merc
 {
     public override void Configure()
     {
-        Post("/orders/{id:int}/refulfil");
+        Post("/orders/{id:guid}/refulfil");
         Policies(AuthPolicies.ExeCom);
         Summary(s => s.Summary = "Fill a short line after a restock (officers only).");
     }
 
     public override async Task HandleAsync(RefulfilLineRequest req, CancellationToken ct)
     {
-        var order = await orders.GetByIdAsync(Route<int>("id"), ct);
+        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
 
         if (order is null)
         {

@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -12,13 +12,13 @@ public class UpdateAchievementEndpoint(IAchievementRepository achievements, IUni
 {
     public override void Configure()
     {
-        Put("/achievements/{id:int}");
+        Put("/achievements/{id:guid}");
         Policies(AuthPolicies.ExeCom);
     }
 
     public override async Task HandleAsync(AchievementDto req, CancellationToken ct)
     {
-        var achievement = await achievements.GetByIdAsync(Route<int>("id"), ct);
+        var achievement = await achievements.GetByIdAsync(Route<Guid>("id"), ct);
         if (achievement is null)
         {
             await Send.NotFoundAsync(ct);

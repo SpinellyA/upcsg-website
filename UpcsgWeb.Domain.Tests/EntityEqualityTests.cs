@@ -14,19 +14,20 @@ public class EntityEqualityTests
     [Fact]
     public void TransientEntityEqualsItself()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         cart.AddItem(Hoodie(), "M", 1);
 
         var line = cart.Lines[0];
 
-        Assert.Equal(0, line.Id); // not persisted
+        // A line has identity from the moment Create makes it, well before any save.
+        Assert.NotEqual(Guid.Empty, line.Id);
         Assert.True(line.Equals(line));
     }
 
     [Fact]
     public void TwoDistinctTransientEntitiesAreNotEqual()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
         cart.AddItem(hoodie, "L", 1);
@@ -37,7 +38,7 @@ public class EntityEqualityTests
     [Fact]
     public void RemovingAnUnsavedCartLineActuallyRemovesIt()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 2);
 
@@ -49,7 +50,7 @@ public class EntityEqualityTests
     [Fact]
     public void RemovingAnUnsavedOrderLineActuallyRemovesIt()
     {
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         var hoodie = Hoodie();
         order.AddLine(hoodie, "M", 1);
 

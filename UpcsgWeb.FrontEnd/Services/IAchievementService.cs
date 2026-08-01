@@ -1,4 +1,4 @@
-﻿using UpcsgWeb.Shared.Contracts;
+using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
@@ -10,5 +10,5 @@ public interface IAchievementService
     /// One entry by id, for the detail article. Fetched directly rather than filtered out
     /// of the full list, so a shared link survives the record growing.
     /// </summary>
-    Task<AchievementDto?> GetAchievementAsync(int id);
+    Task<AchievementDto?> GetAchievementAsync(Guid id);
 }

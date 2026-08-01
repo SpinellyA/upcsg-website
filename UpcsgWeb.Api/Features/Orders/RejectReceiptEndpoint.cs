@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -13,14 +13,14 @@ public class RejectReceiptEndpoint(IOrderRepository orders, IUnitOfWork uow)
 {
     public override void Configure()
     {
-        Post("/orders/{id:int}/receipt/reject");
+        Post("/orders/{id:guid}/receipt/reject");
         Policies(AuthPolicies.ExeCom);
         Summary(s => s.Summary = "Bounce a receipt back to AwaitingPayment with a reason.");
     }
 
     public override async Task HandleAsync(RejectReceiptRequest req, CancellationToken ct)
     {
-        var order = await orders.GetByIdAsync(Route<int>("id"), ct);
+        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
         if (order is null)
         {
             await Send.NotFoundAsync(ct);

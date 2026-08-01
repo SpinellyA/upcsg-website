@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Users;
 using UpcsgWeb.Shared.Contracts;
 
@@ -58,7 +58,7 @@ public class GoogleSignInEndpoint(
 
         if (user is null)
         {
-            user = AppUser.Register(identity.Subject, identity.Email, identity.Name, identity.PictureUrl);
+            user = AppUser.Create(identity.Subject, identity.Email, identity.Name, identity.PictureUrl);
             users.Add(user);
             logger.LogInformation("Registered guilder {Email}", identity.Email);
         }

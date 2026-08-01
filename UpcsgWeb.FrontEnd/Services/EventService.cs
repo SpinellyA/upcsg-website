@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
@@ -55,7 +55,7 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
         return SeedData();
     }
 
-    public async Task<EventDto?> GetEventAsync(int id)
+    public async Task<EventDto?> GetEventAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
@@ -83,7 +83,7 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
             // lines, and a one-liner leaves it looking like a stub.
             new EventDto
             {
-                Id = 1,
+                Id = new Guid("00000000-0000-0000-0000-000000000001"),
                 Title = "Freshie Orientation Night",
                 Description =
                     """
@@ -106,7 +106,7 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
             },
             new EventDto
             {
-                Id = 2,
+                Id = new Guid("00000000-0000-0000-0000-000000000002"),
                 Title = "CodeSprint: Intro to Competitive Programming",
                 Description =
                     """
@@ -127,7 +127,7 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
             },
             new EventDto
             {
-                Id = 3,
+                Id = new Guid("00000000-0000-0000-0000-000000000003"),
                 Title = "General Assembly",
                 Description =
                     """
@@ -143,7 +143,7 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
             },
             new EventDto
             {
-                Id = 4,
+                Id = new Guid("00000000-0000-0000-0000-000000000004"),
                 Title = "Merch Drop: Cosmic Hoodie Pre-orders",
                 Description =
                     """
@@ -160,7 +160,7 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
             },
             new EventDto
             {
-                Id = 5,
+                Id = new Guid("00000000-0000-0000-0000-000000000005"),
                 Title = "Industry Night: Tech Talks",
                 Description =
                     """

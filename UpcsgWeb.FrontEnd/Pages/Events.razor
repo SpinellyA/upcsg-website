@@ -1,4 +1,4 @@
-﻿@page "/events"
+@page "/events"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
@@ -193,7 +193,7 @@
 
     private bool _loading = true;
     private List<EventDto> _events = [];
-    private HashSet<int> _expanded = [];
+    private HashSet<Guid> _expanded = [];
     private DateTime? _selectedDate;
 
     private DateTime FirstOfMonth => new(_month.Year, _month.Month, 1);
@@ -228,7 +228,7 @@
     private List<EventDto> EventsOn(DateTime date) =>
         _events.Where(e => Starts(e).Date == date.Date).ToList();
 
-    private void Toggle(int id)
+    private void Toggle(Guid id)
     {
         if (!_expanded.Add(id))
         {

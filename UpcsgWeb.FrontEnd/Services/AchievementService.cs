@@ -17,7 +17,7 @@ public class AchievementService(HttpClient http, ApiOptions options) : IAchievem
         return SeedData();
     }
 
-    public async Task<AchievementDto?> GetAchievementAsync(int id)
+    public async Task<AchievementDto?> GetAchievementAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
@@ -48,7 +48,7 @@ public class AchievementService(HttpClient http, ApiOptions options) : IAchievem
     [
         new AchievementDto
         {
-            Id = 1,
+            Id = new Guid("00000000-0000-0000-0000-000000000001"),
             Title = "Champion, UP Cebu Interschool Hackathon",
             Year = 2026,
             Category = "Competition",
@@ -73,7 +73,7 @@ public class AchievementService(HttpClient http, ApiOptions options) : IAchievem
         },
         new AchievementDto
         {
-            Id = 2,
+            Id = new Guid("00000000-0000-0000-0000-000000000002"),
             Title = "Outstanding Student Organization, College of Science",
             Year = 2026,
             Category = "Recognition",

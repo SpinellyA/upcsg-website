@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Microsoft.Extensions.Options;
 using UpcsgWeb.Api.Auth;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Abstractions;
 using UpcsgWeb.Infrastructure.Media;
 using UpcsgWeb.Shared.Contracts;

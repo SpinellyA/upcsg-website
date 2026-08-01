@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using UpcsgWeb.Shared.Contracts;
 
@@ -7,8 +7,8 @@ namespace UpcsgWeb.FrontEnd.Services;
 public interface ICartService
 {
     Task<CartDto> GetAsync();
-    Task<CartDto> AddAsync(int merchItemId, string? variant, int quantity);
-    Task<CartDto> SetQuantityAsync(int merchItemId, string? variant, int quantity);
+    Task<CartDto> AddAsync(Guid merchItemId, string? variant, int quantity);
+    Task<CartDto> SetQuantityAsync(Guid merchItemId, string? variant, int quantity);
     Task ClearAsync();
     Task<OrderDto> CheckoutAsync(string? note);
 
@@ -43,7 +43,7 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
         return await response.Content.ReadFromJsonAsync<CartDto>(UpcsgJson.Options) ?? new CartDto();
     }
 
-    public async Task<CartDto> AddAsync(int merchItemId, string? variant, int quantity)
+    public async Task<CartDto> AddAsync(Guid merchItemId, string? variant, int quantity)
     {
         EnsureConfigured();
 
@@ -59,7 +59,7 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
         return cart;
     }
 
-    public async Task<CartDto> SetQuantityAsync(int merchItemId, string? variant, int quantity)
+    public async Task<CartDto> SetQuantityAsync(Guid merchItemId, string? variant, int quantity)
     {
         EnsureConfigured();
 

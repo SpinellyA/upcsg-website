@@ -1,4 +1,4 @@
-@page "/merch/{Id:int}"
+@page "/merch/{Id:guid}"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
@@ -258,7 +258,7 @@ else
 }
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public Guid Id { get; set; }
 
     /// <summary>Mirrors Cart.MaxQuantityPerLine; the domain rejects anything above it.</summary>
     private const int MaxPerLine = 25;

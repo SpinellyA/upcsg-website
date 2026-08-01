@@ -11,7 +11,7 @@ public class SiteSettingsTests
     [Fact]
     public void Following_the_calendar_uses_guild_local_time_not_utc()
     {
-        var settings = SiteSettings.CreateDefault();
+        var settings = SiteSettings.Create();
 
         var (year, month) = settings.ResolveEventsMonth(LateJulyUtc);
 
@@ -25,7 +25,7 @@ public class SiteSettingsTests
     [Fact]
     public void Following_the_calendar_rolls_the_year_over_too()
     {
-        var settings = SiteSettings.CreateDefault();
+        var settings = SiteSettings.Create();
 
         // 5 PM UTC on 31 December is 1 January in Cebu.
         var (year, month) = settings.ResolveEventsMonth(new DateTime(2026, 12, 31, 17, 0, 0, DateTimeKind.Utc));
@@ -37,7 +37,7 @@ public class SiteSettingsTests
     [Fact]
     public void A_pinned_month_ignores_the_clock_entirely()
     {
-        var settings = SiteSettings.CreateDefault();
+        var settings = SiteSettings.Create();
         settings.ShowMonth(2026, 7);
 
         var (year, month) = settings.ResolveEventsMonth(LateJulyUtc);
@@ -49,7 +49,7 @@ public class SiteSettingsTests
     [Fact]
     public void Unpinning_returns_to_the_calendar()
     {
-        var settings = SiteSettings.CreateDefault();
+        var settings = SiteSettings.Create();
         settings.ShowMonth(2026, 3);
 
         settings.FollowCurrentMonth();
@@ -64,7 +64,7 @@ public class SiteSettingsTests
     [InlineData(13)]
     public void A_month_outside_the_year_is_refused(int month)
     {
-        var settings = SiteSettings.CreateDefault();
+        var settings = SiteSettings.Create();
 
         Assert.Throws<DomainException>(() => settings.ShowMonth(2026, month));
     }
@@ -72,7 +72,7 @@ public class SiteSettingsTests
     [Fact]
     public void A_year_far_out_is_refused()
     {
-        var settings = SiteSettings.CreateDefault();
+        var settings = SiteSettings.Create();
 
         // Pinning a decade ahead is a typo, not a plan.
         Assert.Throws<DomainException>(() => settings.ShowMonth(DateTime.UtcNow.Year + 10, 6));

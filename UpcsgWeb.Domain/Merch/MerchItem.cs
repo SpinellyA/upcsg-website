@@ -89,7 +89,7 @@ public class MerchItem : AggregateRoot
 
     public static MerchItem Create(string name, string description, Money price)
     {
-        var item = new MerchItem();
+        var item = new MerchItem { Id = Guid.CreateVersion7() };
         item.UpdateDetails(name, description, price);
         return item;
     }

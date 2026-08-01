@@ -1,6 +1,6 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Achievements;
@@ -14,13 +14,13 @@ public class GetAchievementEndpoint(IAchievementRepository achievements)
 {
     public override void Configure()
     {
-        Get("/achievements/{id:int}");
+        Get("/achievements/{id:guid}");
         AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var found = await achievements.GetByIdAsync(Route<int>("id"), ct);
+        var found = await achievements.GetByIdAsync(Route<Guid>("id"), ct);
 
         if (found is null)
         {

@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Users;
 using UpcsgWeb.Shared.Contracts;
 
@@ -58,7 +58,7 @@ public class DevSignInEndpoint(
         var user = await users.GetByGoogleSubjectAsync(subject, ct);
         if (user is null)
         {
-            user = AppUser.Register(subject, email, wantsAdmin ? "Dev Officer" : "Dev Guilder", null);
+            user = AppUser.Create(subject, email, wantsAdmin ? "Dev Officer" : "Dev Guilder", null);
             users.Add(user);
         }
         else

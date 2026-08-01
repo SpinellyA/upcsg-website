@@ -1,5 +1,5 @@
 @page "/admin/members/new"
-@page "/admin/members/{Id:int}"
+@page "/admin/members/{Id:guid}"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -126,7 +126,7 @@
 </div>
 
 @code {
-    [Parameter] public int? Id { get; set; }
+    [Parameter] public Guid? Id { get; set; }
 
     private MemberDto _item = new();
     private bool _loading = true;

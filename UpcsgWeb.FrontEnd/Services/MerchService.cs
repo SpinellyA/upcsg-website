@@ -17,7 +17,7 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
         return SeedData();
     }
 
-    public async Task<MerchItemDto?> GetMerchItemAsync(int id)
+    public async Task<MerchItemDto?> GetMerchItemAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
@@ -45,38 +45,38 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
         {
             new()
             {
-                Id = 1,
+                Id = new Guid("00000000-0000-0000-0000-000000000001"),
                 Name = "UPCSG 2026-2027 Cosmic Hoodie",
                 Description = "Midnight indigo pullover hoodie with galactic orchid embroidered logo.",
                 Price = 750m,
                 Variants =
                 [
-                    new MerchVariantDto { Id = 1, Name = "S", Price = 750m, Stock = 12 },
-                    new MerchVariantDto { Id = 2, Name = "M", Price = 750m, Stock = 12 },
-                    new MerchVariantDto { Id = 3, Name = "L", Price = 780m, Stock = 12 },
-                    new MerchVariantDto { Id = 4, Name = "XL", Price = 820m, Stock = 4, Description = "Runs generous through the shoulders." },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000001"), Name = "S", Price = 750m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000002"), Name = "M", Price = 750m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000003"), Name = "L", Price = 780m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000004"), Name = "XL", Price = 820m, Stock = 4, Description = "Runs generous through the shoulders." },
                 ],
             },
             new()
             {
-                Id = 2,
+                Id = new Guid("00000000-0000-0000-0000-000000000002"),
                 Name = "Starlight Core Tote Bag",
                 Description = "Canvas tote with the UPCSG starburst print in liquid chrome gold.",
                 Price = 250m,
-                Variants = [new MerchVariantDto { Id = 5, Name = "One size", Price = 250m, Stock = 12 }],
+                Variants = [new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000005"), Name = "One size", Price = 250m, Stock = 12 }],
             },
             new()
             {
-                Id = 3,
+                Id = new Guid("00000000-0000-0000-0000-000000000003"),
                 Name = "Guild Enamel Pin Set",
                 Description = "Set of 3 pins: UPCSG crest, mascot, and constellation icon.",
                 Price = 180m,
                 InStock = false,
-                Variants = [new MerchVariantDto { Id = 6, Name = "Set of 3", Price = 180m, Stock = 12 }],
+                Variants = [new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000006"), Name = "Set of 3", Price = 180m, Stock = 12 }],
             },
             new()
             {
-                Id = 4,
+                Id = new Guid("00000000-0000-0000-0000-000000000004"),
                 IsOnSale = true,
                 SalePercentage = 15m,
                 Name = "Guild Statement Shirt",
@@ -84,29 +84,29 @@ public class MerchService(HttpClient http, ApiOptions options) : IMerchService
                 Price = 450m,
                 Variants =
                 [
-                    new MerchVariantDto { Id = 7, Name = "S", Price = 450m, Stock = 12 },
-                    new MerchVariantDto { Id = 8, Name = "M", Price = 450m, Stock = 12 },
-                    new MerchVariantDto { Id = 9, Name = "L", Price = 450m, Stock = 12 },
-                    new MerchVariantDto { Id = 10, Name = "XL", Price = 480m, Stock = 12 },
-                    new MerchVariantDto { Id = 11, Name = "2XL", Price = 510m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000007"), Name = "S", Price = 450m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000008"), Name = "M", Price = 450m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000009"), Name = "L", Price = 450m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000010"), Name = "XL", Price = 480m, Stock = 12 },
+                    new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000011"), Name = "2XL", Price = 510m, Stock = 12 },
                 ],
             },
             new()
             {
-                Id = 5,
+                Id = new Guid("00000000-0000-0000-0000-000000000005"),
                 Name = "Nebula Lanyard",
                 Description = "Woven lanyard in deep amethyst with a periwinkle guild repeat print.",
                 Price = 120m,
-                Variants = [new MerchVariantDto { Id = 12, Name = "One size", Price = 120m, Stock = 12 }],
+                Variants = [new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000012"), Name = "One size", Price = 120m, Stock = 12 }],
             },
             new()
             {
-                Id = 6,
+                Id = new Guid("00000000-0000-0000-0000-000000000006"),
                 IsPreorder = true,
                 Name = "Sticker Pack: Cosmo Tech",
                 Description = "Eight die-cut vinyl stickers from the Cosmo Tech graphic set. Laptop-safe.",
                 Price = 90m,
-                Variants = [new MerchVariantDto { Id = 13, Name = "Pack of 8", Price = 90m, Stock = 12 }],
+                Variants = [new MerchVariantDto { Id = new Guid("00000000-0000-0000-0000-000000000013"), Name = "Pack of 8", Price = 90m, Stock = 12 }],
             },
         };
 

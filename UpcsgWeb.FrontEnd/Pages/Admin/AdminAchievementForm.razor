@@ -1,5 +1,5 @@
 @page "/admin/achievements/new"
-@page "/admin/achievements/{Id:int}"
+@page "/admin/achievements/{Id:guid}"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -120,7 +120,7 @@
 </div>
 
 @code {
-    [Parameter] public int? Id { get; set; }
+    [Parameter] public Guid? Id { get; set; }
 
     private static readonly string[] Suggested =
         ["Competition", "Recognition", "Community", "Milestone"];

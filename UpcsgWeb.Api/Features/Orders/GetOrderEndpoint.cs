@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
@@ -9,7 +9,7 @@ namespace UpcsgWeb.Api.Features.Orders;
 /// <summary>Single order. Officers see any; guilders see only their own.</summary>
 public class GetOrderEndpoint(IOrderRepository orders) : EndpointWithoutRequest<OrderDto>
 {
-    public override void Configure() => Get("/orders/{id:int}");
+    public override void Configure() => Get("/orders/{id:guid}");
 
     public override async Task HandleAsync(CancellationToken ct)
     {
@@ -20,7 +20,7 @@ public class GetOrderEndpoint(IOrderRepository orders) : EndpointWithoutRequest<
             return;
         }
 
-        var order = await orders.GetByIdAsync(Route<int>("id"), ct);
+        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
         if (order is null)
         {
             await Send.NotFoundAsync(ct);

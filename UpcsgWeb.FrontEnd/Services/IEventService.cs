@@ -1,4 +1,4 @@
-﻿using UpcsgWeb.Shared.Contracts;
+using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
@@ -11,7 +11,7 @@ public interface IEventService
     /// A single event by id. Fetched directly rather than filtered out of the current
     /// month, so a shared link keeps working after the displayed month moves on.
     /// </summary>
-    Task<EventDto?> GetEventAsync(int id);
+    Task<EventDto?> GetEventAsync(Guid id);
 
     /// <summary>
     /// Which month that is. Officers can pin it ahead of the real calendar, so the

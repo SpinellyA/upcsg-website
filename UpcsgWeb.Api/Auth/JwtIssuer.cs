@@ -20,7 +20,7 @@ public class JwtIssuer(IConfiguration configuration)
     private static readonly TimeSpan Lifetime = TimeSpan.FromHours(8);
 
     public (string Token, DateTimeOffset ExpiresAt) Issue(
-        int userId, string email, string name, string role, string? pictureUrl)
+        Guid userId, string email, string name, string role, string? pictureUrl)
     {
         var key = configuration["Jwt:SigningKey"]
             ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");

@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Shared.Contracts;
 
@@ -19,14 +19,14 @@ public class SettleRefundEndpoint(IOrderRepository orders, IUnitOfWork uow)
 {
     public override void Configure()
     {
-        Post("/orders/{id:int}/settle-refund");
+        Post("/orders/{id:guid}/settle-refund");
         Policies(AuthPolicies.ExeCom);
         Summary(s => s.Summary = "Record a refund that has been sent (officers only).");
     }
 
     public override async Task HandleAsync(SettleRefundRequest req, CancellationToken ct)
     {
-        var order = await orders.GetByIdAsync(Route<int>("id"), ct);
+        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
 
         if (order is null)
         {

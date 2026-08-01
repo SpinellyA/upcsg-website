@@ -6,7 +6,7 @@ namespace UpcsgWeb.Shared.Contracts;
 /// </summary>
 public class CartLineDto
 {
-    public int MerchItemId { get; set; }
+    public Guid MerchItemId { get; set; }
     public string ItemName { get; set; } = string.Empty;
     public string? Variant { get; set; }
     public int Quantity { get; set; }
@@ -31,7 +31,7 @@ public class CartDto
 
 public class AddToCartRequest
 {
-    public int MerchItemId { get; set; }
+    public Guid MerchItemId { get; set; }
     public string? Variant { get; set; }
     public int Quantity { get; set; } = 1;
 }
@@ -39,7 +39,7 @@ public class AddToCartRequest
 /// <summary>Absolute quantity. Zero removes the line.</summary>
 public class UpdateCartLineRequest
 {
-    public int MerchItemId { get; set; }
+    public Guid MerchItemId { get; set; }
     public string? Variant { get; set; }
     public int Quantity { get; set; }
 }

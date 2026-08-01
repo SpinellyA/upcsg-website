@@ -1,5 +1,5 @@
 @page "/admin/events/new"
-@page "/admin/events/{Id:int}"
+@page "/admin/events/{Id:guid}"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -147,7 +147,7 @@
 </div>
 
 @code {
-    [Parameter] public int? Id { get; set; }
+    [Parameter] public Guid? Id { get; set; }
 
     /// <summary>
     /// The month the officer was browsing, carried in the query string so a new event

@@ -1,7 +1,7 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.ValueObjects;
 using UpcsgWeb.Shared.Contracts;
@@ -13,13 +13,13 @@ public class UpdateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
 {
     public override void Configure()
     {
-        Put("/merch/{id:int}");
+        Put("/merch/{id:guid}");
         Policies(AuthPolicies.ExeCom);
     }
 
     public override async Task HandleAsync(MerchItemDto req, CancellationToken ct)
     {
-        var item = await merch.GetByIdAsync(Route<int>("id"), ct);
+        var item = await merch.GetByIdAsync(Route<Guid>("id"), ct);
         if (item is null)
         {
             await Send.NotFoundAsync(ct);

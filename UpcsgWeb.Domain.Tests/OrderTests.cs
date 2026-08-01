@@ -12,7 +12,7 @@ public class OrderLifecycleTests
     private static Order AwaitingPaymentOrder(out MerchItem item)
     {
         item = Hoodie();
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(item, "M", 1);
         return order;
     }
@@ -24,7 +24,7 @@ public class OrderLifecycleTests
     [Fact]
     public void CheckoutDoesNotMeanPaid_OrderStartsAwaitingPayment()
     {
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         Assert.Equal(OrderStatus.AwaitingPayment, order.Status);
         Assert.True(order.AwaitsPayment);
         Assert.Null(order.Receipt);
@@ -114,7 +114,7 @@ public class OrderLifecycleTests
     [Fact]
     public void EmptyOrderCannotBePaidFor()
     {
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         Assert.Throws<DomainException>(() => order.SubmitReceipt(Receipt()));
     }
 
@@ -273,7 +273,7 @@ public class OrderLifecycleTests
     [Fact]
     public void TotalSumsLines()
     {
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(Hoodie(), "M", 2);       // 1500
         order.AddLine(Tote(), "One size", 1);  //  250
 
@@ -285,7 +285,7 @@ public class OrderLifecycleTests
     [Fact]
     public void LineTakesTheVariantsPriceNotTheItemBase()
     {
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(HoodieWithPricedSizes(), "XL", 1);
 
         // Base is 750; XL is 820. Charging the base here would sell the biggest size at
@@ -297,7 +297,7 @@ public class OrderLifecycleTests
     public void EachVariantIsPricedIndependentlyOnTheSameOrder()
     {
         var item = HoodieWithPricedSizes();
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
 
         order.AddLine(item, "S", 1);   // 750
         order.AddLine(item, "XL", 1);  // 820
@@ -309,9 +309,8 @@ public class OrderLifecycleTests
     public void ItemWithNoVariantsFallsBackToItsBasePrice()
     {
         var item = MerchItem.Create("Sticker pack", "Vinyl", Money.Of(90m));
-        AssignId(item, 99);
 
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(item, null, 2);
 
         Assert.Equal(180m, order.Total.Amount);
@@ -326,7 +325,7 @@ public class RefundDueTests
         hoodie = Hoodie(stock: 1, price: 750m);
         tote = Tote(price: 250m);
 
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(hoodie, "M", 2);        // 1500, only 1 available
         order.AddLine(tote, "One size", 1);   //  250
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
@@ -376,7 +375,7 @@ public class RefundDueTests
     public void AnOrderWhereNothingCanBeFilledIsRefusedOutright()
     {
         var hoodie = Hoodie(stock: 0);
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(hoodie, "M", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
@@ -413,7 +412,7 @@ public class RefundDueTests
         var hoodie = Hoodie(stock: 1);
         var tote = Tote();
 
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(hoodie, "M", 3);
         order.AddLine(tote, "One size", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
@@ -592,7 +591,7 @@ public class MerchSaleTests
         var item = HoodieWithPricedSizes();
         item.SetSale(true, 20m);
 
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(item, "XL", 1);
 
         // The guilder is charged the sale price; ending the sale must not reprice history.
@@ -609,7 +608,7 @@ public class MerchStockTests
     public void AcknowledgingDeductsStock()
     {
         var item = Hoodie(stock: 5);
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(item, "M", 2);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
@@ -625,7 +624,7 @@ public class MerchStockTests
     public void AcknowledgingIsRefusedWhenStockRanOut()
     {
         var item = Hoodie(stock: 1);
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(item, "M", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
@@ -647,7 +646,7 @@ public class MerchStockTests
         var tote = Tote();
         tote.SetVariantStock(tote.Variants[0].Id, 0);
 
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(hoodie, "M", 1);
         order.AddLine(tote, "One size", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
@@ -661,7 +660,7 @@ public class MerchStockTests
     [Fact]
     public void CartRefusesMoreThanIsLeft()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var item = Hoodie(stock: 2);
 
         var ex = Assert.Throws<DomainException>(() => cart.AddItem(item, "M", 3));
@@ -671,7 +670,7 @@ public class MerchStockTests
     [Fact]
     public void CartChecksTheRunningTotalAgainstStock()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var item = Hoodie(stock: 2);
 
         cart.AddItem(item, "M", 2);
@@ -681,7 +680,7 @@ public class MerchStockTests
     [Fact]
     public void SoldOutSaysSoldOut()
     {
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var item = Hoodie(stock: 0);
 
         var ex = Assert.Throws<DomainException>(() => cart.AddItem(item, "M", 1));
@@ -704,7 +703,6 @@ public class MerchStockTests
     public void ItemWithNoVariantsUsesItsOwnStock()
     {
         var item = MerchItem.Create("Sticker pack", "Vinyl", Money.Of(90m));
-        AssignId(item, 42);
         item.SetStock(3);
 
         Assert.Equal(3, item.StockFor(null));
@@ -728,8 +726,7 @@ public class MerchPreorderTests
     private static MerchItem Preorder()
     {
         var item = MerchItem.Create("Cosmic Hoodie", "Bulk print", Money.Of(750m));
-        AssignId(item, 7);
-        AssignId(item.AddVariant("M", string.Empty, Money.Of(750m)), 1);
+        item.AddVariant("M", string.Empty, Money.Of(750m));
         item.SetPreorder(true, null);
         return item;
     }
@@ -748,7 +745,7 @@ public class MerchPreorderTests
     public void AcknowledgingAPreorderDeductsNothing()
     {
         var item = Preorder();
-        var order = Order.Place(UserId);
+        var order = Order.Create(UserId);
         order.AddLine(item, "M", 3);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
@@ -764,7 +761,7 @@ public class MerchPreorderTests
         var item = Preorder();
         item.SetPreorder(true, DateTime.UtcNow.AddMinutes(-1));
 
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         var ex = Assert.Throws<DomainException>(() => cart.AddItem(item, "M", 1));
         Assert.Contains("closed", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -775,7 +772,7 @@ public class MerchPreorderTests
         var item = Preorder();
         item.SetPreorder(true, DateTime.UtcNow.AddDays(3));
 
-        var cart = Cart.For(UserId);
+        var cart = Cart.Create(UserId);
         cart.AddItem(item, "M", 1);
 
         Assert.Single(cart.Lines);

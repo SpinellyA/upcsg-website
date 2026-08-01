@@ -1,6 +1,6 @@
 using FastEndpoints;
 using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Events;
@@ -9,13 +9,13 @@ public class GetEventEndpoint(IEventRepository events) : EndpointWithoutRequest<
 {
     public override void Configure()
     {
-        Get("/events/{id:int}");
+        Get("/events/{id:guid}");
         AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var found = await events.GetByIdAsync(Route<int>("id"), ct);
+        var found = await events.GetByIdAsync(Route<Guid>("id"), ct);
         if (found is null)
         {
             await Send.NotFoundAsync(ct);

@@ -1,16 +1,13 @@
 using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Common;
-using UpcsgWeb.Domain.Orders;
+using UpcsgWeb.Application.Features.Orders.SubmitReceipt;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
 /// <summary>Guilder submits GCash proof, moving their order into the officers' queue.</summary>
-public class SubmitReceiptEndpoint(IOrderRepository orders, IUnitOfWork uow)
-    : Endpoint<SubmitReceiptRequest, OrderDto>
+public class SubmitReceiptEndpoint(ISender sender) : Endpoint<SubmitReceiptRequest, OrderDto>
 {
     public override void Configure()
     {
@@ -27,34 +24,11 @@ public class SubmitReceiptEndpoint(IOrderRepository orders, IUnitOfWork uow)
             return;
         }
 
-        var order = await orders.GetByIdAsync(Route<Guid>("id"), ct);
-        if (order is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
+        var order = await sender.Send(
+            new SubmitReceiptCommand(
+                Route<Guid>("id"), userId.Value, req.ScreenshotUrl, req.ReferenceNumber),
+            ct);
 
-        // Paying is the guilder's own act. Officers can move statuses but must not be
-        // able to fabricate a receipt on someone's behalf — so no admin bypass here.
-        if (order.UserId != userId.Value)
-        {
-            await Send.ForbiddenAsync(ct);
-            return;
-        }
-
-        try
-        {
-            var receipt = PaymentReceipt.FromScreenshot(req.ScreenshotUrl, req.ReferenceNumber);
-            order.SubmitReceipt(receipt);
-        }
-        catch (DomainException ex)
-        {
-            AddError(ex.Message);
-            await Send.ErrorsAsync(409, ct);
-            return;
-        }
-
-        await uow.SaveChangesAsync(ct);
-        await Send.OkAsync(order.ToDto(), ct);
+        await Send.OkAsync(order, ct);
     }
 }

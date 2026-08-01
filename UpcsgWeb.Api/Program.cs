@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Api.Features.Dev;
+using UpcsgWeb.Api;
 using UpcsgWeb.Api.Features.Media;
 using UpcsgWeb.Application;
 using UpcsgWeb.Infrastructure;
@@ -117,6 +118,12 @@ app.UseStaticFiles();
 
 // CORS goes before auth so preflight OPTIONS requests aren't rejected as unauthorised.
 app.UseCors(CorsPolicies.Frontend);
+
+// Outside the endpoints so it catches rules thrown from anywhere in the handler chain,
+// but inside CORS so the error response still carries the headers the browser needs to
+// let the frontend read it.
+app.UseDomainExceptionMapping();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

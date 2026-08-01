@@ -1,7 +1,7 @@
 using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Orders.GetMyOrders;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
@@ -11,7 +11,7 @@ namespace UpcsgWeb.Api.Features.Orders;
 // and a second place for the pricing rules to drift.
 
 /// <summary>A guilder's own order history.</summary>
-public class MyOrdersEndpoint(IOrderRepository orders) : EndpointWithoutRequest<List<OrderDto>>
+public class MyOrdersEndpoint(ISender sender) : EndpointWithoutRequest<List<OrderDto>>
 {
     public override void Configure() => Get("/orders/mine");
 
@@ -25,7 +25,6 @@ public class MyOrdersEndpoint(IOrderRepository orders) : EndpointWithoutRequest<
         }
 
         // Scoped by the token's user id, never by a caller-supplied one.
-        var result = await orders.GetForUserAsync(userId.Value, ct);
-        await Send.OkAsync([.. result.Select(o => o.ToDto())], ct);
+        await Send.OkAsync(await sender.Send(new GetMyOrdersQuery(userId.Value), ct), ct);
     }
 }

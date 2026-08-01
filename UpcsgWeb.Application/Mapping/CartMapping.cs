@@ -2,7 +2,7 @@ using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Merch;
 using UpcsgWeb.Shared.Contracts;
 
-namespace UpcsgWeb.Api.Mapping;
+namespace UpcsgWeb.Application.Mapping;
 
 public static class CartMapping
 {

@@ -1,5 +1,5 @@
 using FastEndpoints;
-using UpcsgWeb.Api.Mapping;
+using UpcsgWeb.Application.Mapping;
 using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Shared.Contracts;
 

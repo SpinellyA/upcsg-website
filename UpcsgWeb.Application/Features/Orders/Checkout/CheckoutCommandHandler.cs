@@ -1,6 +1,8 @@
 using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Mapping;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Orders;
+using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Application.Features.Orders.Checkout;
 
@@ -12,12 +14,16 @@ namespace UpcsgWeb.Application.Features.Orders.Checkout;
 /// infrastructure in it. Rewriting it here would move domain rules into the application
 /// layer and cost the ability to test checkout without a database.
 /// </summary>
-public class CheckoutCommandHandler(IUnitOfWork uow) : ICommandHandler<CheckoutCommand, Guid>
+public class CheckoutCommandHandler(IUnitOfWork uow) : ICommandHandler<CheckoutCommand, OrderDto>
 {
-    public async Task<Guid> Handle(CheckoutCommand command, CancellationToken cancellationToken)
+    public async Task<OrderDto> Handle(CheckoutCommand command, CancellationToken cancellationToken)
     {
-        var cart = await uow.Carts.GetForUserAsync(command.UserId, cancellationToken)
-            ?? throw new DomainException("Your cart is empty.");
+        var cart = await uow.Carts.GetForUserAsync(command.UserId, cancellationToken);
+
+        if (cart is null || cart.IsEmpty)
+        {
+            throw new DomainException("Your cart is empty.");
+        }
 
         // One round trip for every item in the cart, keyed by id: CheckoutService needs
         // the live MerchItem to snapshot its price and re-check stock.
@@ -29,6 +35,6 @@ public class CheckoutCommandHandler(IUnitOfWork uow) : ICommandHandler<CheckoutC
         uow.Orders.Add(order);
         await uow.SaveChangesAsync(cancellationToken);
 
-        return order.Id;
+        return order.ToDto();
     }
 }

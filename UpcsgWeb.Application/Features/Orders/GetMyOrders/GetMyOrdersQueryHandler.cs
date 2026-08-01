@@ -1,30 +1,18 @@
-using Microsoft.EntityFrameworkCore;
 using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Orders;
+using UpcsgWeb.Application.Mapping;
+using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Application.Features.Orders.GetMyOrders;
 
-public class GetMyOrdersQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetMyOrdersQuery, List<MyOrderListItem>>
+public class GetMyOrdersQueryHandler(IUnitOfWork uow)
+    : IQueryHandler<GetMyOrdersQuery, List<OrderDto>>
 {
-    public async Task<List<MyOrderListItem>> Handle(
+    public async Task<List<OrderDto>> Handle(
         GetMyOrdersQuery query,
-        CancellationToken cancellationToken) =>
-        await context.Orders
-            .AsNoTracking()
-            .Where(o => o.UserId == query.UserId)
-            .OrderByDescending(o => o.PlacedAt)
-            .Select(o => new MyOrderListItem(
-                o.Id,
-                o.PlacedAt,
-                o.Status.ToString(),
-                o.Lines.Sum(l => l.Quantity),
+        CancellationToken cancellationToken)
+    {
+        var orders = await uow.Orders.GetForUserAsync(query.UserId, cancellationToken);
 
-                // Summed in SQL rather than through Order.Total, which is a computed
-                // property the provider cannot translate.
-                o.Lines.Sum(l => l.UnitPrice.Amount * l.Quantity),
-                o.Lines
-                    .Where(l => l.Status == OrderLineStatus.RefundDue)
-                    .Sum(l => l.UnitPrice.Amount * l.Quantity)))
-            .ToListAsync(cancellationToken);
+        return [.. orders.Select(o => o.ToDto())];
+    }
 }

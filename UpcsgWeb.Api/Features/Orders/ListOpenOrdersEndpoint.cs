@@ -1,14 +1,13 @@
 using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Api.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Orders;
+using UpcsgWeb.Application.Features.Orders.ListOpenOrders;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
 /// <summary>The officer queue: everything not yet received or cancelled.</summary>
-public class ListOpenOrdersEndpoint(IOrderRepository orders) : EndpointWithoutRequest<List<OrderDto>>
+public class ListOpenOrdersEndpoint(ISender sender) : EndpointWithoutRequest<List<OrderDto>>
 {
     public override void Configure()
     {
@@ -16,16 +15,9 @@ public class ListOpenOrdersEndpoint(IOrderRepository orders) : EndpointWithoutRe
         Policies(AuthPolicies.ExeCom);
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
-    {
-        var status = Query<string?>("status", isRequired: false);
-
-        // An unparseable status falls back to the open queue rather than erroring —
-        // the filter is a convenience, not a contract.
-        var result = Enum.TryParse<OrderStatus>(status, ignoreCase: true, out var parsed)
-            ? await orders.GetByStatusAsync(parsed, ct)
-            : await orders.GetOpenAsync(ct);
-
-        await Send.OkAsync([.. result.Select(o => o.ToDto())], ct);
-    }
+    public override async Task HandleAsync(CancellationToken ct) =>
+        await Send.OkAsync(
+            await sender.Send(
+                new ListOpenOrdersQuery(Query<string?>("status", isRequired: false)), ct),
+            ct);
 }

@@ -2,6 +2,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UpcsgWeb.Domain\UpcsgWeb.Domain.csproj" />
+
+    <!-- Handlers return wire contracts so the API layer has nothing left to do but
+         choose a status code. Shared is a DTO-only project with no dependencies of its
+         own, so this does not drag delivery concerns into the application layer. -->
+    <ProjectReference Include="..\UpcsgWeb.Shared\UpcsgWeb.Shared.csproj" />
   </ItemGroup>
 
   <!-- Versions match the Scholaris application layer, which is the shape this follows. -->

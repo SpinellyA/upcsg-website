@@ -9,12 +9,12 @@ using UpcsgWeb.Shared.Contracts;
 using DomainMemberCategory = UpcsgWeb.Domain.Content.MemberCategory;
 using WireMemberCategory = UpcsgWeb.Shared.Contracts.MemberCategory;
 
-namespace UpcsgWeb.Api.Mapping;
+namespace UpcsgWeb.Application.Mapping;
 
 /// <summary>
 /// Domain to wire-contract projection, kept in one place so the API surface can't drift
-/// between endpoints. Mapping lives in the API because DTOs are a delivery concern —
-/// the domain doesn't know they exist.
+/// between endpoints. It sits beside the handlers that return these DTOs so the API layer
+/// has nothing left to decide but a status code; the domain still doesn't know they exist.
 /// </summary>
 public static class DtoMapping
 {

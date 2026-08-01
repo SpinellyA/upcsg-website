@@ -38,9 +38,9 @@ public class Order : AggregateRoot
 
     private Order() { } // EF
 
-    private Order(int userId)
+    private Order(Guid userId)
     {
-        if (userId <= 0)
+        if (userId == Guid.Empty)
         {
             throw new DomainException("An order must belong to a user.");
         }
@@ -54,7 +54,7 @@ public class Order : AggregateRoot
     }
 
     /// <summary>Reference to the AppUser aggregate by id only.</summary>
-    public int UserId { get; private set; }
+    public Guid UserId { get; private set; }
 
     public OrderStatus Status { get; private set; }
     public DateTime PlacedAt { get; private set; }
@@ -119,9 +119,10 @@ public class Order : AggregateRoot
 
     public bool IsOpen => Status is not (OrderStatus.Received or OrderStatus.Cancelled);
 
-    public static Order Place(int userId, string? note = null)
+    public static Order Create(Guid userId, string? note = null)
     {
-        var order = new Order(userId) { Note = note };
+        var order = new Order(userId) { Id = Guid.CreateVersion7(), Note = note };
+        order.Raise(new OrderPlacedEvent(order.Id, userId));
         return order;
     }
 
@@ -160,7 +161,7 @@ public class Order : AggregateRoot
         Touch();
     }
 
-    public void RemoveLine(int merchItemId, string? variant)
+    public void RemoveLine(Guid merchItemId, string? variant)
     {
         EnsureEditable();
 
@@ -187,6 +188,7 @@ public class Order : AggregateRoot
         // TransitionTo rejects this from any state but AwaitingPayment, so a receipt
         // can't be swapped out after an officer has already acted on it.
         TransitionTo(OrderStatus.Pending);
+        Raise(new ReceiptSubmittedEvent(Id, UserId));
 
         Receipt = receipt;
         ReceiptRejectionReason = null;
@@ -204,6 +206,7 @@ public class Order : AggregateRoot
         }
 
         TransitionTo(OrderStatus.AwaitingPayment);
+        Raise(new ReceiptRejectedEvent(Id, UserId, reason.Trim()));
 
         Receipt = null;
         ReceiptRejectionReason = reason.Trim();
@@ -220,7 +223,7 @@ public class Order : AggregateRoot
     /// Pending so an officer can restock or refund rather than being handed a half-done
     /// transition.
     /// </summary>
-    public void Acknowledge(IReadOnlyDictionary<int, MerchItem> items)
+    public void Acknowledge(IReadOnlyDictionary<Guid, MerchItem> items)
     {
         // Check everything before taking anything, so a shortfall on the second line
         // cannot leave the first line's stock already deducted.
@@ -247,6 +250,7 @@ public class Order : AggregateRoot
 
         AmountPaid = Total;
         TransitionTo(OrderStatus.Acknowledged);
+        Raise(new OrderAcknowledgedEvent(Id, UserId));
     }
 
     /// <summary>
@@ -259,7 +263,7 @@ public class Order : AggregateRoot
     /// Returns the lines that fell short, so the caller can tell the guilder precisely
     /// what is being refunded.
     /// </summary>
-    public IReadOnlyList<OrderLine> AcknowledgeWithShortfall(IReadOnlyDictionary<int, MerchItem> items)
+    public IReadOnlyList<OrderLine> AcknowledgeWithShortfall(IReadOnlyDictionary<Guid, MerchItem> items)
     {
         var short_ = new List<OrderLine>();
 
@@ -294,6 +298,7 @@ public class Order : AggregateRoot
 
         AmountPaid = Total;
         TransitionTo(OrderStatus.Acknowledged);
+        Raise(new OrderAcknowledgedWithShortfallEvent(Id, UserId, RefundDue));
 
         return short_;
     }
@@ -303,7 +308,7 @@ public class Order : AggregateRoot
     /// chooses this — a restock never silently resurrects an order, because the guilder
     /// may already have been told they're being refunded.
     /// </summary>
-    public void RefulfilLine(int merchItemId, string? variant, IReadOnlyDictionary<int, MerchItem> items)
+    public void RefulfilLine(Guid merchItemId, string? variant, IReadOnlyDictionary<Guid, MerchItem> items)
     {
         // Checked before the line lookup: once settled, every line is Refunded rather than
         // RefundDue, so the lookup would fail first and report "not awaiting a refund" —
@@ -353,6 +358,10 @@ public class Order : AggregateRoot
                 + "cannot verify the money actually moved.");
         }
 
+        // Captured before the loop: MarkRefunded clears IsRefundDue, so reading
+        // RefundDue afterwards would report zero back to whoever is listening.
+        var owed = RefundDue;
+
         foreach (var line in _lines.Where(l => l.IsRefundDue).ToList())
         {
             line.MarkRefunded();
@@ -360,12 +369,21 @@ public class Order : AggregateRoot
 
         RefundReference = reference.Trim();
         RefundSettledAt = DateTime.UtcNow;
+        Raise(new RefundSettledEvent(Id, UserId, owed, RefundReference));
         Touch();
     }
 
-    public void Release() => TransitionTo(OrderStatus.Released);
+    public void Release()
+    {
+        TransitionTo(OrderStatus.Released);
+        Raise(new OrderReleasedEvent(Id, UserId));
+    }
 
-    public void MarkReceived() => TransitionTo(OrderStatus.Received);
+    public void MarkReceived()
+    {
+        TransitionTo(OrderStatus.Received);
+        Raise(new OrderReceivedEvent(Id, UserId));
+    }
 
     public void Cancel(string reason)
     {
@@ -375,6 +393,7 @@ public class Order : AggregateRoot
         }
 
         TransitionTo(OrderStatus.Cancelled);
+        Raise(new OrderCancelledEvent(Id, UserId, reason.Trim()));
         CancellationReason = reason;
     }
 

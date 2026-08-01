@@ -26,7 +26,7 @@ public class Member : AggregateRoot
         string? committee,
         int displayOrder)
     {
-        var member = new Member { Category = category };
+        var member = new Member { Id = Guid.CreateVersion7(), Category = category };
         member.Update(name, role, committee, displayOrder);
         return member;
     }

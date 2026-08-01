@@ -146,7 +146,7 @@ public class MerchItem : AggregateRoot
         return variant;
     }
 
-    public void UpdateVariant(int variantId, string name, string description, Money price, IEnumerable<string>? photoUrls)
+    public void UpdateVariant(Guid variantId, string name, string description, Money price, IEnumerable<string>? photoUrls)
     {
         var variant = _variants.FirstOrDefault(v => v.Id == variantId)
             ?? throw new DomainException("That variant does not exist on this item.");
@@ -163,7 +163,7 @@ public class MerchItem : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void RemoveVariant(int variantId)
+    public void RemoveVariant(Guid variantId)
     {
         var variant = _variants.FirstOrDefault(v => v.Id == variantId)
             ?? throw new DomainException("That variant does not exist on this item.");
@@ -173,7 +173,7 @@ public class MerchItem : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void ReorderVariants(IReadOnlyList<int> variantIdsInOrder)
+    public void ReorderVariants(IReadOnlyList<Guid> variantIdsInOrder)
     {
         for (var i = 0; i < variantIdsInOrder.Count; i++)
         {
@@ -290,7 +290,7 @@ public class MerchItem : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void SetVariantStock(int variantId, int stock)
+    public void SetVariantStock(Guid variantId, int stock)
     {
         var variant = _variants.FirstOrDefault(v => v.Id == variantId)
             ?? throw new DomainException("That variant does not exist on this item.");

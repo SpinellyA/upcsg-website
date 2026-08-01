@@ -17,7 +17,7 @@ public static class CheckoutService
 {
     public static Order Checkout(
         Cart cart,
-        IReadOnlyDictionary<int, MerchItem> availableItems,
+        IReadOnlyDictionary<Guid, MerchItem> availableItems,
         string? note = null)
     {
         if (cart.IsEmpty)
@@ -25,7 +25,7 @@ public static class CheckoutService
             throw new DomainException("Your cart is empty.");
         }
 
-        var order = Order.Place(cart.UserId, note);
+        var order = Order.Create(cart.UserId, note);
 
         foreach (var line in cart.Lines)
         {

@@ -16,15 +16,18 @@ public class CartLine : Entity
 {
     private CartLine() { } // EF
 
-    internal CartLine(int merchItemId, string? variant, int quantity)
+    internal CartLine(Guid merchItemId, string? variant, int quantity)
     {
+        // Assigned here, not by the database: a line must be identifiable inside its
+        // cart before anything is saved, or removing an unsaved one cannot find it.
+        Id = Guid.CreateVersion7();
         MerchItemId = merchItemId;
         Variant = variant;
         Quantity = quantity;
     }
 
-    public int CartId { get; private set; }
-    public int MerchItemId { get; private set; }
+    public Guid CartId { get; private set; }
+    public Guid MerchItemId { get; private set; }
     public string? Variant { get; private set; }
     public int Quantity { get; private set; }
 

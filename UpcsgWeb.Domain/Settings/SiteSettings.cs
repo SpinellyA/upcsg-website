@@ -20,7 +20,7 @@ public class SiteSettings : AggregateRoot
 
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    public static SiteSettings CreateDefault() => new();
+    public static SiteSettings Create() => new() { Id = Guid.CreateVersion7() };
 
     /// <summary>Pins the events page to a specific month.</summary>
     public void ShowMonth(int year, int month)

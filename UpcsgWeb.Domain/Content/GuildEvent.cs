@@ -20,7 +20,7 @@ public class GuildEvent : AggregateRoot
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    public static GuildEvent Schedule(
+    public static GuildEvent Create(
         string title,
         string description,
         DateTime startsAt,
@@ -28,7 +28,7 @@ public class GuildEvent : AggregateRoot
         string location,
         string? posterUrl = null)
     {
-        var guildEvent = new GuildEvent();
+        var guildEvent = new GuildEvent { Id = Guid.CreateVersion7() };
         guildEvent.Update(title, description, startsAt, endsAt, location, posterUrl);
         return guildEvent;
     }

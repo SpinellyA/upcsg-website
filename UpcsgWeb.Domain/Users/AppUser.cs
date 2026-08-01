@@ -23,7 +23,7 @@ public class AppUser : AggregateRoot
 
     public bool IsAdmin => Role == GuildRoles.Admin;
 
-    public static AppUser Register(string googleSubject, string email, string name, string? pictureUrl)
+    public static AppUser Create(string googleSubject, string email, string name, string? pictureUrl)
     {
         if (string.IsNullOrWhiteSpace(googleSubject))
         {
@@ -35,8 +35,9 @@ public class AppUser : AggregateRoot
             throw new DomainException("A user must have an email address.");
         }
 
-        return new AppUser
+        var user = new AppUser
         {
+            Id = Guid.CreateVersion7(),
             GoogleSubject = googleSubject,
             Email = email,
             Name = string.IsNullOrWhiteSpace(name) ? email : name,
@@ -46,6 +47,9 @@ public class AppUser : AggregateRoot
             // see GrantAdmin. Signing in can never confer it.
             Role = GuildRoles.Member,
         };
+
+        user.Raise(new UserRegisteredEvent(user.Id, user.Email));
+        return user;
     }
 
     /// <summary>Refreshes profile fields on each sign-in. Never touches Role.</summary>

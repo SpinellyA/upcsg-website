@@ -16,9 +16,9 @@ public class Cart : AggregateRoot
 
     private Cart() { } // EF
 
-    private Cart(int userId)
+    private Cart(Guid userId)
     {
-        if (userId <= 0)
+        if (userId == Guid.Empty)
         {
             throw new DomainException("A cart must belong to a user.");
         }
@@ -27,7 +27,7 @@ public class Cart : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public int UserId { get; private set; }
+    public Guid UserId { get; private set; }
     public DateTime UpdatedAt { get; private set; }
 
     public IReadOnlyList<CartLine> Lines => _lines.AsReadOnly();
@@ -36,7 +36,7 @@ public class Cart : AggregateRoot
 
     public int TotalItems => _lines.Sum(l => l.Quantity);
 
-    public static Cart For(int userId) => new(userId);
+    public static Cart Create(Guid userId) => new(userId);
 
     /// <summary>
     /// Adds to the cart, or tops up an existing line for the same item and variant.
@@ -97,7 +97,7 @@ public class Cart : AggregateRoot
     }
 
     /// <summary>Sets an absolute quantity. Zero removes the line.</summary>
-    public void SetQuantity(int merchItemId, string? variant, int quantity)
+    public void SetQuantity(Guid merchItemId, string? variant, int quantity)
     {
         if (quantity < 0)
         {
@@ -124,7 +124,7 @@ public class Cart : AggregateRoot
         Touch();
     }
 
-    public void RemoveItem(int merchItemId, string? variant)
+    public void RemoveItem(Guid merchItemId, string? variant)
     {
         var line = Find(merchItemId, variant)
             ?? throw new DomainException("That item is not in your cart.");
@@ -140,7 +140,7 @@ public class Cart : AggregateRoot
         Touch();
     }
 
-    private CartLine? Find(int merchItemId, string? variant) =>
+    private CartLine? Find(Guid merchItemId, string? variant) =>
         _lines.FirstOrDefault(l => l.MerchItemId == merchItemId && l.Variant == variant);
 
     private void Touch() => UpdatedAt = DateTime.UtcNow;

@@ -15,9 +15,9 @@ public class OrderLine : Entity
 {
     private OrderLine() { } // EF
 
-    internal OrderLine(int merchItemId, string itemName, string? variant, Money unitPrice, int quantity)
+    internal OrderLine(Guid merchItemId, string itemName, string? variant, Money unitPrice, int quantity)
     {
-        if (merchItemId <= 0)
+        if (merchItemId == Guid.Empty)
         {
             throw new DomainException("An order line must reference a merch item.");
         }
@@ -32,6 +32,7 @@ public class OrderLine : Entity
             throw new DomainException("Quantity must be at least 1.");
         }
 
+        Id = Guid.CreateVersion7();
         MerchItemId = merchItemId;
         ItemName = itemName;
         Variant = variant;
@@ -39,10 +40,10 @@ public class OrderLine : Entity
         Quantity = quantity;
     }
 
-    public int OrderId { get; private set; }
+    public Guid OrderId { get; private set; }
 
     /// <summary>Reference to the MerchItem aggregate by id only.</summary>
-    public int MerchItemId { get; private set; }
+    public Guid MerchItemId { get; private set; }
 
     public string ItemName { get; private set; } = string.Empty;
     public string? Variant { get; private set; }

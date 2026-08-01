@@ -20,7 +20,7 @@ public class MerchVariant : Entity
 
     private MerchVariant() { } // EF
 
-    public int MerchItemId { get; private set; }
+    public Guid MerchItemId { get; private set; }
 
     public string Name { get; private set; } = string.Empty;
 
@@ -45,7 +45,7 @@ public class MerchVariant : Entity
 
     internal static MerchVariant Create(string name, string description, Money price, int displayOrder)
     {
-        var variant = new MerchVariant();
+        var variant = new MerchVariant { Id = Guid.CreateVersion7() };
         variant.Update(name, description, price);
         variant.DisplayOrder = displayOrder;
         return variant;

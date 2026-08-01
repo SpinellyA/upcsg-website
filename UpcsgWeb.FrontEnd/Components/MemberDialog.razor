@@ -1,52 +1,127 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* The full profile behind a roster card. MudDialog rather than an inline expander: an
-   expanding card reflows the grid underneath it, so every other officer jumps down the
-   page as you read one of them. *@
+@* The full profile behind a roster card.
 
-<MudDialog>
+   MudDialog rather than an inline expander: an expanding card reflows the grid, so every
+   other officer jumps down the page while you read one.
+
+   ContentClass strips MudBlazor's default padding so the portrait can run edge to edge.
+   Without it the plate sits in a 24px frame and reads as a picture pasted into a box
+   rather than as the head of the card. *@
+
+<MudDialog ContentClass="upcsg-mdlg__content" ActionsClass="upcsg-mdlg__actions">
     <DialogContent>
-        <div class="upcsg-memberdialog">
-            <CosmicImage Src="@Member.PhotoUrl"
-                         Alt="@Member.Name"
-                         Seed="@Member.Name"
-                         ShowInitials="true"
-                         Eager="true"
-                         Class="upcsg-memberdialog__portrait" />
+        <div class="upcsg-mdlg">
 
-            <div>
-                <p class="upcsg-memberdialog__role">@Member.Role</p>
-                <h3 class="upcsg-memberdialog__name">@Member.Name</h3>
+            <div class="upcsg-mdlg__head">
+                @* Keyed on the member so Blazor replaces the plate instead of patching
+                   it when paging: without the key the previous officer's colours linger
+                   on the new name for a frame. *@
+                <CosmicImage @key="Current.Id"
+                             Src="@Current.PhotoUrl"
+                             Alt="@Current.Name"
+                             Seed="@Current.Name"
+                             ShowInitials="true"
+                             Eager="true"
+                             Class="upcsg-mdlg__portrait" />
 
-                @if (!string.IsNullOrWhiteSpace(Member.Committee))
+                <div class="upcsg-mdlg__scrim"></div>
+
+                <MudIconButton Icon="@Icons.Material.Rounded.Close"
+                               Size="Size.Small"
+                               Class="upcsg-mdlg__close"
+                               aria-label="Close"
+                               OnClick="Close" />
+
+                <div class="upcsg-mdlg__title">
+                    <p class="upcsg-mdlg__role">@Current.Role</p>
+                    <h2 class="upcsg-mdlg__name">@Current.Name</h2>
+
+                    @if (!string.IsNullOrWhiteSpace(Current.Committee))
+                    {
+                        <span class="upcsg-mdlg__chip">@Current.Committee</span>
+                    }
+                </div>
+            </div>
+
+            <div class="upcsg-mdlg__body">
+                @if (!string.IsNullOrWhiteSpace(Current.Quote))
                 {
-                    <MudChip T="string" Size="Size.Small" Class="upcsg-memberdialog__chip">
-                        @Member.Committee
-                    </MudChip>
+                    <blockquote class="upcsg-mdlg__quote">
+                        <span class="upcsg-mdlg__mark" aria-hidden="true">&ldquo;</span>
+                        @Current.Quote
+                    </blockquote>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(Current.Bio))
+                {
+                    <p class="upcsg-mdlg__bio">@Current.Bio</p>
+                }
+                else
+                {
+                    <p class="upcsg-mdlg__bio upcsg-mdlg__bio--none">
+                        No profile has been written for this officer yet.
+                    </p>
                 }
             </div>
         </div>
-
-        @if (!string.IsNullOrWhiteSpace(Member.Quote))
-        {
-            <blockquote class="upcsg-memberdialog__quote">&ldquo;@Member.Quote&rdquo;</blockquote>
-        }
-
-        @if (!string.IsNullOrWhiteSpace(Member.Bio))
-        {
-            <p class="upcsg-memberdialog__bio">@Member.Bio</p>
-        }
     </DialogContent>
 
     <DialogActions>
-        <MudButton OnClick="Close">Close</MudButton>
+        @* Paging only earns its place when there is somewhere to go. *@
+        @if (Members.Count > 1)
+        {
+            <div class="upcsg-mdlg__nav">
+                <MudButton StartIcon="@Icons.Material.Rounded.ChevronLeft"
+                           Variant="Variant.Text"
+                           OnClick="Previous">
+                    @Neighbour(-1)
+                </MudButton>
+
+                <span class="upcsg-mdlg__pos">@(_index + 1) / @Members.Count</span>
+
+                <MudButton EndIcon="@Icons.Material.Rounded.ChevronRight"
+                           Variant="Variant.Text"
+                           OnClick="Next">
+                    @Neighbour(1)
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <MudButton OnClick="Close">Close</MudButton>
+        }
     </DialogActions>
 </MudDialog>
 
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
 
-    [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<MemberDto> Members { get; set; } = [];
+
+    /// <summary>Which officer to open on.</summary>
+    [Parameter] public int Index { get; set; }
+
+    private int _index;
+
+    private MemberDto Current => Members[_index];
+
+    protected override void OnParametersSet() =>
+        _index = Math.Clamp(Index, 0, Math.Max(0, Members.Count - 1));
+
+    // Wraps at both ends: reaching the last officer and being unable to continue reads
+    // as a broken button, and the roster is a ring, not a document.
+    private void Previous() => _index = (_index - 1 + Members.Count) % Members.Count;
+
+    private void Next() => _index = (_index + 1) % Members.Count;
+
+    /// <summary>First name of the neighbour, so the buttons say who is next, not "next".</summary>
+    private string Neighbour(int offset)
+    {
+        var i = (_index + offset + Members.Count) % Members.Count;
+        return Members[i].Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+            ?? Members[i].Name;
+    }
 
     private void Close() => MudDialog.Close();
 }

@@ -576,6 +576,90 @@
     flex: 1;
 }
 
+/* --- Spotlight: the lead officer ----------------------------------------- */
+
+.upcsg-memberlead { margin-bottom: 1.5rem; }
+
+.upcsg-membercard--spotlight {
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.upcsg-membercard--spotlight .upcsg-membercard__portrait {
+    /* A fixed share of the card, so the portrait keeps its proportion instead of
+       stretching to whatever height the bio happens to produce. */
+    flex: 0 0 clamp(9rem, 30%, 17rem);
+    aspect-ratio: auto;
+}
+
+.upcsg-membercard--spotlight .upcsg-membercard__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+}
+
+.upcsg-membercard--spotlight .upcsg-membercard__name {
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+}
+
+.upcsg-membercard--spotlight .upcsg-membercard__quote {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    font-size: 1.05rem;
+}
+
+.upcsg-membercard__bio {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.8rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--upcsg-periwinkle);
+}
+
+/* Stacks below the point where a side-by-side portrait leaves the text too narrow
+   to read comfortably. */
+@media (max-width: 46rem) {
+    .upcsg-membercard--spotlight { flex-direction: column; }
+
+    .upcsg-membercard--spotlight .upcsg-membercard__portrait {
+        flex: none;
+        aspect-ratio: 16 / 10;
+    }
+}
+
+/* --- Row: compact strip for short committees ----------------------------- */
+
+.upcsg-memberstrip {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+
+.upcsg-membercard--row {
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+}
+
+.upcsg-membercard--row .upcsg-membercard__portrait {
+    flex: 0 0 3.6rem;
+    width: 3.6rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+}
+
+.upcsg-membercard--row .upcsg-membercard__body { padding: 0; }
+
+.upcsg-membercard--row .upcsg-membercard__name { font-size: 1.1rem; }
+
+.upcsg-membercard--row .upcsg-membercard__more { padding: 0.35rem 0 0; }
+
 .upcsg-membercard__role {
     display: block;
     font-family: var(--upcsg-font-heading);
@@ -669,54 +753,134 @@
 
 /* --- Member dialog ------------------------------------------------------- */
 
-.upcsg-memberdialog {
-    display: flex;
-    align-items: center;
-    gap: 1.1rem;
-    margin-bottom: 1.25rem;
+/* MudBlazor pads dialog content by default, which framed the portrait in a 24px
+   border and made it read as a picture pasted into a box. */
+.upcsg-mdlg__content {
+    padding: 0 !important;
+    overflow: hidden;
 }
 
-.upcsg-memberdialog__portrait {
-    width: 5.5rem;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    flex-shrink: 0;
+.upcsg-mdlg__actions { padding: 0.75rem 1.25rem 1rem !important; }
+
+.upcsg-mdlg__head {
+    position: relative;
+    isolation: isolate;
 }
 
-.upcsg-memberdialog__role {
+.upcsg-mdlg__portrait {
+    width: 100%;
+    aspect-ratio: 16 / 11;
+    border-radius: 0;
+}
+
+/* Carries the title over any photograph, however bright. Without it the name sits on
+   whatever happens to be in the top of the frame. */
+.upcsg-mdlg__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(6, 3, 24, 0.95) 0%,
+        rgba(6, 3, 24, 0.55) 38%,
+        rgba(6, 3, 24, 0.05) 70%);
+    pointer-events: none;
+}
+
+.upcsg-mdlg__close {
+    position: absolute !important;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 3;
+    color: var(--upcsg-honeydew-white) !important;
+    background: rgba(6, 3, 24, 0.55) !important;
+    backdrop-filter: blur(6px);
+}
+
+.upcsg-mdlg__title {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 1.5rem 1.4rem 1.15rem;
+}
+
+.upcsg-mdlg__role {
     margin: 0;
     font-family: var(--upcsg-font-heading);
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--upcsg-liquid-chrome-gold);
 }
 
-.upcsg-memberdialog__name {
-    margin: 0.15rem 0 0.5rem;
+.upcsg-mdlg__name {
+    margin: 0.25rem 0 0.6rem;
     font-family: var(--upcsg-font-display);
-    font-size: 1.5rem;
-    line-height: 1.2;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    line-height: 1.15;
     color: var(--upcsg-honeydew-white);
+    text-shadow: 0 2px 20px rgba(6, 3, 24, 0.7);
 }
 
-.upcsg-memberdialog__chip { margin: 0 !important; }
-
-.upcsg-memberdialog__quote {
-    margin: 0 0 1rem;
-    padding-left: 1rem;
-    border-left: 2px solid var(--upcsg-galactic-orchid);
-    font-family: var(--upcsg-font-subheading);
-    font-style: italic;
-    font-size: 1.02rem;
-    line-height: 1.5;
+.upcsg-mdlg__chip {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border: 1px solid rgba(246, 255, 233, 0.22);
+    border-radius: 999px;
+    background: rgba(6, 3, 24, 0.5);
+    backdrop-filter: blur(6px);
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--upcsg-cosmic-lavender);
 }
 
-.upcsg-memberdialog__bio {
+.upcsg-mdlg__body { padding: 1.4rem 1.4rem 0.4rem; }
+
+.upcsg-mdlg__quote {
+    position: relative;
+    margin: 0 0 1.1rem;
+    padding-left: 2.4rem;
+    font-family: var(--upcsg-font-display);
+    font-size: 1.2rem;
+    line-height: 1.45;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-mdlg__mark {
+    position: absolute;
+    left: 0;
+    top: -0.55rem;
+    font-family: var(--upcsg-font-display);
+    font-size: 3.2rem;
+    line-height: 1;
+    color: var(--upcsg-galactic-orchid);
+    opacity: 0.75;
+}
+
+.upcsg-mdlg__bio {
     margin: 0;
-    line-height: 1.65;
+    line-height: 1.7;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-mdlg__bio--none { font-style: italic; opacity: 0.75; }
+
+.upcsg-mdlg__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.upcsg-mdlg__pos {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
     color: var(--upcsg-periwinkle);
 }
 

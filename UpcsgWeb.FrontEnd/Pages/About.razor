@@ -91,7 +91,7 @@
                 @foreach (var (member, i) in _faculty.Select((m, i) => (m, i)))
                 {
                     <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
-                        <MemberCard Member="member" />
+                        <MemberCard Member="member" Roster="_faculty" />
                     </Reveal>
                 }
             </div>
@@ -131,14 +131,32 @@
                     <span class="upcsg-committee-rule__count">@committee.Members.Count</span>
                 </Reveal>
 
-                <div class="upcsg-memberpile">
-                    @foreach (var (member, i) in committee.Members.Select((m, i) => (m, i)))
-                    {
-                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 60)">
-                            <MemberCard Member="member" />
-                        </Reveal>
-                    }
-                </div>
+                @* The lead officer is given a spotlight, so the page opens on a person
+                   rather than on a wall of equal tiles. *@
+                @if (committee.Lead is not null)
+                {
+                    <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-memberlead">
+                        <MemberCard Member="committee.Lead"
+                                    Variant="MemberCard.Density.Spotlight"
+                                    Roster="_allOfficers" />
+                    </Reveal>
+                }
+
+                @* A committee too small to fill a grid row reads as an accident when it
+                   is laid out as one. Those render as strips instead. *@
+                @if (committee.Rest.Count > 0)
+                {
+                    <div class="@(committee.UseRows ? "upcsg-memberstrip" : "upcsg-memberpile")">
+                        @foreach (var (member, i) in committee.Rest.Select((m, i) => (m, i)))
+                        {
+                            <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 60)">
+                                <MemberCard Member="member"
+                                            Variant="@(committee.UseRows ? MemberCard.Density.Row : MemberCard.Density.Card)"
+                                            Roster="_allOfficers" />
+                            </Reveal>
+                        }
+                    </div>
+                }
             }
         }
     </section>
@@ -163,9 +181,21 @@
 </div>
 
 @code {
-    private sealed record CommitteeGroup(string Name, List<MemberDto> Members);
+    /// <param name="Lead">Spotlit at the head of the committee, or null if it has none.</param>
+    /// <param name="Rest">Everyone else, as tiles or strips.</param>
+    /// <param name="UseRows">
+    /// Set when the remainder is too short to fill a grid row. Three tiles in a row built
+    /// for four leaves a gap that reads as a missing person.
+    /// </param>
+    private sealed record CommitteeGroup(
+        string Name,
+        List<MemberDto> Members,
+        MemberDto? Lead,
+        List<MemberDto> Rest,
+        bool UseRows);
 
     private List<MemberDto> _faculty = [];
+    private List<MemberDto> _allOfficers = [];
     private List<CommitteeGroup> _committees = [];
     private int _execCount;
     private int _facultyCount;
@@ -193,11 +223,31 @@
             .ToList();
 
         _execCount = exeCom.Count;
+        _allOfficers = exeCom;
 
         // GroupBy keeps first-seen key order, so committees follow DisplayOrder.
-        _committees = [.. exeCom
+        var groups = exeCom
             .GroupBy(m => string.IsNullOrWhiteSpace(m.Committee) ? "Other" : m.Committee)
-            .Select(g => new CommitteeGroup(g.Key, [.. g]))];
+            .ToList();
+
+        _committees = [];
+
+        foreach (var (group, position) in groups.Select((g, i) => (g, i)))
+        {
+            var inCommittee = group.ToList();
+
+            // Only the most senior committee gets a spotlight. Giving every group one
+            // would restore exactly the flatness it exists to break, at a larger size.
+            var lead = position == 0 ? inCommittee[0] : null;
+            List<MemberDto> rest = lead is null ? inCommittee : [.. inCommittee.Skip(1)];
+
+            _committees.Add(new CommitteeGroup(
+                group.Key,
+                inCommittee,
+                lead,
+                rest,
+                UseRows: rest.Count is > 0 and <= 2));
+        }
 
         _loading = false;
     }

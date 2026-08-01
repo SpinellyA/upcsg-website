@@ -23,29 +23,6 @@
 
 <div class="upcsg-page upcsg-page--after-hero">
 
-    @* ---------- Summary, derived from the record itself.
-         Suppressed while the record is short: "1 year covered / 2 categories" measures
-         how little has been verified, not the guild's achievements. ---------- *@
-    @if (_all.Count >= MinimumEntriesForStats)
-    {
-        <section class="upcsg-section upcsg-band">
-            <div class="upcsg-stats">
-                <div>
-                    <p class="upcsg-stat__value upcsg-gradient-text">@_all.Count</p>
-                    <p class="upcsg-stat__label">Entries on record</p>
-                </div>
-                <div>
-                    <p class="upcsg-stat__value upcsg-gradient-text">@YearSpan</p>
-                    <p class="upcsg-stat__label">Years covered</p>
-                </div>
-                <div>
-                    <p class="upcsg-stat__value upcsg-gradient-text">@_categories.Count</p>
-                    <p class="upcsg-stat__label">Categories</p>
-                </div>
-            </div>
-        </section>
-    }
-
     @if (_loading)
     {
         <MudProgressLinear Indeterminate="true" Class="my-8" />
@@ -193,9 +170,6 @@
 </div>
 
 @code {
-    /// <summary>Below this, the summary stats describe the backlog rather than the guild.</summary>
-    private const int MinimumEntriesForStats = 3;
-
     private List<AchievementDto> _all = [];
     private List<string> _categories = [];
     private string? _activeCategory;
@@ -216,21 +190,6 @@
             : _all.Where(a => a.Category == _activeCategory))
         .Where(a => a.Id != Lead?.Id)
         .ToList();
-
-    private string YearSpan
-    {
-        get
-        {
-            if (_all.Count == 0)
-            {
-                return "0";
-            }
-
-            var min = _all.Min(a => a.Year);
-            var max = _all.Max(a => a.Year);
-            return min == max ? min.ToString() : $"{max - min + 1}";
-        }
-    }
 
     protected override async Task OnInitializedAsync()
     {

@@ -568,6 +568,126 @@
 .upcsg-empty--tall { padding: clamp(3.5rem, 10vw, 6rem) 1.5rem; gap: 1.25rem; }
 .upcsg-empty--tall img { width: 5rem; }
 
+/* --- Hall of Fame ------------------------------------------------------- */
+
+.upcsg-achcard {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    background: linear-gradient(180deg, rgba(82, 38, 87, 0.45), rgba(22, 17, 58, 0.75));
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.upcsg-achcard:hover,
+.upcsg-achcard:focus-visible {
+    transform: translateY(-6px);
+    border-color: rgba(246, 200, 117, 0.45);
+    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+}
+
+.upcsg-achcard__media {
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+}
+
+.upcsg-achcard__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.15rem 1.25rem 1.35rem;
+}
+
+.upcsg-achcard__kicker {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--upcsg-liquid-chrome-gold);
+    min-height: 1rem;
+}
+
+.upcsg-achcard__title {
+    margin-top: 0.4rem;
+    font-family: var(--upcsg-font-display);
+    font-size: 1.3rem;
+    line-height: 1.25;
+    color: var(--upcsg-honeydew-white);
+}
+
+/* Entries run to several hundred words; the standfirst is the opening paragraph, so
+   without a clamp one long opener sets the height of every card beside it. */
+.upcsg-achcard__standfirst {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.55rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--upcsg-periwinkle);
+}
+
+/* Pushed to the bottom so the cue sits on one line across a row of uneven copy. */
+.upcsg-achcard__cue {
+    margin-top: auto;
+    padding-top: 0.9rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-achcard:hover .upcsg-achcard__cue { color: var(--upcsg-liquid-chrome-gold); }
+
+/* Lead: media beside the copy. */
+.upcsg-achcard--lead { flex-direction: row; }
+
+.upcsg-achcard--lead .upcsg-achcard__media {
+    flex: 0 0 clamp(11rem, 42%, 26rem);
+    aspect-ratio: auto;
+}
+
+.upcsg-achcard--lead .upcsg-achcard__body {
+    justify-content: center;
+    padding: clamp(1.5rem, 3.5vw, 2.75rem);
+}
+
+.upcsg-achcard--lead .upcsg-achcard__title {
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+}
+
+.upcsg-achcard--lead .upcsg-achcard__standfirst {
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    font-size: 1rem;
+}
+
+.upcsg-achcard--lead .upcsg-achcard__cue { margin-top: 1.25rem; padding-top: 0; }
+
+@media (max-width: 52rem) {
+    .upcsg-achcard--lead { flex-direction: column; }
+
+    .upcsg-achcard--lead .upcsg-achcard__media {
+        flex: none;
+        aspect-ratio: 16 / 10;
+    }
+}
+
+/* The grid item is the Reveal wrapper, so the card needs the stretched height passed
+   through to keep a row's bottom edges level. */
+.upcsg-recordgrid > .upcsg-reveal { display: flex; }
+.upcsg-recordgrid > .upcsg-reveal > * { flex: 1; }
+
+.upcsg-filterrow { margin-bottom: 1.75rem; }
+
 /* --- Events page: calendar rail beside the listing ----------------------- */
 
 .upcsg-eventslayout {

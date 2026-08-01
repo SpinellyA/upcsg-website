@@ -1,0 +1,62 @@
+@using UpcsgWeb.Shared.Contracts
+
+@* One Hall of Fame entry, as a lead story or a grid tile. Shared by the record and the
+   foot of the article, so the two cannot drift.
+
+   The plate is seeded on the title. No entry on the record has a photograph, and the old
+   shared crest plate meant five identical images down the page — the record read as five
+   copies of one thing rather than five separate wins. Seeding gives each its own colour
+   while keeping the crest. *@
+
+<a class="upcsg-achcard upcsg-achcard--@Variant.ToString().ToLowerInvariant()"
+   href="@($"hall-of-fame/{Entry.Id}")">
+
+    <CosmicImage Src="@Entry.ImageUrl"
+                 Alt="@Entry.Title"
+                 Seed="@Entry.Title"
+                 Badge="@Entry.Year.ToString()"
+                 Class="upcsg-achcard__media" />
+
+    <span class="upcsg-achcard__body">
+        <span class="upcsg-achcard__kicker">
+            @if (Variant == Density.Lead)
+            {
+                <span class="upcsg-star upcsg-star--tiny" aria-hidden="true"></span>
+                <text>Most recent</text>
+
+                @if (!string.IsNullOrWhiteSpace(Entry.Category))
+                {
+                    <text> &middot; @Entry.Category</text>
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(Entry.Category))
+            {
+                <text>@Entry.Category</text>
+            }
+        </span>
+
+        <span class="upcsg-achcard__title">@Entry.Title</span>
+
+        <span class="upcsg-achcard__standfirst">@Prose.Standfirst(Entry.Description)</span>
+
+        <span class="upcsg-achcard__cue">
+            @(Variant == Density.Lead ? "Read the story" : "Read")
+            <span aria-hidden="true">&rarr;</span>
+        </span>
+    </span>
+</a>
+
+@code {
+    public enum Density
+    {
+        /// <summary>The newest entry: full width, media beside the copy.</summary>
+        Lead,
+
+        /// <summary>A tile in the record grid.</summary>
+        Card,
+    }
+
+    [Parameter, EditorRequired] public AchievementDto Entry { get; set; } = default!;
+
+    [Parameter] public Density Variant { get; set; } = Density.Card;
+}

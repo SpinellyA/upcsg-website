@@ -59,15 +59,21 @@ else
         </header>
 
         @* ---------- Lead image ---------- *@
-        <figure class="upcsg-article__figure">
-            <span class="upcsg-achimg-frame">
-                <AchievementImage Entry="_entry" />
-            </span>
-            @if (string.IsNullOrWhiteSpace(_entry.ImageUrl))
-            {
-                <figcaption>No photo on file for this entry yet.</figcaption>
-            }
-        </figure>
+        <Reveal Variant="Reveal.RevealMotion.Scale">
+            <figure class="upcsg-article__figure">
+                <CosmicImage Src="@_entry.ImageUrl"
+                             Alt="@_entry.Title"
+                             Seed="@_entry.Title"
+                             Badge="@_entry.Year.ToString()"
+                             Eager="true"
+                             Class="upcsg-article__art" />
+
+                @if (string.IsNullOrWhiteSpace(_entry.ImageUrl))
+                {
+                    <figcaption>No photo on file for this entry yet.</figcaption>
+                }
+            </figure>
+        </Reveal>
 
         @* ---------- Body ---------- *@
         <div class="upcsg-article__body">
@@ -103,33 +109,20 @@ else
         @if (_more.Count > 0)
         {
             <section class="upcsg-section">
-                <div class="upcsg-section-head">
-                    <div>
-                        <p class="upcsg-kicker">Elsewhere on the record</p>
-                        <h2 class="upcsg-title-xl">More wins</h2>
-                    </div>
-                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="hall-of-fame">
-                        View all
-                    </MudButton>
-                </div>
+                <SectionHeading Kicker="Elsewhere on the record" Title="More wins">
+                    <Action>
+                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="hall-of-fame">
+                            View all
+                        </MudButton>
+                    </Action>
+                </SectionHeading>
 
-                <div class="upcsg-storygrid">
-                    @foreach (var other in _more)
+                <div class="upcsg-cardgrid upcsg-cardgrid--3 upcsg-recordgrid">
+                    @foreach (var (other, i) in _more.Select((a, i) => (a, i)))
                     {
-                        <a class="upcsg-surface upcsg-lift upcsg-story" href="@($"hall-of-fame/{other.Id}")">
-                            <span class="upcsg-story__media">
-                                <AchievementImage Entry="other" />
-                            </span>
-                            <span class="upcsg-story__body">
-                                @if (!string.IsNullOrWhiteSpace(other.Category))
-                                {
-                                    <span class="upcsg-card__tag">@other.Category</span>
-                                }
-                                <h4 class="upcsg-story__title">@other.Title</h4>
-                                <p class="upcsg-story__standfirst">@Prose.Standfirst(other.Description)</p>
-                                <span class="upcsg-card__cue">Read <span aria-hidden="true">&rarr;</span></span>
-                            </span>
-                        </a>
+                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                            <AchievementCard Entry="other" />
+                        </Reveal>
                     }
                 </div>
             </section>

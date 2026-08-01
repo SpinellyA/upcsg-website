@@ -3169,6 +3169,59 @@ h4, h5, h6, .upcsg-heading {
     line-height: 1.9;
 }
 
+/* --- Dialogs and message boxes ---
+   Every one of these is MudBlazor's own (IDialogService, MudDialog,
+   MudMessageBox); this only dresses them, because the default surface is
+   MudBlazor's purple rather than the ink the rest of the site is built from.
+   A confirmation that looks like it belongs to a different app is a
+   confirmation people stop reading. */
+
+.mud-dialog {
+    background: var(--upcsg-ink-panel);
+    border: 1px solid var(--upcsg-ink-rule);
+    border-radius: 4px;
+    color: var(--upcsg-text);
+}
+
+/* The h6 carries its own typography, so the heading face has to be set on it
+   rather than on the title wrapper. */
+.mud-dialog-title,
+.mud-dialog-title .mud-typography {
+    font-family: var(--upcsg-font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--upcsg-text);
+}
+
+.mud-dialog-title {
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--upcsg-ink-rule);
+}
+
+.mud-dialog-content {
+    padding-top: 1rem;
+    font-size: 0.88rem;
+    line-height: 1.65;
+    color: var(--upcsg-text);
+
+    /* Reasons and shortfall messages are written as sentences with line breaks;
+       without this they collapse into one run. */
+    white-space: pre-line;
+}
+
+.mud-dialog-actions {
+    gap: 0.35rem;
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--upcsg-ink-rule);
+}
+
+/* A form dialog supplies its own fields and spacing, so it keeps the plain
+   content padding rather than the message-box prose treatment. */
+.mud-dialog:not(.mud-message-box) .mud-dialog-content {
+    white-space: normal;
+}
+
 /* --- Signed-in avatar and its menu ---
    The avatar is the whole control in the bar; everything about the person signed
    in lives behind it. MudMenu draws the popover, so this only dresses it. */

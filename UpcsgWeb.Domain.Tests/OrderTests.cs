@@ -1,4 +1,4 @@
-﻿using UpcsgWeb.Domain.Carts;
+using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Merch;
 using UpcsgWeb.Domain.Orders;
@@ -419,7 +419,7 @@ public class RefundDueTests
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
         order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
 
-        // A partial restock is not enough â€” lines are filled whole or not at all.
+        // A partial restock is not enough — lines are filled whole or not at all.
         hoodie.Restock("M", 1);
 
         var ex = Assert.Throws<DomainException>(

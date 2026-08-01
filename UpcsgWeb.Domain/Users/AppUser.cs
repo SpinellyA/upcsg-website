@@ -1,9 +1,9 @@
-﻿using UpcsgWeb.Domain.Common;
+using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.Users;
 
 /// <summary>
-/// A signed-in guilder. Root of its own aggregate â€” orders point at it by id rather
+/// A signed-in guilder. Root of its own aggregate — orders point at it by id rather
 /// than hanging off it, so loading a user never drags their order history along.
 /// </summary>
 public class AppUser : AggregateRoot
@@ -42,7 +42,7 @@ public class AppUser : AggregateRoot
             Name = string.IsNullOrWhiteSpace(name) ? email : name,
             PictureUrl = pictureUrl,
 
-            // Everyone starts as a member. Promotion is a separate, deliberate act â€”
+            // Everyone starts as a member. Promotion is a separate, deliberate act —
             // see GrantAdmin. Signing in can never confer it.
             Role = GuildRoles.Member,
         };

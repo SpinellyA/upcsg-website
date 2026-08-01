@@ -68,7 +68,7 @@
                 {
                     <button type="button"
                             class="upcsg-cal__day upcsg-cal__day--has-events @(isToday ? "upcsg-cal__day--today" : null) @(isSelected ? "upcsg-cal__day--selected" : null) @(isPast ? "upcsg-cal__day--past" : null)"
-                            aria-label="@($"{date:MMMM d} â€” {dayEvents.Count} event{(dayEvents.Count == 1 ? "" : "s")}")"
+                            aria-label="@($"{date:MMMM d}, {dayEvents.Count} event{(dayEvents.Count == 1 ? "" : "s")}")"
                             @onclick="() => SelectDayAsync(date)">
                         <span class="upcsg-cal__day-num">@d</span>
                         <span class="upcsg-cal__dots">

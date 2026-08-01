@@ -1,4 +1,4 @@
-@page "/events/{Id:int}"
+﻿@page "/events/{Id:int}"
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IEventService EventService
@@ -53,110 +53,105 @@ else
     <div class="upcsg-page upcsg-page--after-hero">
         <MudLink Href="events" Class="mb-4 d-inline-block">&larr; All events this month</MudLink>
 
-        <section class="upcsg-section upcsg-eventdetail">
-            <div>
-                @if (!string.IsNullOrWhiteSpace(_event.PosterUrl))
-                {
+        @* The facts run across the top rather than down a rail beside the copy. A tall
+           column of prose next to a short column of labels never balances, and the
+           mismatch only gets worse the more an officer writes. *@
+        <MudPaper Elevation="0" Class="upcsg-surface upcsg-glance mb-6">
+            <MudGrid Spacing="3">
+                <MudItem xs="6" md="3">
+                    <p class="upcsg-glance__label">When</p>
+                    <p class="upcsg-glance__value">@Starts.ToString("ddd, MMM d")</p>
+                </MudItem>
+
+                <MudItem xs="6" md="3">
+                    <p class="upcsg-glance__label">Time</p>
+                    @* – rather than a literal en dash: this file has been through a
+                       tool that mangles non-ASCII, and an escape cannot be corrupted. *@
+                    <p class="upcsg-glance__value">
+                        @Starts.ToString("h:mm tt")@(Ends is { } e ? $" – {e:h:mm tt}" : "")
+                    </p>
+                </MudItem>
+
+                <MudItem xs="6" md="3">
+                    <p class="upcsg-glance__label">Runs for</p>
+                    <p class="upcsg-glance__value">
+                        @(Ends is { } ends ? DurationLabel(ends - Starts) : "Not announced")
+                    </p>
+                </MudItem>
+
+                <MudItem xs="6" md="3">
+                    <p class="upcsg-glance__label">Where</p>
+                    <p class="upcsg-glance__value">@_event.Location</p>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-4" />
+
+            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap"
+                      AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                @* Takes its colour from the status rather than always being gold, so a
+                   finished event stops shouting the same way an upcoming one does. *@
+                <span class="upcsg-glance__countdown upcsg-glance__countdown--@StatusSlug">
+                    @Countdown
+                </span>
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap" AlignItems="AlignItems.Center">
+                    @if (!IsOnline)
+                    {
+                        <MudButton Variant="@(HasEnded ? Variant.Outlined : Variant.Filled)"
+                                   Class="@(HasEnded ? "upcsg-ghost-button px-6" : "upcsg-cta-button px-6")"
+                                   StartIcon="@Icons.Material.Outlined.Directions"
+                                   Href="@DirectionsUrl" Target="_blank" rel="noopener">
+                            Get directions
+                        </MudButton>
+                    }
+
+                    <MudButton Variant="@(IsOnline && !HasEnded ? Variant.Filled : Variant.Outlined)"
+                               Class="@(IsOnline && !HasEnded ? "upcsg-cta-button px-6" : "upcsg-ghost-button px-6")"
+                               StartIcon="@Icons.Material.Outlined.Share"
+                               OnClick="ShareAsync">
+                        Share
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+
+            @if (IsOnline)
+            {
+                <p class="upcsg-glance__note">
+                    <MudIcon Icon="@Icons.Material.Outlined.Videocam" Size="Size.Small" />
+                    Runs online. The joining link goes out in the guild channels closer to the day.
+                </p>
+            }
+        </MudPaper>
+
+        @* Poster beside the copy when there is one, copy full width when there isn't —
+           rather than a fixed column that leaves a hole on text-only events. *@
+        <MudGrid Spacing="4" Class="upcsg-section">
+            @if (!string.IsNullOrWhiteSpace(_event.PosterUrl))
+            {
+                <MudItem xs="12" md="5">
                     @* Poster URLs come from the CMS, so treat a dead one the same way the
                        receipt panel does: say so rather than leaving a blank frame. *@
-                    <div class="upcsg-surface upcsg-eventposter">
+                    <MudPaper Elevation="0" Class="upcsg-surface upcsg-eventposter">
                         <img src="@_event.PosterUrl" alt="Poster for @_event.Title"
                              onerror="this.closest('.upcsg-eventposter').classList.add('upcsg-eventposter--broken')" />
                         <p class="upcsg-eventposter__broken">Poster image couldn't be loaded.</p>
-                    </div>
-                }
+                    </MudPaper>
+                </MudItem>
+            }
 
-                <div class="upcsg-surface upcsg-eventbody">
+            <MudItem xs="12" md="@(string.IsNullOrWhiteSpace(_event.PosterUrl) ? 12 : 7)">
+                <MudPaper Elevation="0" Class="upcsg-surface upcsg-eventbody">
                     <p class="upcsg-kicker">About this event</p>
 
                     @foreach (var paragraph in Paragraphs)
                     {
                         <p class="upcsg-eventbody__para">@paragraph</p>
                     }
-                </div>
-            </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
 
-            <aside class="upcsg-eventaside">
-                <div class="upcsg-surface upcsg-eventfacts">
-                    <div class="upcsg-eventfacts__date">
-                        <span class="upcsg-eventfacts__month">@Starts.ToString("MMM")</span>
-                        <span class="upcsg-eventfacts__day">@Starts.Day</span>
-                        <span class="upcsg-eventfacts__weekday">@Starts.ToString("ddd")</span>
-                    </div>
-
-                    @* The one thing someone opening this page actually wants to know,
-                       said before the times they'd otherwise have to subtract. *@
-                    <p class="upcsg-eventfacts__countdown">@Countdown</p>
-
-                    <dl class="upcsg-eventfacts__list">
-                        <div>
-                            <dt>Starts</dt>
-                            <dd>@Starts.ToString("h:mm tt")</dd>
-                        </div>
-
-                        @if (Ends is { } ends)
-                        {
-                            <div>
-                                <dt>Ends</dt>
-                                <dd>@ends.ToString("h:mm tt")</dd>
-                            </div>
-                            <div>
-                                <dt>Runs for</dt>
-                                <dd>@DurationLabel(ends - Starts)</dd>
-                            </div>
-                        }
-                        else
-                        {
-                            @* No end time on the record — say that, rather than guessing one. *@
-                            <div>
-                                <dt>Ends</dt>
-                                <dd class="upcsg-eventfacts__unknown">Not announced</dd>
-                            </div>
-                        }
-
-                        <div>
-                            <dt>Where</dt>
-                            <dd>@_event.Location</dd>
-                        </div>
-                    </dl>
-
-                    @* Directions beat a calendar file: a freshie's real problem is finding
-                       the room, and their phone already knows the date once they've read
-                       it. An online event has nowhere to walk to, so it leads with share
-                       instead of a map to a building that isn't the venue. *@
-                    <div class="upcsg-eventfacts__actions">
-                        @if (IsOnline)
-                        {
-                            <MudAlert Severity="Severity.Normal" Dense="true" Square="true" Elevation="0"
-                                      Icon="@Icons.Material.Outlined.Videocam"
-                                      Class="upcsg-eventfacts__online">
-                                Runs online. The joining link goes out in the guild channels
-                                closer to the day.
-                            </MudAlert>
-
-                            <MudButton Variant="Variant.Filled" FullWidth="true" Class="upcsg-cta-button"
-                                       StartIcon="@Icons.Material.Outlined.Share"
-                                       OnClick="ShareAsync">
-                                Share this event
-                            </MudButton>
-                        }
-                        else
-                        {
-                            <MudButton Variant="Variant.Filled" FullWidth="true" Class="upcsg-cta-button"
-                                       StartIcon="@Icons.Material.Outlined.Directions"
-                                       Href="@DirectionsUrl" Target="_blank" rel="noopener">
-                                Get directions
-                            </MudButton>
-                            <MudButton Variant="Variant.Outlined" FullWidth="true" Class="upcsg-ghost-button"
-                                       StartIcon="@Icons.Material.Outlined.Share"
-                                       OnClick="ShareAsync">
-                                Share this event
-                            </MudButton>
-                        }
-                    </div>
-                </div>
-            </aside>
-        </section>
 
         @if (_others.Count > 0)
         {
@@ -171,26 +166,30 @@ else
                     </MudButton>
                 </div>
 
-                <div class="upcsg-agenda">
+                @* Cards in a grid rather than full-width bars: three short entries
+                   shouldn't take the same vertical run as the article above them. *@
+                <MudGrid Spacing="3">
                     @foreach (var other in _others)
                     {
-                        <a class="upcsg-agenda__item" href="@($"events/{other.Id}")">
-                            <span class="upcsg-agenda__head" style="cursor: pointer;">
+                        var when = other.StartDateTime.ToLocalTime();
+
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudPaper Elevation="0" Class="upcsg-surface upcsg-othercard"
+                                      @onclick="@(() => Navigation.NavigateTo($"events/{other.Id}"))">
                                 <span class="upcsg-datechip">
-                                    <span class="upcsg-datechip__month">@other.StartDateTime.ToLocalTime().ToString("MMM")</span>
-                                    <span class="upcsg-datechip__day">@other.StartDateTime.ToLocalTime().Day</span>
+                                    <span class="upcsg-datechip__month">@when.ToString("MMM")</span>
+                                    <span class="upcsg-datechip__day">@when.Day</span>
                                 </span>
-                                <span>
-                                    <p class="upcsg-agenda__title">@other.Title</p>
-                                    <p class="upcsg-agenda__meta">
-                                        @other.StartDateTime.ToLocalTime().ToString("h:mm tt") &middot; @other.Location
+                                <div>
+                                    <p class="upcsg-othercard__title">@other.Title</p>
+                                    <p class="upcsg-othercard__meta">
+                                        @when.ToString("h:mm tt") &middot; @other.Location
                                     </p>
-                                </span>
-                                <span class="upcsg-agenda__chevron">&rarr;</span>
-                            </span>
-                        </a>
+                                </div>
+                            </MudPaper>
+                        </MudItem>
                     }
-                </div>
+                </MudGrid>
             </section>
         }
     </div>
@@ -349,7 +348,7 @@ else
             case "cancelled":
                 break;
             default:
-                Snackbar.Add("Couldn't share — you can copy the link from the address bar.", Severity.Warning);
+                Snackbar.Add("Couldn't share. You can copy the link from the address bar.", Severity.Warning);
                 break;
         }
     }

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using UpcsgWeb.Shared.Contracts;
 using UpcsgWeb.FrontEnd.Services;
@@ -9,7 +9,7 @@ namespace UpcsgWeb.FrontEnd.Auth;
 /// Auth state derived from the session our API issued.
 ///
 /// This is a UI convenience only. Claims here come from localStorage, which the user can
-/// edit â€” nothing on the client may be treated as a security boundary. Every privileged
+/// edit — nothing on the client may be treated as a security boundary. Every privileged
 /// action must be re-authorised by the API against the JWT signature.
 /// </summary>
 public class UpcsgAuthenticationStateProvider(IAuthService auth) : AuthenticationStateProvider

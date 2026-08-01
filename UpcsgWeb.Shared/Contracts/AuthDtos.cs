@@ -1,4 +1,4 @@
-﻿namespace UpcsgWeb.Shared.Contracts;
+namespace UpcsgWeb.Shared.Contracts;
 
 /// <summary>Roles are assigned in our own database, never inferred from the Google sign-in.</summary>
 public static class UpcsgRoles
@@ -25,7 +25,7 @@ public class AppUserDto
 
 /// <summary>
 /// What the API returns from the token exchange: our own JWT plus the resolved user.
-/// The Google credential is never stored â€” it is traded for this and discarded.
+/// The Google credential is never stored — it is traded for this and discarded.
 /// </summary>
 public class AuthResultDto
 {

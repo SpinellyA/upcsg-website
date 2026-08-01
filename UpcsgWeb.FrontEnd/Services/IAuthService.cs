@@ -1,4 +1,4 @@
-﻿using UpcsgWeb.Shared.Contracts;
+using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
@@ -9,7 +9,7 @@ public interface IAuthService
 
     /// <summary>
     /// Trades the ID token Google handed the browser for our own JWT. The API is what
-    /// decides the user's role â€” signing in with Google proves identity, nothing more.
+    /// decides the user's role — signing in with Google proves identity, nothing more.
     /// </summary>
     Task<AuthResultDto> SignInWithGoogleAsync(string googleCredential);
 

@@ -1,11 +1,11 @@
-﻿using UpcsgWeb.Domain.Common;
+using UpcsgWeb.Domain.Common;
 using UpcsgWeb.Domain.Merch;
 
 namespace UpcsgWeb.Domain.Carts;
 
 /// <summary>
 /// One open cart per guilder. Root of its own aggregate; it references merch by id and
-/// knows nothing about orders â€” checkout is what bridges the two.
+/// knows nothing about orders — checkout is what bridges the two.
 /// </summary>
 public class Cart : AggregateRoot
 {

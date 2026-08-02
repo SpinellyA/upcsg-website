@@ -11,82 +11,75 @@
         <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Reach the guild</p>
         <h1 class="upcsg-banner__title">Get in Touch</h1>
         <p class="upcsg-lede" style="margin-bottom: 0;">
-            Questions about membership, events, or merch? Every channel below reaches the same
-            set of officers &mdash; pick whichever you already have open.
+            Questions about events, merch, or getting involved? Every channel below reaches the
+            same set of officers &mdash; pick whichever you already have open.
         </p>
     </div>
 </section>
 
+<Marquee Items="@Ticker" DurationSeconds="48" Class="upcsg-marquee--hero" />
+
 <div class="upcsg-page upcsg-page--after-hero">
 
-    @* ---------- Channels ----------
-       Three cards rather than a list, because the useful information isn't the handle —
-       it's which one to pick. Each says what it's actually good for. *@
+    @* ---------- Channels ---------- *@
     <section class="upcsg-section">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">Where to reach us</p>
-                <h2 class="upcsg-title-xl">Pick a channel</h2>
-            </div>
-        </div>
+        <SectionHeading Kicker="Where to reach us" Title="Pick a channel" />
 
-        <div class="upcsg-cards">
-            <a class="upcsg-surface upcsg-lift upcsg-card" href="https://facebook.com/upcsg"
-               target="_blank" rel="noopener">
-                <span class="upcsg-channel__icon">
-                    <MudIcon Icon="@Icons.Custom.Brands.Facebook" Size="Size.Medium" />
-                </span>
-                <span class="upcsg-card__tag">Facebook</span>
-                <h3 class="upcsg-card__title">/UPCSG</h3>
-                <p class="upcsg-card__meta">
+        <div class="upcsg-cardgrid upcsg-cardgrid--3 upcsg-recordgrid">
+            <Reveal Variant="Reveal.RevealMotion.Scale">
+                <ChannelCard Href="https://facebook.com/upcsg"
+                             Icon="@Icons.Custom.Brands.Facebook"
+                             Label="Facebook"
+                             Handle="/UPCSG"
+                             Cue="Open page"
+                             External="true">
                     Where announcements go up first. Best for anything time-sensitive &mdash;
-                    event changes, sign-up deadlines, drop dates.
-                </p>
-                <span class="upcsg-card__cue">Open page <span aria-hidden="true">&rarr;</span></span>
-            </a>
+                    event changes, deadlines, drop dates.
+                </ChannelCard>
+            </Reveal>
 
-            <a class="upcsg-surface upcsg-lift upcsg-card" href="https://instagram.com/upcsg"
-               target="_blank" rel="noopener">
-                <span class="upcsg-channel__icon">
-                    <MudIcon Icon="@Icons.Custom.Brands.Instagram" Size="Size.Medium" />
-                </span>
-                <span class="upcsg-card__tag">Instagram</span>
-                <h3 class="upcsg-card__title">@@upcsg</h3>
-                <p class="upcsg-card__meta">
+            <Reveal Variant="Reveal.RevealMotion.Scale" Delay="70">
+                <ChannelCard Href="https://instagram.com/upcsg"
+                             Icon="@Icons.Custom.Brands.Instagram"
+                             Label="Instagram"
+                             Handle="@("@upcsg")"
+                             Cue="Open profile"
+                             External="true">
                     Photos from events, merch drops, and the occasional story poll. Drop us a DM
                     if that's easier than a form.
-                </p>
-                <span class="upcsg-card__cue">Open profile <span aria-hidden="true">&rarr;</span></span>
-            </a>
+                </ChannelCard>
+            </Reveal>
 
-            <a class="upcsg-surface upcsg-lift upcsg-card" href="mailto:upcsg.upcebu@gmail.com">
-                <span class="upcsg-channel__icon">
-                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Medium" />
-                </span>
-                <span class="upcsg-card__tag">Email</span>
-                <h3 class="upcsg-card__title upcsg-card__title--mail">upcsg.upcebu@gmail.com</h3>
-                <p class="upcsg-card__meta">
+            <Reveal Variant="Reveal.RevealMotion.Scale" Delay="140">
+                <ChannelCard Href="mailto:upcsg.upcebu@gmail.com"
+                             Icon="@Icons.Material.Filled.Email"
+                             Label="Email"
+                             Handle="upcsg.upcebu@gmail.com"
+                             Cue="Compose">
                     For anything that needs a paper trail: partnerships, sponsorships, requests
                     from other orgs, and documents.
-                </p>
-                <span class="upcsg-card__cue">Compose <span aria-hidden="true">&rarr;</span></span>
-            </a>
+                </ChannelCard>
+            </Reveal>
         </div>
     </section>
 
-    @* ---------- Membership ---------- *@
-    <section class="upcsg-section upcsg-split">
-        <div class="upcsg-split__body">
-            <p class="upcsg-kicker">Joining</p>
-            <h2 class="upcsg-title-xl">Become a guilder</h2>
+    @* ---------- Membership ----------
+       This section used to describe semester membership drives and a sign-up form. There
+       are none: every Computer Science student at UP Cebu is a guilder automatically, so
+       the page was inventing a hurdle and then explaining how to clear it. *@
+    <section class="upcsg-section upcsg-feature">
+        <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__body">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Membership</p>
+            <h2 class="upcsg-title-xl">You're already a guilder</h2>
             <p class="upcsg-lede">
-                UPCSG is open to every Computer Science major at UP Cebu. Membership drives run at
-                the start of each semester and the sign-up form is announced on our socials &mdash;
-                so the shortest path in is to follow the Facebook page and watch for it.
+                Every Computer Science student at UP Cebu is part of the guild from day one.
+                There is no form to fill in and nothing to pay for &mdash; if you're taking the
+                degree, you're in.
             </p>
             <p class="upcsg-lede">
-                Missed the drive? Message us anyway. We'd rather point you to the next one than
-                have you wait a whole semester wondering.
+                What's up to you is how involved you get. Committees always need hands, teams
+                need people to compete, and events need someone to run them. Message us and
+                we'll point you at whoever is organising what.
             </p>
 
             <dl class="upcsg-contact__facts">
@@ -95,76 +88,100 @@
                     <dd>University of the Philippines Cebu</dd>
                 </div>
                 <div>
-                    <dt>Open to</dt>
-                    <dd>All Computer Science majors</dd>
+                    <dt>Who's a guilder</dt>
+                    <dd>Every CS student, automatically</dd>
                 </div>
                 <div>
-                    <dt>Drives</dt>
-                    <dd>Start of each semester</dd>
+                    <dt>To get involved</dt>
+                    <dd>Message an officer</dd>
                 </div>
             </dl>
-        </div>
+        </Reveal>
 
-        <div class="upcsg-split__visual">
-            <p class="upcsg-split__visual-label">Campus photo &mdash; placeholder</p>
-        </div>
+        @* Replaces a div that literally read "Campus photo — placeholder". *@
+        <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual" Delay="120">
+            <div class="upcsg-quoteplate">
+                <span class="upcsg-quoteplate__mark" aria-hidden="true">&ldquo;</span>
+                <blockquote class="upcsg-quoteplate__text">
+                    You don't join the guild. You're already in it &mdash; the only question is
+                    what you do with it.
+                </blockquote>
+                <img class="upcsg-quoteplate__burst" src="img/starburst.png" alt="" aria-hidden="true" />
+            </div>
+        </Reveal>
     </section>
 
     @* ---------- FAQ ----------
        Every answer here is something the site already does; nothing invented. *@
     <section class="upcsg-section">
-        <div class="upcsg-section-head">
-            <div>
-                <p class="upcsg-kicker">Before you message</p>
-                <h2 class="upcsg-title-xl">Asked a lot</h2>
-            </div>
-        </div>
+        <SectionHeading Kicker="Before you message" Title="Asked a lot" />
 
-        <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="upcsg-faq">
-            <MudExpansionPanel Text="Who can join UPCSG?">
-                Any Computer Science major at UP Cebu. There's no application beyond the
-                membership form, which goes up on our socials at the start of each semester.
-            </MudExpansionPanel>
+        <Reveal Variant="Reveal.RevealMotion.Up">
+            <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="upcsg-faq">
+                <MudExpansionPanel Text="Do I need to sign up to be a guilder?">
+                    No. Every Computer Science student at UP Cebu is a guilder automatically —
+                    there's no drive, no form and no fee. Signing in here just links your UP
+                    account so officers can see whose merch order is whose.
+                </MudExpansionPanel>
 
-            <MudExpansionPanel Text="How do merch orders work?">
-                Add what you want to your cart and check out. You'll then send the GCash
-                reference for your payment, an officer verifies it, and the order moves through
-                confirmed &rarr; released &rarr; received. You can follow all of that from
-                <MudLink Href="orders">My Orders</MudLink>.
-            </MudExpansionPanel>
+                <MudExpansionPanel Text="How do I actually get involved?">
+                    Message us. Committees take on people through the year, teams get put
+                    together ahead of competitions, and events usually need volunteers the week
+                    before. Officers are listed on <MudLink Href="about">the About page</MudLink>.
+                </MudExpansionPanel>
 
-            <MudExpansionPanel Text="Why does the events page only show one month?">
-                Because anything further out is still subject to change, and a calendar full of
-                dates that later move is worse than no calendar. The current month is the one
-                we're confident about.
-            </MudExpansionPanel>
+                <MudExpansionPanel Text="How do merch orders work?">
+                    Add what you want to your cart and check out. You'll then send the GCash
+                    reference for your payment, an officer verifies it, and the order moves through
+                    confirmed &rarr; released &rarr; received. You can follow all of that from
+                    <MudLink Href="orders">My Orders</MudLink>.
+                </MudExpansionPanel>
 
-            <MudExpansionPanel Text="I won something for the guild and it isn't in the Hall of Fame.">
-                Send it our way. We only list achievements the ExeCom can verify, so entries from
-                earlier years get added as we confirm them &mdash; nothing is being left out on
-                purpose. See <MudLink Href="hall-of-fame">the record</MudLink>.
-            </MudExpansionPanel>
+                <MudExpansionPanel Text="Why does the events page only show one month?">
+                    Because anything further out is still subject to change, and a calendar full of
+                    dates that later move is worse than no calendar. The current month is the one
+                    we're confident about.
+                </MudExpansionPanel>
 
-            <MudExpansionPanel Text="Can I edit something on this site?">
-                Signing in gives you a guilder account, but editing site content is limited to
-                executive committee accounts. If something here is wrong, message us and we'll
-                fix it.
-            </MudExpansionPanel>
-        </MudExpansionPanels>
+                <MudExpansionPanel Text="I won something for the guild and it isn't in the Hall of Fame.">
+                    Send it our way. We only list achievements the ExeCom can verify, so entries from
+                    earlier years get added as we confirm them &mdash; nothing is being left out on
+                    purpose. See <MudLink Href="hall-of-fame">the record</MudLink>.
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="Can I edit something on this site?">
+                    Signing in gives you a guilder account, but editing site content is limited to
+                    executive committee accounts. If something here is wrong, message us and we'll
+                    fix it.
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </Reveal>
     </section>
 
     @* ---------- Closing CTA ---------- *@
-    <section class="upcsg-section upcsg-band upcsg-cta-band">
-        <p class="upcsg-kicker">Still stuck?</p>
-        <h2 class="upcsg-title-xl">Just message us</h2>
-        <p class="upcsg-lede">
-            No question is too small. If you're not sure who to ask, ask us &mdash; we'll route it
-            to whoever handles it.
-        </p>
-        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8"
-                   Href="https://facebook.com/upcsg" Target="_blank">
-            Message on Facebook
-        </MudButton>
+    <section class="upcsg-section upcsg-closing">
+        <div class="upcsg-flare upcsg-closing__flare"></div>
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Still stuck?</p>
+            <h2 class="upcsg-title-xl">Just message us</h2>
+            <p class="upcsg-lede">
+                No question is too small. If you're not sure who to ask, ask us &mdash; we'll route it
+                to whoever handles it.
+            </p>
+            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8"
+                       Href="https://facebook.com/upcsg" Target="_blank">
+                Message on Facebook
+            </MudButton>
+        </Reveal>
     </section>
 
 </div>
+
+@code {
+    private static readonly string[] Ticker =
+    [
+        "Announcements", "Event changes", "Merch drops", "Partnerships",
+        "Sponsorships", "Committee sign-ups", "Questions", "UP Cebu",
+    ];
+}

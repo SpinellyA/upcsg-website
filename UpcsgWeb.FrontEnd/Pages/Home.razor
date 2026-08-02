@@ -206,16 +206,25 @@
     <section class="upcsg-section upcsg-closing">
         <div class="upcsg-flare upcsg-closing__flare"></div>
 
+        @* Not "Join the guild": every CS student at UP Cebu is a guilder automatically.
+           Inviting them to join something they are already in is both wrong and a wasted
+           call to action — what is actually optional is how involved they get. *@
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Got questions?</p>
-            <h2 class="upcsg-title-xl">Join the guild</h2>
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Already one of us</p>
+            <h2 class="upcsg-title-xl">You're a guilder from day one</h2>
             <p class="upcsg-lede">
-                Open to all Computer Science majors at UP Cebu. Membership drives run at the start
-                of each semester &mdash; reach out and we'll point you to the sign-up.
+                Every Computer Science student at UP Cebu is part of the guild &mdash; nothing to
+                sign, nothing to pay. What's up to you is how far in you go: a committee, a
+                competition, or just turning up to the next thing on the calendar.
             </p>
-            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
-                Get in Touch
-            </MudButton>
+            <div class="upcsg-closing__actions">
+                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="events">
+                    See what's on
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Large" Class="upcsg-ghost-button px-8" Href="contact">
+                    Get in Touch
+                </MudButton>
+            </div>
         </Reveal>
     </section>
 

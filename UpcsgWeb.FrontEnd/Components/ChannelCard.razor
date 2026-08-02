@@ -1,0 +1,41 @@
+@* One way to reach the guild.
+
+   The useful information on a contact page is not the handle — it is which channel to
+   pick. Each card leads with what it is actually good for, so the choice is made before
+   the click rather than after a reply that never comes. *@
+
+<a class="upcsg-channel"
+   href="@Href"
+   target="@(External ? "_blank" : null)"
+   rel="@(External ? "noopener" : null)">
+
+    <span class="upcsg-channel__icon">
+        <MudIcon Icon="@Icon" Size="Size.Medium" />
+    </span>
+
+    <span class="upcsg-channel__tag">@Label</span>
+    <span class="upcsg-channel__handle">@Handle</span>
+    <span class="upcsg-channel__meta">@ChildContent</span>
+
+    <span class="upcsg-channel__cue">@Cue <span aria-hidden="true">&rarr;</span></span>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired] public string Icon { get; set; } = string.Empty;
+
+    /// <summary>The platform, e.g. "Facebook".</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+
+    /// <summary>The handle or address itself.</summary>
+    [Parameter, EditorRequired] public string Handle { get; set; } = string.Empty;
+
+    [Parameter] public string Cue { get; set; } = "Open";
+
+    /// <summary>Opens in a new tab, with the rel that closes the opener vulnerability.</summary>
+    [Parameter] public bool External { get; set; }
+
+    /// <summary>What this channel is best for.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

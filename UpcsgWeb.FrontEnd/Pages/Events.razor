@@ -20,6 +20,8 @@
     </div>
 </section>
 
+<Marquee Items="@Ticker" DurationSeconds="50" Class="upcsg-marquee--hero" />
+
 <div class="upcsg-page upcsg-page--after-hero">
 
     @if (_loading)
@@ -174,6 +176,12 @@
 
 @code {
     private static readonly string[] DayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    private static readonly string[] Ticker =
+    [
+        "General assemblies", "Industry nights", "CodeSprints", "Workshops",
+        "Orientations", "Merch drops", "Socials", "UP Cebu",
+    ];
 
     /// <summary>
     /// The month being published, which officers can pin ahead of the real calendar.

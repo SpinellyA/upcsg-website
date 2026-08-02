@@ -23,6 +23,8 @@
     </div>
 </section>
 
+<Marquee Items="@Ticker" DurationSeconds="44" Class="upcsg-marquee--hero" />
+
 <div class="upcsg-page upcsg-page--after-hero">
 
     @if (_loading)
@@ -141,6 +143,12 @@
     private MerchItemDto? _featured;
     private List<MerchItemDto> _catalog = [];
     private bool _loading = true;
+
+    private static readonly string[] Ticker =
+    [
+        "Limited drops", "Pre-orders", "GCash", "Claim on campus",
+        "Sized to fit", "Officer-verified", "UP Cebu",
+    ];
 
     protected override async Task OnInitializedAsync()
     {

@@ -376,6 +376,109 @@
 .upcsg-merchcard__was { color: var(--upcsg-periwinkle); text-decoration: line-through; font-size: 0.82rem; }
 .upcsg-merchcard__gone { color: var(--upcsg-periwinkle); }
 
+/* A sold-out item stays legible and clickable — its page still explains itself — but
+   stops competing with what can actually be bought. */
+.upcsg-merchcard--out .upcsg-merchcard__thumb { opacity: 0.55; }
+
+.upcsg-merchcard__variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.6rem;
+}
+
+.upcsg-merchcard__cue {
+    display: block;
+    margin-top: auto;
+    padding-top: 0.9rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-merchcard:hover .upcsg-merchcard__cue { color: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-merchcard--card .upcsg-merchcard__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* Feature: the leading drop, photo beside the copy. */
+.upcsg-merchcard--feature {
+    flex-direction: row;
+    align-items: stretch;
+    border: var(--upcsg-hairline);
+    border-radius: var(--upcsg-radius);
+    background: linear-gradient(180deg, rgba(82, 38, 87, 0.45), rgba(22, 17, 58, 0.75));
+    overflow: hidden;
+}
+
+.upcsg-merchcard--feature:hover { transform: translateY(-4px); }
+
+.upcsg-merchcard--feature .upcsg-merchcard__thumb {
+    flex: 0 0 clamp(11rem, 42%, 26rem);
+    aspect-ratio: auto;
+    border: none;
+    border-radius: 0;
+}
+
+.upcsg-merchcard--feature .upcsg-merchcard__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(1.5rem, 3.5vw, 2.75rem);
+}
+
+.upcsg-merchcard--feature .upcsg-merchcard__name {
+    margin-top: 0.35rem;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+    line-height: 1.15;
+}
+
+.upcsg-merchcard__blurb {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 0.6rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-merchcard--feature .upcsg-merchcard__price { font-size: 1.15rem; margin-top: 0.8rem; }
+
+.upcsg-merchcard--feature .upcsg-merchcard__cue { margin-top: 1.25rem; padding-top: 0; }
+
+@media (max-width: 52rem) {
+    .upcsg-merchcard--feature { flex-direction: column; }
+
+    .upcsg-merchcard--feature .upcsg-merchcard__thumb {
+        flex: none;
+        aspect-ratio: 16 / 10;
+    }
+}
+
+/* --- Merch gallery ------------------------------------------------------- */
+
+/* The main frame is a CosmicImage now, so it carries the plate itself rather than
+   wrapping a bare img that had nothing behind it when the URL was dead. */
+.upcsg-gallery__main {
+    aspect-ratio: 1;
+    width: 100%;
+    border: var(--upcsg-hairline);
+}
+
+.upcsg-gallery__thumb .upcsg-cosmic {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+}
+
 /* --- FacePile ------------------------------------------------------------ */
 
 .upcsg-facepile {

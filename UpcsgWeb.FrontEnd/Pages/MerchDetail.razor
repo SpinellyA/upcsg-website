@@ -34,34 +34,17 @@ else
 
             @* ---------- Gallery ---------- *@
             <div class="upcsg-gallery">
-                <div class="upcsg-gallery__main">
-                    @if (Photos.Count > 0)
-                    {
-                        <img src="@Photos[_photoIndex]" alt="@_item.Name"
-                             onerror="this.closest('.upcsg-gallery__main').classList.add('upcsg-gallery__main--broken'); this.remove();" />
-                    }
-                    else
-                    {
-                        <img class="upcsg-merch-placeholder" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-                    }
-
-                    <p class="upcsg-gallery__broken">Photo couldn't be loaded.</p>
-
-                    @if (!_item.InStock)
-                    {
-                        <span class="upcsg-gallery__soldout">Sold out</span>
-                    }
-                    else if (_item.IsPreorder)
-                    {
-                        <span class="upcsg-gallery__badge upcsg-gallery__badge--preorder">Preorder</span>
-                    }
-                    else if (_item.HasActiveSale)
-                    {
-                        <span class="upcsg-gallery__badge upcsg-gallery__badge--sale">
-                            @_item.SalePercentage.ToString("0.##")% off
-                        </span>
-                    }
-                </div>
+                @* CosmicImage rather than a bare img: a dead CMS photo drops to the item's
+                   own plate instead of the "Photo couldn't be loaded" line this used to
+                   show, and an item with no photos at all gets a designed panel rather
+                   than a crest floating in an empty box. *@
+                <CosmicImage @key="CurrentPhoto"
+                             Src="@CurrentPhoto"
+                             Alt="@_item.Name"
+                             Seed="@_item.Name"
+                             Badge="@Flag"
+                             Eager="true"
+                             Class="upcsg-gallery__main" />
 
                 @* Thumbnails only earn their space once there's more than one photo. *@
                 @if (Photos.Count > 1)
@@ -75,7 +58,7 @@ else
                                     aria-label="@($"Photo {index + 1} of {Photos.Count}")"
                                     aria-pressed="@(index == _photoIndex ? "true" : "false")"
                                     @onclick="() => _photoIndex = index">
-                                <img src="@Photos[index]" alt="" loading="lazy" />
+                                <CosmicImage Src="@Photos[index]" Seed="@_item.Name" />
                             </button>
                         }
                     </div>
@@ -244,11 +227,39 @@ else
         @if (!string.IsNullOrWhiteSpace(_item.Description))
         {
             <section class="upcsg-section">
-                <div class="upcsg-surface upcsg-product__about">
-                    <p class="upcsg-kicker">Details</p>
-                    @foreach (var paragraph in Prose.Paragraphs(_item.Description))
+                <Reveal Variant="Reveal.RevealMotion.Up">
+                    <div class="upcsg-surface upcsg-product__about">
+                        <p class="upcsg-kicker">
+                            <span class="upcsg-star upcsg-star--tiny" aria-hidden="true"></span> Details
+                        </p>
+                        @foreach (var paragraph in Prose.Paragraphs(_item.Description))
+                        {
+                            <p class="upcsg-product__para">@paragraph</p>
+                        }
+                    </div>
+                </Reveal>
+            </section>
+        }
+
+        @* The page used to end at the description, so the only way onward was the browser
+           back button. Every other detail page in the site offers somewhere to go next. *@
+        @if (_more.Count > 0)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="Also in the store" Title="More to rep">
+                    <Action>
+                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="merch">
+                            Shop all
+                        </MudButton>
+                    </Action>
+                </SectionHeading>
+
+                <div class="upcsg-cardgrid upcsg-cardgrid--4 upcsg-recordgrid">
+                    @foreach (var (other, i) in _more.Select((m, i) => (m, i)))
                     {
-                        <p class="upcsg-product__para">@paragraph</p>
+                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                            <MerchCard Item="other" />
+                        </Reveal>
                     }
                 </div>
             </section>
@@ -263,6 +274,7 @@ else
     private const int MaxPerLine = 25;
 
     private MerchItemDto? _item;
+    private List<MerchItemDto> _more = [];
     private MerchVariantDto? _selected;
     private int _quantity = 1;
     private int _photoIndex;
@@ -273,6 +285,20 @@ else
     private const int LowStockThreshold = 5;
 
     private List<string> Photos => _item?.PhotosOf(_selected?.Name) ?? [];
+
+    /// <summary>
+    /// The photo on show, or null when the item has none. Index-checked because switching
+    /// variant can shorten the list under an index carried over from the previous one.
+    /// </summary>
+    private string? CurrentPhoto =>
+        _photoIndex >= 0 && _photoIndex < Photos.Count ? Photos[_photoIndex] : null;
+
+    /// <summary>Corner badge on the gallery: the same states the listing tiles show.</summary>
+    private string? Flag => _item is null ? null
+        : !_item.InStock ? "Sold out"
+        : _item.IsPreorder ? "Pre-order"
+        : _item.HasActiveSale ? $"-{_item.SalePercentage:0.#}%"
+        : null;
 
     private decimal UnitPrice => _selected is null
         ? _item?.PriceFrom ?? 0m
@@ -315,6 +341,7 @@ else
     {
         _loading = true;
         _item = null;
+        _more = [];
         _selected = null;
         _quantity = 1;
         _photoIndex = 0;
@@ -322,6 +349,12 @@ else
         try
         {
             _item = await MerchService.GetMerchItemAsync(Id);
+
+            if (_item is not null)
+            {
+                var all = await MerchService.GetMerchAsync();
+                _more = [.. all.Where(m => m.Id != Id).Take(4)];
+            }
 
             // Preselect when there's only one way to buy it — making someone click "One
             // size" before they can order is a pointless gate. Skipped when that single

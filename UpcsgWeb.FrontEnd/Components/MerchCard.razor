@@ -1,12 +1,15 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* One merch item as a tile.
+@* One merch item, as a tile or as the leading drop. Shared by the home strip, the store
+   and the foot of the item page.
 
    The home page used to draw a star glyph here regardless of what the item had, so the
-   hoodie's three real photographs never appeared anywhere but its detail page. This shows
-   the actual product and only falls back when there genuinely is nothing. *@
+   hoodie's real photographs never appeared anywhere but its detail page. This shows the
+   actual product and only falls back when there genuinely is nothing. *@
 
-<a class="upcsg-merchcard" href="@($"merch/{Item.Id}")">
+<a class="upcsg-merchcard upcsg-merchcard--@Variant.ToString().ToLowerInvariant() @(Item.InStock ? null : "upcsg-merchcard--out")"
+   href="@($"merch/{Item.Id}")">
+
     <CosmicImage Src="@Photo"
                  Alt="@Item.Name"
                  Seed="@Item.Name"
@@ -14,7 +17,19 @@
                  Class="upcsg-merchcard__thumb" />
 
     <span class="upcsg-merchcard__body">
+        @if (Variant == Density.Feature)
+        {
+            <span class="upcsg-kicker">
+                <span class="upcsg-star upcsg-star--tiny" aria-hidden="true"></span> This season's drop
+            </span>
+        }
+
         <span class="upcsg-merchcard__name">@Item.Name</span>
+
+        @if (Variant == Density.Feature && !string.IsNullOrWhiteSpace(Item.Description))
+        {
+            <span class="upcsg-merchcard__blurb">@Prose.Standfirst(Item.Description)</span>
+        }
 
         <span class="upcsg-merchcard__price">
             @if (Item.IsPreorder)
@@ -36,17 +51,42 @@
 
                 @* Struck-through original only when a sale is actually running, so the
                    discount is never implied by a stale percentage. *@
-                @if (Item.HasActiveSale)
+                @if (Item.HasActiveSale && Item.ListPriceFrom > Item.PriceFrom)
                 {
                     <span class="upcsg-merchcard__was">&#8369;@Item.ListPriceFrom.ToString("N2")</span>
                 }
             }
         </span>
+
+        @if (Item.Variants.Count > 0)
+        {
+            <span class="upcsg-merchcard__variants">
+                @foreach (var variant in Item.Variants)
+                {
+                    <span class="upcsg-chip">@variant.Name</span>
+                }
+            </span>
+        }
+
+        <span class="upcsg-merchcard__cue">
+            @(Item.InStock ? "View item" : "See details") <span aria-hidden="true">&rarr;</span>
+        </span>
     </span>
 </a>
 
 @code {
+    public enum Density
+    {
+        /// <summary>A tile in the catalog grid.</summary>
+        Card,
+
+        /// <summary>The leading drop: photo beside the copy, with a blurb.</summary>
+        Feature,
+    }
+
     [Parameter, EditorRequired] public MerchItemDto Item { get; set; } = default!;
+
+    [Parameter] public Density Variant { get; set; } = Density.Card;
 
     /// <summary>
     /// First photo is the listing shot by convention; ImageUrl is the older single-photo

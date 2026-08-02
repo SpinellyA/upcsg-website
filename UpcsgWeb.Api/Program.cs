@@ -142,12 +142,35 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerGen();
 }
 
-// Endpoint for the uptime pinger. Touches the DB, so a warm process sitting on a cold
-// Neon connection still reports unhealthy.
-app.MapGet("/health", async (UpcsgDbContext db) =>
+// Endpoint for the uptime pinger, and the one thing keeping both halves of the free tier
+// alive: the web service sleeps when nothing calls it, and the Postgres project pauses
+// when nothing writes to it. A read would wake only the first, so this writes.
+//
+// The write is throttled inside the SQL rather than here, so /health staying public and
+// unauthenticated does not make it an unlimited write endpoint.
+app.MapGet("/health", async (UpcsgDbContext db, CancellationToken ct) =>
 {
-    var ok = await db.Database.CanConnectAsync();
-    return ok ? Results.Ok(new { status = "healthy" }) : Results.StatusCode(503);
+    var beat = await DatabaseHeartbeat.PingAsync(db, TimeSpan.FromMinutes(1), ct);
+
+    if (!beat.Reachable)
+    {
+        // 503, not 500: the API is up, its database is not. A pinger that treats every
+        // non-200 the same still alerts, and anyone reading the body learns which it was.
+        return Results.Json(
+            new { status = "unhealthy", database = "unreachable" },
+            statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
+    return Results.Ok(new
+    {
+        status = "healthy",
+        database = "reachable",
+
+        // False just means another request already wrote inside the throttle window.
+        keptAlive = beat.Wrote,
+        lastKeepAlive = beat.LastPingedAt,
+        pingCount = beat.PingCount,
+    });
 });
 
 app.Run();

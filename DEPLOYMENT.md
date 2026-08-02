@@ -146,13 +146,40 @@ provider at startup; it should say `Supabase Storage`. Check that line on the fi
 ### Keep both services awake
 
 Render free services sleep after ~15 minutes idle; Supabase free projects pause after ~7
-days. One cron hitting the API's health endpoint solves both, because the health check
-touches the database:
+days. One cron against `GET /health` solves both, because the endpoint **writes** to the
+database rather than only reading — a read would wake the web service and leave Postgres
+looking idle.
 
-- [cron-job.org](https://cron-job.org) or UptimeRobot, every 10 minutes, `GET /health`.
+- [cron-job.org](https://cron-job.org) or UptimeRobot, every **10 minutes**, `GET /health`.
+- Alert on any non-200.
 
 Without it, the first visitor after a quiet spell waits ~30s for a cold start, and after a
-long break the database needs a manual restore.
+long break the database needs a manual restore from the Supabase dashboard.
+
+**What it returns**
+
+```json
+{
+  "status": "healthy",
+  "database": "reachable",
+  "keptAlive": true,
+  "lastKeepAlive": "2026-08-02T14:57:49.747809Z",
+  "pingCount": 2
+}
+```
+
+`keptAlive: false` is not a problem — it means another request already wrote inside the
+throttle window. The write happens at most once a minute no matter how often the endpoint
+is called, because `/health` is public and unauthenticated and an unthrottled write there
+would be an open invitation to generate database load. A 10-minute cron always writes.
+
+`pingCount` is the useful field after an outage: if the site went down over a break, it
+tells you whether the pinger was actually running.
+
+When Postgres cannot be reached the endpoint returns **503** with
+`{"status":"unhealthy","database":"unreachable"}` — a 503 rather than a 500, so a monitor
+that only checks the status code still alerts, and anyone reading the body learns which
+dependency failed.
 
 ---
 

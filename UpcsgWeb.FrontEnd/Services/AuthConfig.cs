@@ -1,20 +1,12 @@
-﻿namespace UpcsgWeb.FrontEnd.Services;
+namespace UpcsgWeb.FrontEnd.Services;
 
 public static class AuthConfig
 {
-    /// <summary>
-    /// True until the API's token-exchange endpoint and a Google client ID exist.
-    /// While set, the login page offers stub sign-in so the authenticated UI can be
-    /// exercised locally. Flip to false and the real Google flow takes over.
-    /// </summary>
-    public const bool UseStubSignIn = true;
-
-    /// <summary>
-    /// From Google Cloud Console â†’ Credentials â†’ OAuth client ID (Web application).
-    /// Authorised origins and redirect URIs must list both localhost and the production
-    /// GitHub Pages URL, or one of the two environments will fail.
-    /// </summary>
-    public const string GoogleClientId = "";
+    // UseStubSignIn and GoogleClientId used to be constants here. They are now
+    // GoogleAuthOptions, bound from wwwroot/appsettings.json: a WebAssembly app fetches
+    // that file at startup, so a deployment can be pointed at a client id without a
+    // rebuild — and the stand-in sign-in switches itself off the moment one is set,
+    // rather than depending on somebody remembering to flip a bool before shipping.
 
     /// <summary>localStorage key holding the serialized session.</summary>
     public const string SessionStorageKey = "upcsg.session";

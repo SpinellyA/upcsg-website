@@ -20,6 +20,12 @@ var apiOptions = new ApiOptions();
 builder.Configuration.GetSection("Api").Bind(apiOptions);
 builder.Services.AddSingleton(apiOptions);
 
+// The Google client id, also runtime configuration. Empty means the login page offers
+// the development stand-ins instead of the real button.
+var googleOptions = new GoogleAuthOptions();
+builder.Configuration.GetSection("Google").Bind(googleOptions);
+builder.Services.AddSingleton(googleOptions);
+
 var apiBase = apiOptions.IsConfigured
     ? apiOptions.BaseUrl.TrimEnd('/') + "/"
     : builder.HostEnvironment.BaseAddress;

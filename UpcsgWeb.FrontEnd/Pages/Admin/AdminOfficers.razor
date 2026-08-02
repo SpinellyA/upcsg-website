@@ -1,0 +1,224 @@
+@page "/admin/officers"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@attribute [Authorize(Policy = "ExeCom")]
+@inject IAdminContentService Content
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject AuthenticationStateProvider AuthState
+
+<PageTitle>Officers - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page upcsg-admin">
+    <AdminNav />
+
+    <div class="upcsg-admin__head">
+        <div>
+            <p class="upcsg-kicker">Access</p>
+            <h1 class="upcsg-admin__title">Officers</h1>
+            <p class="upcsg-admin__lede">
+                These addresses get officer rights when they sign in with Google. Everyone else
+                signs in as an ordinary guilder. Roles are not set per account &mdash; this list
+                is the only thing that decides them.
+            </p>
+        </div>
+    </div>
+
+    <MudPaper Elevation="0" Class="upcsg-ink-panel pa-4 mb-4">
+        <MudForm @ref="_form">
+            <MudGrid Spacing="2" Class="align-center">
+                <MudItem xs="12" md="5">
+                    <MudTextField @bind-Value="_email"
+                                  Label="UP email address"
+                                  Placeholder="officer@up.edu.ph"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Email"
+                                  Immediate="true"
+                                  Required="true"
+                                  RequiredError="An email address is required."
+                                  Validation="@(new Func<string, string?>(ValidateEmail))" />
+                </MudItem>
+
+                <MudItem xs="12" md="5">
+                    <MudTextField @bind-Value="_note"
+                                  Label="Who is this? (optional)"
+                                  Placeholder="Executive Director, A.Y. 2026-2027"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" md="2">
+                    <MudButton Variant="Variant.Filled"
+                               FullWidth="true"
+                               Class="upcsg-cta-button"
+                               Disabled="@(_busy || string.IsNullOrWhiteSpace(_email))"
+                               OnClick="AddAsync">
+                        Add officer
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
+    </MudPaper>
+
+    <MudTable Items="_officers"
+              Dense="true"
+              Hover="true"
+              Loading="_loading"
+              Elevation="0"
+              Class="upcsg-ink-table"
+              LoadingProgressColor="Color.Secondary"
+              NoRecordsText="No officers yet. That should be impossible — add one now.">
+        <HeaderContent>
+            <MudTh>Email</MudTh>
+            <MudTh>Who</MudTh>
+            <MudTh>Added</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align:right">&nbsp;</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Email">
+                <span class="upcsg-mono">@context.Email</span>
+                @if (IsMe(context.Email))
+                {
+                    <MudChip T="string" Size="Size.Small" Class="ml-2">you</MudChip>
+                }
+            </MudTd>
+            <MudTd DataLabel="Who">@(context.Note ?? "—")</MudTd>
+            <MudTd DataLabel="Added">@context.AddedAt.ToLocalTime().ToString("MMM d, yyyy")</MudTd>
+            <MudTd DataLabel="Status">
+                @* An allowlisted address nobody has signed in with is normal right after a
+                   handover, and a useful signal that it might be a typo. *@
+                @if (context.HasSignedIn)
+                {
+                    <span class="upcsg-statuspill upcsg-statuspill--received">Active</span>
+                }
+                else
+                {
+                    <span class="upcsg-statuspill upcsg-statuspill--confirmed">Not signed in yet</span>
+                }
+            </MudTd>
+            <MudTd Style="text-align:right">
+                <MudButton Variant="Variant.Text"
+                           Size="Size.Small"
+                           Disabled="@(_busy || _officers.Count <= 1)"
+                           OnClick="() => RemoveAsync(context)">
+                    Remove
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+        Removing someone takes effect immediately for new sign-ins, but a token they already
+        hold stays valid until it expires. If you need to lock someone out right now, remove
+        them here and ask them to sign out.
+    </MudAlert>
+</div>
+
+@code {
+    private MudForm? _form;
+    private List<OfficerEmailDto> _officers = [];
+    private string _email = string.Empty;
+    private string? _note;
+    private bool _loading = true;
+    private bool _busy;
+    private string? _myEmail;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        _myEmail = state.User.FindFirst(c => c.Type.EndsWith("emailaddress") || c.Type == "email")?.Value;
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+
+        try
+        {
+            _officers = await Content.GetOfficersAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool IsMe(string email) =>
+        !string.IsNullOrWhiteSpace(_myEmail)
+        && string.Equals(email, _myEmail, StringComparison.OrdinalIgnoreCase);
+
+    // Mirrors the domain's shape check so a typo is caught before the round trip.
+    private static string? ValidateEmail(string value) =>
+        string.IsNullOrWhiteSpace(value) || System.Text.RegularExpressions.Regex.IsMatch(
+            value.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+            ? null
+            : "That doesn't look like an email address.";
+
+    private async Task AddAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            await Content.AddOfficerAsync(new AddOfficerRequest { Email = _email, Note = _note });
+            Snackbar.Add($"{_email.Trim().ToLowerInvariant()} can now administer the site.", Severity.Success);
+
+            _email = string.Empty;
+            _note = null;
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RemoveAsync(OfficerEmailDto officer)
+    {
+        // Removing yourself is legitimate during a handover, but it is the one action here
+        // that logs the person doing it out of the CMS, so it gets its own warning.
+        var warning = IsMe(officer.Email)
+            ? "This is your own address. You will lose access to these admin pages the next "
+              + "time you sign in. Continue?"
+            : $"{officer.Email} will lose officer rights immediately. Continue?";
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Remove officer",
+            warning,
+            yesText: "Remove",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _busy = true;
+
+        try
+        {
+            await Content.RemoveOfficerAsync(officer.Id);
+            Snackbar.Add($"{officer.Email} is no longer an officer.", Severity.Success);
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

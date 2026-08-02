@@ -19,6 +19,7 @@ namespace UpcsgWeb.Application.Abstractions;
 public interface IApplicationDbContext
 {
     DbSet<AppUser> Users { get; }
+    DbSet<OfficerEmail> OfficerEmails { get; }
     DbSet<MerchItem> MerchItems { get; }
     DbSet<Order> Orders { get; }
     DbSet<Cart> Carts { get; }

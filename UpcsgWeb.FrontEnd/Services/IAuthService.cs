@@ -14,8 +14,9 @@ public interface IAuthService
     Task<AuthResultDto> SignInWithGoogleAsync(string googleCredential);
 
     /// <summary>
-    /// Stand-in used while there is no Google client ID and no API to exchange against.
-    /// Delete this together with <see cref="AuthConfig.UseStubSignIn"/> once auth is live.
+    /// Stand-in used while no Google client id is configured. It calls the API's
+    /// development sign-in endpoint, which is filtered out of the endpoint registry
+    /// outside Development — so this cannot work against a deployed API.
     /// </summary>
     Task<AuthResultDto> SignInAsStubAsync(string role);
 

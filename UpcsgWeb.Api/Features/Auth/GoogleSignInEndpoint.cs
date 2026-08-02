@@ -2,6 +2,7 @@ using FastEndpoints;
 using UpcsgWeb.Api.Auth;
 using UpcsgWeb.Application.Mapping;
 using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Officers;
 using UpcsgWeb.Domain.Users;
 using UpcsgWeb.Shared.Contracts;
 
@@ -65,8 +66,16 @@ public class GoogleSignInEndpoint(
         else
         {
             // Refreshes profile fields only — the aggregate gives no way to change Role
-            // here, so a sign-in can never escalate privileges.
+            // here, so a sign-in can never escalate privileges by itself.
             user.RefreshProfile(identity.Email, identity.Name, identity.PictureUrl);
+        }
+
+        // Role is decided by the officer allowlist and by nothing in the token. This is
+        // what makes the admin screen effective in both directions: an address added
+        // there gets its rights at the next sign-in, and one removed loses them.
+        if (await SyncOfficerRole.ApplyAsync(uow, user, ct))
+        {
+            logger.LogInformation("{Email} signed in as {Role}.", user.Email, user.Role);
         }
 
         await uow.SaveChangesAsync(ct);

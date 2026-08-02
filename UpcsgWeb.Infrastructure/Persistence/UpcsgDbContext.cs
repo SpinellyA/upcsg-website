@@ -29,6 +29,7 @@ public class UpcsgDbContext(
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<MerchItem> MerchItems => Set<MerchItem>();
     public DbSet<AppUser> Users => Set<AppUser>();
+    public DbSet<OfficerEmail> OfficerEmails => Set<OfficerEmail>();
     public DbSet<GuildEvent> Events => Set<GuildEvent>();
     public DbSet<Member> Members => Set<Member>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
@@ -43,6 +44,7 @@ public class UpcsgDbContext(
     private IOrderRepository? _orderRepository;
     private IMerchRepository? _merchRepository;
     private IUserRepository? _userRepository;
+    private IOfficerEmailRepository? _officerEmailRepository;
     private IEventRepository? _eventRepository;
     private IMemberRepository? _memberRepository;
     private IAchievementRepository? _achievementRepository;
@@ -52,6 +54,7 @@ public class UpcsgDbContext(
     IOrderRepository IUnitOfWork.Orders => _orderRepository ??= new OrderRepository(this);
     IMerchRepository IUnitOfWork.Merch => _merchRepository ??= new MerchRepository(this);
     IUserRepository IUnitOfWork.Users => _userRepository ??= new UserRepository(this);
+    IOfficerEmailRepository IUnitOfWork.OfficerEmails => _officerEmailRepository ??= new OfficerEmailRepository(this);
     IEventRepository IUnitOfWork.Events => _eventRepository ??= new EventRepository(this);
     IMemberRepository IUnitOfWork.Members => _memberRepository ??= new MemberRepository(this);
     IAchievementRepository IUnitOfWork.Achievements => _achievementRepository ??= new AchievementRepository(this);

@@ -27,6 +27,10 @@ public interface IAdminContentService
 
     Task<SiteSettingsDto> GetSettingsAsync();
     Task<SiteSettingsDto> SaveSettingsAsync(UpdateSiteSettingsRequest request);
+
+    Task<List<OfficerEmailDto>> GetOfficersAsync();
+    Task<OfficerEmailDto> AddOfficerAsync(AddOfficerRequest request);
+    Task RemoveOfficerAsync(Guid id);
 }
 
 public class AdminContentService(HttpClient http, ApiOptions options) : IAdminContentService
@@ -103,6 +107,30 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
 
         return await response.Content.ReadFromJsonAsync<SiteSettingsDto>(UpcsgJson.Options) ?? new SiteSettingsDto();
     }
+
+    // --- Officers -------------------------------------------------------------------
+
+    public async Task<List<OfficerEmailDto>> GetOfficersAsync()
+    {
+        EnsureConfigured();
+        return await http.GetFromJsonAsync<List<OfficerEmailDto>>("api/admin/officers", UpcsgJson.Options) ?? [];
+    }
+
+    public async Task<OfficerEmailDto> AddOfficerAsync(AddOfficerRequest request)
+    {
+        EnsureConfigured();
+
+        var response = await http.PostAsJsonAsync("api/admin/officers", request, UpcsgJson.Options);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ApiException(await CartService.DescribeAsync(response));
+        }
+
+        return await response.Content.ReadFromJsonAsync<OfficerEmailDto>(UpcsgJson.Options)
+            ?? throw new ApiException("The API returned an empty response.");
+    }
+
+    public Task RemoveOfficerAsync(Guid id) => DeleteAsync($"api/admin/officers/{id}");
 
     // --- Shared -------------------------------------------------------------------
 

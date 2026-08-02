@@ -15,6 +15,7 @@ namespace UpcsgWeb.Application.Abstractions;
 public interface IUnitOfWork
 {
     IUserRepository Users { get; }
+    IOfficerEmailRepository OfficerEmails { get; }
     IMerchRepository Merch { get; }
     IOrderRepository Orders { get; }
     ICartRepository Carts { get; }

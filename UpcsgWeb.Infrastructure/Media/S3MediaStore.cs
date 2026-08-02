@@ -1,3 +1,4 @@
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
@@ -6,35 +7,39 @@ using UpcsgWeb.Domain.Abstractions;
 namespace UpcsgWeb.Infrastructure.Media;
 
 /// <summary>
-/// Cloudflare R2 over the S3 API.
+/// Any S3-compatible bucket: Supabase Storage, Cloudflare R2, MinIO, AWS.
 ///
-/// Uploads are presigned so the browser PUTs straight to the bucket — bytes never touch
+/// This was R2MediaStore, with the Cloudflare endpoint built from an account id. The
+/// protocol is identical across providers, so the vendor is now purely configuration —
+/// changing providers is an environment-variable edit, not a code deployment.
+///
+/// Uploads are presigned so the browser PUTs straight to the bucket; bytes never touch
 /// the API, which matters on a free-tier host that sleeps and has little headroom.
 /// </summary>
-public sealed class R2MediaStore : IMediaStore, IDisposable
+public sealed class S3MediaStore : IMediaStore, IDisposable
 {
     private readonly MediaOptions _options;
     private readonly AmazonS3Client _client;
 
-    public R2MediaStore(IOptions<MediaOptions> options)
+    public S3MediaStore(IOptions<MediaOptions> options)
     {
         _options = options.Value;
 
         _client = new AmazonS3Client(
-            _options.AccessKeyId,
-            _options.SecretAccessKey,
+            new BasicAWSCredentials(_options.AccessKeyId, _options.SecretAccessKey),
             new AmazonS3Config
             {
-                ServiceURL = $"https://{_options.AccountId}.r2.cloudflarestorage.com",
+                ServiceURL = _options.ServiceUrl,
 
-                // R2 has no regions, but the SDK signs with one; "auto" is what Cloudflare
-                // expects. Path style because R2 does not do virtual-host buckets.
-                AuthenticationRegion = "auto",
+                // Neither Supabase nor R2 serves buckets as subdomains of the endpoint, so
+                // path style is required; virtual-host addressing would build URLs that
+                // resolve to nothing.
+                AuthenticationRegion = _options.Region,
                 ForcePathStyle = true,
             });
     }
 
-    public string ProviderName => "Cloudflare R2";
+    public string ProviderName => _options.DescribeProvider();
 
     public Task<UploadGrant> CreateUploadGrantAsync(
         string folder, string fileName, string contentType, CancellationToken ct = default)

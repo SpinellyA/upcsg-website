@@ -65,8 +65,8 @@ public static class DependencyInjection
 
         if (options.IsConfigured)
         {
-            services.AddSingleton<IMediaStore, R2MediaStore>();
-            return "Cloudflare R2";
+            services.AddSingleton<IMediaStore, S3MediaStore>();
+            return options.DescribeProvider();
         }
 
         // Partial configuration is a mistake worth naming rather than quietly ignoring.
@@ -77,7 +77,7 @@ public static class DependencyInjection
             sp.GetRequiredService<IOptions<MediaOptions>>(), contentRoot, localBaseUrl));
 
         return partial
-            ? $"local disk — R2 is PARTIALLY configured, missing: {string.Join(", ", missing)}"
-            : "local disk (no R2 configuration found)";
+            ? $"local disk — bucket storage is PARTIALLY configured, missing: {string.Join(", ", missing)}"
+            : "local disk (no bucket configuration found)";
     }
 }

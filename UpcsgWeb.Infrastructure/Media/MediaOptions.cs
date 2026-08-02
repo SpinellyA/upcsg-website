@@ -4,13 +4,32 @@ namespace UpcsgWeb.Infrastructure.Media;
 /// Bound from the "Media" configuration section. Every value is a secret or a deployment
 /// detail, so nothing here has a default that would work by accident — an unconfigured
 /// app falls back to local disk rather than half-talking to a bucket.
+///
+/// Deliberately vendor-neutral. This used to carry a Cloudflare account id and build the
+/// R2 endpoint from it, which made moving to another provider a code change rather than a
+/// configuration one. Supabase Storage, R2, MinIO and AWS all speak the same protocol;
+/// what differs is the endpoint and the region.
 /// </summary>
 public sealed class MediaOptions
 {
     public const string SectionName = "Media";
 
-    /// <summary>Cloudflare account id; forms the S3 endpoint.</summary>
-    public string? AccountId { get; set; }
+    /// <summary>
+    /// Full S3 endpoint of the provider.
+    ///
+    ///   Supabase   https://[project-ref].supabase.co/storage/v1/s3
+    ///   R2         https://[account-id].r2.cloudflarestorage.com
+    /// </summary>
+    public string? ServiceUrl { get; set; }
+
+    /// <summary>
+    /// The region the credentials are signed for.
+    ///
+    /// Supabase issues a per-project region and rejects a signature made for another one.
+    /// R2 has no regions, but the SDK still signs with something and Cloudflare expects
+    /// the literal "auto" — which is why this is configuration rather than a constant.
+    /// </summary>
+    public string Region { get; set; } = "auto";
 
     public string? AccessKeyId { get; set; }
     public string? SecretAccessKey { get; set; }
@@ -19,8 +38,10 @@ public sealed class MediaOptions
     public string? PublicBucket { get; set; }
 
     /// <summary>
-    /// Origin the public bucket is served from — a custom domain like https://img.example.org,
-    /// or the r2.dev URL for testing.
+    /// Origin the public bucket is served from.
+    ///
+    ///   Supabase   https://[project-ref].supabase.co/storage/v1/object/public/[bucket]
+    ///   R2         a custom domain, or the r2.dev URL for testing
     /// </summary>
     public string? PublicBaseUrl { get; set; }
 
@@ -31,12 +52,12 @@ public sealed class MediaOptions
     public int MaxUploadBytes { get; set; } = 8 * 1024 * 1024;
 
     /// <summary>
-    /// True only when everything needed to talk to R2 is present. Partial configuration is
-    /// treated as unconfigured — a half-set bucket should fail loudly at startup, not
-    /// mysteriously at the first upload.
+    /// True only when everything needed to talk to the bucket is present. Partial
+    /// configuration is treated as unconfigured — a half-set bucket should be visible at
+    /// startup, not mysteriously at the first upload.
     /// </summary>
     public bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(AccountId)
+        !string.IsNullOrWhiteSpace(ServiceUrl)
         && !string.IsNullOrWhiteSpace(AccessKeyId)
         && !string.IsNullOrWhiteSpace(SecretAccessKey)
         && !string.IsNullOrWhiteSpace(PublicBucket)
@@ -47,12 +68,30 @@ public sealed class MediaOptions
     {
         var missing = new List<string>();
 
-        if (string.IsNullOrWhiteSpace(AccountId)) missing.Add($"{SectionName}:{nameof(AccountId)}");
+        if (string.IsNullOrWhiteSpace(ServiceUrl)) missing.Add($"{SectionName}:{nameof(ServiceUrl)}");
         if (string.IsNullOrWhiteSpace(AccessKeyId)) missing.Add($"{SectionName}:{nameof(AccessKeyId)}");
         if (string.IsNullOrWhiteSpace(SecretAccessKey)) missing.Add($"{SectionName}:{nameof(SecretAccessKey)}");
         if (string.IsNullOrWhiteSpace(PublicBucket)) missing.Add($"{SectionName}:{nameof(PublicBucket)}");
         if (string.IsNullOrWhiteSpace(PublicBaseUrl)) missing.Add($"{SectionName}:{nameof(PublicBaseUrl)}");
 
         return missing;
+    }
+
+    /// <summary>Named for the startup log, so a deployment shows what it connected to.</summary>
+    public string DescribeProvider()
+    {
+        if (string.IsNullOrWhiteSpace(ServiceUrl))
+        {
+            return "unconfigured";
+        }
+
+        if (ServiceUrl.Contains("supabase", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Supabase Storage";
+        }
+
+        return ServiceUrl.Contains("r2.cloudflarestorage", StringComparison.OrdinalIgnoreCase)
+            ? "Cloudflare R2"
+            : "S3-compatible storage";
     }
 }

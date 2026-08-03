@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using UpcsgWeb.FrontEnd.Http;
 using UpcsgWeb.FrontEnd.Services;
@@ -36,6 +37,16 @@ public class ServiceGraphTests
 
             return new HttpClient(handler) { BaseAddress = new Uri("http://localhost:5180/") };
         });
+
+        // SnapshotService logs when no snapshot is committed.
+        services.AddLogging();
+
+        // Its own HttpClient, based at the site rather than the API — mirroring Program.cs,
+        // where fetching the offline fallback through the API client would defeat the point
+        // of having a fallback.
+        services.AddScoped<ISnapshotService>(sp => new SnapshotService(
+            new HttpClient { BaseAddress = new Uri("http://localhost:5000/") },
+            sp.GetRequiredService<ILogger<SnapshotService>>()));
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IEventService, EventService>();
@@ -89,6 +100,7 @@ public class ServiceGraphTests
     [InlineData(typeof(ICartService))]
     [InlineData(typeof(IOrderService))]
     [InlineData(typeof(IAdminContentService))]
+    [InlineData(typeof(ISnapshotService))]
     [InlineData(typeof(ISessionStore))]
     public void EveryRegisteredServiceResolves(Type serviceType)
     {

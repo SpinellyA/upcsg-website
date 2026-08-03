@@ -59,7 +59,19 @@ builder.Services.AddScoped<UpcsgAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(sp =>
     sp.GetRequiredService<UpcsgAuthenticationStateProvider>());
 
-// --- Content (live when configured, seeded otherwise) -----------------------------------
+// --- Content (live when reachable, snapshot otherwise) ----------------------------------
+// The snapshot is served by the site, not the API, so it needs its own client: the shared
+// one is based at the API origin, and the whole point of the fallback is that it works
+// when that origin is unreachable. Requesting it through the API client asks a dead host
+// for the file that exists to survive the host being dead.
+//
+// Scoped rather than singleton because HttpClient is scoped, and a singleton holding a
+// scoped dependency fails container validation at startup. In WebAssembly a scope lasts
+// as long as the tab, so the snapshot is still fetched once per visit.
+builder.Services.AddScoped<ISnapshotService>(sp => new SnapshotService(
+    new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) },
+    sp.GetRequiredService<ILogger<SnapshotService>>()));
+
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IMerchService, MerchService>();
 builder.Services.AddScoped<IMemberService, MemberService>();

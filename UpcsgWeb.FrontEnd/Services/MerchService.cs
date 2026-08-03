@@ -3,36 +3,42 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
-public class MerchService(HttpClient http, ApiOptions options) : IMerchService
+public class MerchService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
+    : IMerchService
 {
-    public async Task<List<MerchItemDto>> GetMerchAsync()
-    {
-        // Live when an API is configured; the seed below keeps the public site
-        // renderable standalone.
-        if (options.IsConfigured)
-        {
-            return await http.GetFromJsonAsync<List<MerchItemDto>>("api/merch", UpcsgJson.Options) ?? [];
-        }
-
-        return SeedData();
-    }
+    // Live when reachable, then the committed snapshot, then the built-in seed.
+    public Task<List<MerchItemDto>> GetMerchAsync() =>
+        LiveOrSnapshot.ReadAsync(
+            options,
+            snapshots,
+            async () => await http.GetFromJsonAsync<List<MerchItemDto>>("api/merch", UpcsgJson.Options) ?? [],
+            snapshot => snapshot.Merch,
+            SeedData);
 
     public async Task<MerchItemDto?> GetMerchItemAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
-            return SeedData().FirstOrDefault(m => m.Id == id);
+            return (await GetMerchAsync()).FirstOrDefault(m => m.Id == id);
         }
 
-        // A bad id in the URL is an ordinary answer, not an exception to catch.
-        var response = await http.GetAsync($"api/merch/{id}");
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            return null;
-        }
+            // A bad id in the URL is an ordinary answer, not an exception to catch.
+            var response = await http.GetAsync($"api/merch/{id}");
 
-        return await response.Content.ReadFromJsonAsync<MerchItemDto>(UpcsgJson.Options);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<MerchItemDto>(UpcsgJson.Options);
+        }
+        catch (HttpRequestException)
+        {
+            // Unreachable rather than not found — the list path knows how to fall back.
+            return (await GetMerchAsync()).FirstOrDefault(m => m.Id == id);
+        }
     }
 
     /// <summary>

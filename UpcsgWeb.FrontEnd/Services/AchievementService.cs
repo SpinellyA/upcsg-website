@@ -3,36 +3,42 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
-public class AchievementService(HttpClient http, ApiOptions options) : IAchievementService
+public class AchievementService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
+    : IAchievementService
 {
-    public async Task<List<AchievementDto>> GetAchievementsAsync()
-    {
-        // Live when an API is configured; the seed below keeps the public site
-        // renderable standalone.
-        if (options.IsConfigured)
-        {
-            return await http.GetFromJsonAsync<List<AchievementDto>>("api/achievements", UpcsgJson.Options) ?? [];
-        }
-
-        return SeedData();
-    }
+    // Live when reachable, then the committed snapshot, then the built-in seed.
+    public Task<List<AchievementDto>> GetAchievementsAsync() =>
+        LiveOrSnapshot.ReadAsync(
+            options,
+            snapshots,
+            async () => await http.GetFromJsonAsync<List<AchievementDto>>("api/achievements", UpcsgJson.Options) ?? [],
+            snapshot => snapshot.Achievements,
+            SeedData);
 
     public async Task<AchievementDto?> GetAchievementAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
-            return SeedData().FirstOrDefault(a => a.Id == id);
+            return (await GetAchievementsAsync()).FirstOrDefault(a => a.Id == id);
         }
 
-        // A bad id in the URL is an ordinary answer, not an exception for the page to catch.
-        var response = await http.GetAsync($"api/achievements/{id}");
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            return null;
-        }
+            // A bad id in the URL is an ordinary answer, not an exception for the page.
+            var response = await http.GetAsync($"api/achievements/{id}");
 
-        return await response.Content.ReadFromJsonAsync<AchievementDto>(UpcsgJson.Options);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<AchievementDto>(UpcsgJson.Options);
+        }
+        catch (HttpRequestException)
+        {
+            // Unreachable rather than not found — the list path knows how to fall back.
+            return (await GetAchievementsAsync()).FirstOrDefault(a => a.Id == id);
+        }
     }
 
     /// <summary>

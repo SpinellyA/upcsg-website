@@ -87,6 +87,23 @@ public static class DtoMapping
         Category = a.Category,
     };
 
+    /// <summary>
+    /// Resolves the displayed month as part of mapping, because every caller needs it and
+    /// none of them should be re-deriving "pinned month, or today in Cebu" themselves.
+    /// </summary>
+    public static SiteSettingsDto ToDto(this UpcsgWeb.Domain.Settings.SiteSettings s)
+    {
+        var (year, month) = s.ResolveEventsMonth();
+
+        return new SiteSettingsDto
+        {
+            EventsYear = s.EventsYear,
+            EventsMonth = s.EventsMonth,
+            ResolvedYear = year,
+            ResolvedMonth = month,
+        };
+    }
+
     public static AppUserDto ToDto(this AppUser u) => new()
     {
         Id = u.Id.ToString(),

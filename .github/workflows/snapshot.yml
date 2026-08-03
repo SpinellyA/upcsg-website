@@ -1,0 +1,159 @@
+name: Snapshot content
+
+# Captures the public catalogue and every image it references, and commits them, so the
+# site keeps working when the API is asleep, paused or broken.
+#
+# This runs on GitHub's servers rather than in the browser, which is the whole point: it
+# needs a token that can push to this repository, and the frontend is a WebAssembly app
+# whose every byte is downloaded by visitors. A push token shipped there would be public
+# the moment anyone opened developer tools.
+
+on:
+  schedule:
+    # Daily, a little after midnight Manila (UTC+8). Content changes rarely; the value is
+    # in the snapshot never being more than a day stale.
+    - cron: "20 16 * * *"
+
+  # So an officer can capture the site right after making changes.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Two runs committing to the same branch would race. Later run wins; the earlier one is
+  # cancelled rather than queued, because a stale snapshot is worth nothing.
+  group: content-snapshot
+  cancel-in-progress: true
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch the snapshot
+        env:
+          API: ${{ vars.API_BASE_URL }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${API:-}" ]; then
+            echo "::error::Set the API_BASE_URL repository variable to your Render origin."
+            exit 1
+          fi
+
+          # Render free instances sleep. The first request wakes the host and can take
+          # ~30s, so wake it separately and give the real request room.
+          echo "Waking $API ..."
+          curl -fsS --max-time 90 --retry 3 --retry-delay 10 --retry-all-errors \
+            "$API/health" > /dev/null || true
+
+          mkdir -p UpcsgWeb.FrontEnd/wwwroot
+
+          curl -fsS --max-time 120 --retry 3 --retry-delay 10 --retry-all-errors \
+            "$API/api/snapshot" -o snapshot.raw.json
+
+          # Refuse to commit something that isn't the document we expect. A sleeping host
+          # or a proxy can return an HTML error page with a 200, and overwriting a good
+          # snapshot with that would take the offline fallback down too.
+          python3 - <<'PY'
+          import json, sys
+          data = json.load(open("snapshot.raw.json"))
+          for key in ("members", "events", "achievements", "merch", "settings"):
+              if key not in data:
+                  sys.exit(f"Snapshot is missing '{key}' — refusing to commit it.")
+          if not any(data[k] for k in ("members", "events", "achievements", "merch")):
+              sys.exit("Snapshot is entirely empty — refusing to overwrite a good one.")
+          json.dump(data, open("UpcsgWeb.FrontEnd/wwwroot/content-snapshot.json", "w"),
+                    indent=2, ensure_ascii=False)
+          print("Snapshot OK:",
+                len(data["members"]), "members,",
+                len(data["events"]), "events,",
+                len(data["achievements"]), "achievements,",
+                len(data["merch"]), "merch")
+          PY
+
+          rm -f snapshot.raw.json
+
+      - name: Mirror the images
+        run: |
+          set -euo pipefail
+
+          # Images live in Supabase Storage. If that project pauses, the bucket goes with
+          # the database, so a snapshot pointing at it would render a page of broken
+          # frames. Mirroring them into the repo makes the fallback self-contained.
+          python3 - <<'PY'
+          import json, os, re, hashlib, pathlib, urllib.request, urllib.error
+
+          root = pathlib.Path("UpcsgWeb.FrontEnd/wwwroot")
+          out = root / "offline-media"
+          out.mkdir(parents=True, exist_ok=True)
+
+          path = root / "content-snapshot.json"
+          text = path.read_text(encoding="utf-8")
+
+          # Only absolute http(s) URLs. Anything already relative is served from the site
+          # itself and needs no mirroring.
+          urls = sorted(set(re.findall(r'https?://[^"\\\\ ]+?\.(?:png|jpe?g|webp|gif|svg)', text, re.I)))
+          print(f"{len(urls)} image(s) referenced")
+
+          mapping = {}
+          for url in urls:
+              # Content-addressed name: the same image keeps the same filename across
+              # runs, so an unchanged snapshot produces no diff and no commit.
+              ext = os.path.splitext(url.split("?")[0])[1].lower() or ".img"
+              name = hashlib.sha256(url.encode()).hexdigest()[:16] + ext
+              target = out / name
+
+              if not target.exists():
+                  try:
+                      with urllib.request.urlopen(url, timeout=60) as r:
+                          target.write_bytes(r.read())
+                      print("  fetched", name)
+                  except (urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as e:
+                      # A dead CMS URL must not fail the run. The snapshot keeps the
+                      # original link and CosmicImage falls back to its plate.
+                      print(f"  SKIP {url}: {e}")
+                      continue
+
+              mapping[url] = f"offline-media/{name}"
+
+          for original, local in mapping.items():
+              text = text.replace(f'"{original}"', f'"{local}"')
+
+          path.write_text(text, encoding="utf-8")
+          print(f"rewrote {len(mapping)} URL(s) to local copies")
+          PY
+
+      - name: Commit if anything changed
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add UpcsgWeb.FrontEnd/wwwroot/content-snapshot.json UpcsgWeb.FrontEnd/wwwroot/offline-media
+
+          # generatedAt changes on every run, so a diff of only that line means nothing
+          # actually changed. Committing it daily would be pure noise in the history.
+          if git diff --cached --quiet; then
+            echo "No content changes."
+            exit 0
+          fi
+
+          if [ "$(git diff --cached --numstat | wc -l)" = "1" ] \
+             && git diff --cached -U0 -- UpcsgWeb.FrontEnd/wwwroot/content-snapshot.json \
+                | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -qv generatedAt; then
+            :
+          elif [ "$(git diff --cached --numstat | wc -l)" = "1" ] \
+             && ! git diff --cached -U0 -- UpcsgWeb.FrontEnd/wwwroot/content-snapshot.json \
+                | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -qv generatedAt; then
+            echo "Only the timestamp changed; skipping."
+            git reset
+            exit 0
+          fi
+
+          git commit -m "Update content snapshot"
+          git push

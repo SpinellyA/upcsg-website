@@ -6,6 +6,7 @@
 @inject IAdminContentService Admin
 @inject IEventService Events
 @inject ISnackbar Snackbar
+@inject IJSRuntime JS
 
 <PageTitle>Settings - UPCSG Admin</PageTitle>
 
@@ -64,10 +65,85 @@
                 Save
             </MudButton>
         </section>
+
+        @* ---------- Offline snapshot ---------- *@
+        <section class="upcsg-section">
+            <div class="upcsg-section-head">
+                <div>
+                    <p class="upcsg-kicker">Offline fallback</p>
+                    <h2 class="upcsg-title-xl">Content snapshot</h2>
+                </div>
+            </div>
+
+            <p class="upcsg-lede">
+                Saves every public record &mdash; officers, events, the Hall of Fame, merch and
+                the published month &mdash; into one file. Commit it to the site repository as
+                <code>wwwroot/content-snapshot.json</code> and the public pages keep working
+                when the API is asleep or down. Orders and accounts are never included.
+            </p>
+
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-8"
+                       StartIcon="@Icons.Material.Outlined.Download"
+                       Disabled="_snapshotting" OnClick="DownloadSnapshotAsync">
+                @(_snapshotting ? "Preparing…" : "Download snapshot")
+            </MudButton>
+
+            @if (_snapshotSummary is not null)
+            {
+                <MudAlert Severity="Severity.Success" Dense="true" Class="mt-4">
+                    @_snapshotSummary
+                </MudAlert>
+            }
+
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
+                The GitHub Action in <code>.github/workflows/snapshot.yml</code> does this on a
+                schedule and commits the result, including a copy of every image. Downloading
+                here is the manual route for when you want it captured right now.
+            </MudAlert>
+        </section>
     }
 </div>
 
 @code {
+    private bool _snapshotting;
+    private string? _snapshotSummary;
+
+    private async Task DownloadSnapshotAsync()
+    {
+        _snapshotting = true;
+        _snapshotSummary = null;
+
+        try
+        {
+            // Raw JSON, written to the file exactly as the API produced it — round-tripping
+            // through objects here could quietly change what gets committed.
+            var json = await Admin.GetSnapshotJsonAsync();
+
+            await using var module = await JS.InvokeAsync<IJSObjectReference>(
+                "import", "./js/download.js");
+
+            await module.InvokeVoidAsync(
+                "saveText", "content-snapshot.json", json, "application/json");
+
+            var counts = System.Text.Json.JsonDocument.Parse(json).RootElement;
+            _snapshotSummary =
+                $"Saved {Count(counts, "members")} officers, {Count(counts, "events")} events, "
+                + $"{Count(counts, "achievements")} achievements and {Count(counts, "merch")} merch items "
+                + $"({json.Length / 1024} KB). Commit it to wwwroot/content-snapshot.json.";
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _snapshotting = false;
+        }
+    }
+
+    private static int Count(System.Text.Json.JsonElement root, string property) =>
+        root.TryGetProperty(property, out var array) ? array.GetArrayLength() : 0;
+
     private SiteSettingsDto _settings = new();
     private bool _followCurrent = true;
     private int _year = DateTime.Now.Year;

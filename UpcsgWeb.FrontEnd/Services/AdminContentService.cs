@@ -31,6 +31,13 @@ public interface IAdminContentService
     Task<List<OfficerEmailDto>> GetOfficersAsync();
     Task<OfficerEmailDto> AddOfficerAsync(AddOfficerRequest request);
     Task RemoveOfficerAsync(Guid id);
+
+    /// <summary>
+    /// Every public record in one document, as raw JSON so it can be written to a file
+    /// byte for byte. Deserialising and re-serialising would risk the committed snapshot
+    /// differing from what the API actually serves.
+    /// </summary>
+    Task<string> GetSnapshotJsonAsync();
 }
 
 public class AdminContentService(HttpClient http, ApiOptions options) : IAdminContentService
@@ -131,6 +138,21 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
     }
 
     public Task RemoveOfficerAsync(Guid id) => DeleteAsync($"api/admin/officers/{id}");
+
+    // --- Snapshot -------------------------------------------------------------------
+
+    public async Task<string> GetSnapshotJsonAsync()
+    {
+        EnsureConfigured();
+
+        var response = await http.GetAsync("api/snapshot");
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ApiException(await CartService.DescribeAsync(response));
+        }
+
+        return await response.Content.ReadAsStringAsync();
+    }
 
     // --- Shared -------------------------------------------------------------------
 

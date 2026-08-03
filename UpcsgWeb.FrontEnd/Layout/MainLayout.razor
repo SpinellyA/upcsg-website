@@ -3,7 +3,7 @@
 @inject UpcsgAuthenticationStateProvider AuthState
 @inject NavigationManager Navigation
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider Theme="@_theme" IsDarkMode="true" />
 <MudPopoverProvider />
 @* FullWidth by default: without it a dialog shrinks to fit its content, so the
    paste-a-link box came out 417px with a 367px field to hold a URL, while the
@@ -96,7 +96,6 @@
                 </NotAuthorized>
             </AuthorizeView>
 
-            <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" Class="ml-2" />
         </nav>
 
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.End" OnClick="@DrawerToggle" Class="upcsg-mobile-toggle" />

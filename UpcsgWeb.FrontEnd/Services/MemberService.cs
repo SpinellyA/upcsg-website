@@ -3,7 +3,8 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
-public class MemberService(HttpClient http, ApiOptions options) : IMemberService
+public class MemberService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
+    : IMemberService
 {
     public async Task<MemberDto?> GetMemberAsync(Guid id)
     {
@@ -12,24 +13,33 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
             return (await GetMembersAsync()).FirstOrDefault(m => m.Id == id);
         }
 
-        // 404 is an ordinary answer here — a bad id in the URL — so it must not surface
-        // as an exception the page has to catch.
-        var response = await http.GetAsync($"api/members/{id}");
+        try
+        {
+            // 404 is an ordinary answer here — a bad id in the URL — so it must not
+            // surface as an exception the page has to catch.
+            var response = await http.GetAsync($"api/members/{id}");
 
-        return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<MemberDto>(UpcsgJson.Options)
-            : null;
+            return response.IsSuccessStatusCode
+                ? await response.Content.ReadFromJsonAsync<MemberDto>(UpcsgJson.Options)
+                : null;
+        }
+        catch (HttpRequestException)
+        {
+            // The API is down rather than the id being wrong; the list path knows how to
+            // fall back, so reuse it instead of returning a spurious "not found".
+            return (await GetMembersAsync()).FirstOrDefault(m => m.Id == id);
+        }
     }
 
-    public async Task<List<MemberDto>> GetMembersAsync()
-    {
-        // Live when an API is configured; the seed below keeps the public site
-        // renderable standalone.
-        if (options.IsConfigured)
-        {
-            return await http.GetFromJsonAsync<List<MemberDto>>("api/members", UpcsgJson.Options) ?? [];
-        }
-        return
+    public Task<List<MemberDto>> GetMembersAsync() =>
+        LiveOrSnapshot.ReadAsync(
+            options,
+            snapshots,
+            async () => await http.GetFromJsonAsync<List<MemberDto>>("api/members", UpcsgJson.Options) ?? [],
+            snapshot => snapshot.Members,
+            SeedData);
+
+    private static List<MemberDto> SeedData() =>
         [
             new MemberDto
             {
@@ -137,5 +147,4 @@ public class MemberService(HttpClient http, ApiOptions options) : IMemberService
                 DisplayOrder = 7,
             },
         ];
-    }
 }

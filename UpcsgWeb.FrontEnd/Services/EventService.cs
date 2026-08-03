@@ -7,7 +7,8 @@ namespace UpcsgWeb.FrontEnd.Services;
 /// Reads live data when an API is configured, otherwise serves the built-in sample so
 /// the public site still renders standalone. Same pattern across the content services.
 /// </summary>
-public class EventService(HttpClient http, ApiOptions options) : IEventService
+public class EventService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
+    : IEventService
 {
     private (int Year, int Month)? _cachedMonth;
 
@@ -20,24 +21,18 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
 
         var now = DateTime.Now;
 
-        if (!options.IsConfigured)
-        {
-            _cachedMonth = (now.Year, now.Month);
-            return _cachedMonth.Value;
-        }
+        // The snapshot carries the pinned month too, so an offline site keeps showing the
+        // month the officers published rather than silently jumping to today's.
+        var settings = await LiveOrSnapshot.ReadAsync<SiteSettingsDto?>(
+            options,
+            snapshots,
+            async () => await http.GetFromJsonAsync<SiteSettingsDto>("api/settings", UpcsgJson.Options),
+            snapshot => snapshot.Settings,
+            () => null);
 
-        try
-        {
-            var settings = await http.GetFromJsonAsync<SiteSettingsDto>("api/settings", UpcsgJson.Options);
-            _cachedMonth = settings is null
-                ? (now.Year, now.Month)
-                : (settings.ResolvedYear, settings.ResolvedMonth);
-        }
-        catch
-        {
-            // A settings hiccup shouldn't blank the events page.
-            _cachedMonth = (now.Year, now.Month);
-        }
+        _cachedMonth = settings is null
+            ? (now.Year, now.Month)
+            : (settings.ResolvedYear, settings.ResolvedMonth);
 
         return _cachedMonth.Value;
     }
@@ -46,32 +41,66 @@ public class EventService(HttpClient http, ApiOptions options) : IEventService
 
     public async Task<List<EventDto>> GetThisMonthEventsAsync()
     {
-        if (options.IsConfigured)
-        {
-            var (year, month) = await GetDisplayMonthAsync();
-            return await http.GetFromJsonAsync<List<EventDto>>($"api/events?year={year}&month={month}", UpcsgJson.Options) ?? [];
-        }
+        var (year, month) = await GetDisplayMonthAsync();
 
-        return SeedData();
+        return await LiveOrSnapshot.ReadAsync(
+            options,
+            snapshots,
+            async () => await http.GetFromJsonAsync<List<EventDto>>(
+                $"api/events?year={year}&month={month}", UpcsgJson.Options) ?? [],
+
+            // The snapshot holds every event, so the month filter that the API applies
+            // server-side has to be applied here instead. Local time, matching how the
+            // pages render them — filtering on the raw UTC instant would drop an evening
+            // event at the start or end of a month.
+            snapshot =>
+            [
+                .. snapshot.Events
+                    .Where(e => e.StartDateTime.ToLocalTime().Year == year
+                             && e.StartDateTime.ToLocalTime().Month == month)
+                    .OrderBy(e => e.StartDateTime)
+            ],
+            SeedData);
     }
 
     public async Task<EventDto?> GetEventAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
-            return SeedData().FirstOrDefault(e => e.Id == id);
+            return await FromSnapshotOrSeedAsync(id);
         }
 
-        // 404 is an ordinary answer here — a bad id in the URL — so it must not surface
-        // as an exception the page has to catch.
-        var response = await http.GetAsync($"api/events/{id}");
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            return null;
-        }
+            // 404 is an ordinary answer here — a bad id in the URL — so it must not
+            // surface as an exception the page has to catch.
+            var response = await http.GetAsync($"api/events/{id}");
 
-        return await response.Content.ReadFromJsonAsync<EventDto>(UpcsgJson.Options);
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
+
+            return await response.Content.ReadFromJsonAsync<EventDto>(UpcsgJson.Options);
+        }
+        catch (HttpRequestException)
+        {
+            snapshots.NoteApiFailure();
+            return await FromSnapshotOrSeedAsync(id);
+        }
+    }
+
+    /// <summary>
+    /// Looks across every event rather than the displayed month, so a shared link to an
+    /// event outside the current month still resolves while offline.
+    /// </summary>
+    private async Task<EventDto?> FromSnapshotOrSeedAsync(Guid id)
+    {
+        var snapshot = await snapshots.GetAsync();
+
+        return snapshot is null
+            ? SeedData().FirstOrDefault(e => e.Id == id)
+            : snapshot.Events.FirstOrDefault(e => e.Id == id);
     }
 
     private static List<EventDto> SeedData()

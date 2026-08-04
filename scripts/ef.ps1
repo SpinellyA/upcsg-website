@@ -38,21 +38,39 @@ if (-not $EfArgs) {
     exit 1
 }
 
-# Read the secret from user-secrets rather than the environment or a file.
-$secretsId = [regex]::Match(
-    (Get-Content (Join-Path $api "UpcsgWeb.Api.csproj") -Raw),
-    '<UserSecretsId>([^<]+)</UserSecretsId>').Groups[1].Value
+# Same file the API reads, so there is one place to look when something is wrong.
+$localSettings = Join-Path $api "appsettings.Development.local.json"
+$conn = $null
 
-$secretsFile = Join-Path $env:APPDATA "Microsoft\UserSecrets\$secretsId\secrets.json"
-
-if (-not (Test-Path $secretsFile)) {
-    Write-Error "No user-secrets found. Run: dotnet user-secrets set `"ConnectionStrings:Production`" `"<connection string>`" --project UpcsgWeb.Api"
+if (Test-Path $localSettings) {
+    # Strip // comments: the .NET config provider tolerates them, ConvertFrom-Json does not.
+    $text = (Get-Content $localSettings -Raw) -replace '(?m)^\s*//.*$', ''
+    $conn = ($text | ConvertFrom-Json).ConnectionStrings.Production
 }
 
-$conn = (Get-Content $secretsFile -Raw | ConvertFrom-Json).'ConnectionStrings:Production'
+# Falls back to user-secrets so an existing setup keeps working.
+if ([string]::IsNullOrWhiteSpace($conn)) {
+    $secretsId = [regex]::Match(
+        (Get-Content (Join-Path $api "UpcsgWeb.Api.csproj") -Raw),
+        '<UserSecretsId>([^<]+)</UserSecretsId>').Groups[1].Value
+
+    $secretsFile = Join-Path $env:APPDATA "Microsoft\UserSecrets\$secretsId\secrets.json"
+
+    if (Test-Path $secretsFile) {
+        $conn = (Get-Content $secretsFile -Raw | ConvertFrom-Json).'ConnectionStrings:Production'
+    }
+}
 
 if ([string]::IsNullOrWhiteSpace($conn)) {
-    Write-Error "ConnectionStrings:Production is not set in user-secrets."
+    Write-Error @"
+No connection string found.
+
+Put it in UpcsgWeb.Api/appsettings.Development.local.json (git-ignored):
+
+  {
+    "ConnectionStrings": { "Production": "Host=...;Port=5432;Database=postgres;Username=...;Password=...;SSL Mode=Require" }
+  }
+"@
 }
 
 # Confirm the target without revealing the credentials — dropping or migrating the wrong

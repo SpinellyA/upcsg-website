@@ -16,12 +16,26 @@ using UpcsgWeb.Shared.Contracts;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Configuration ------------------------------------------------------------------
-// Locally these come from user-secrets; on Render from environment variables
-// (ConnectionStrings__Production, Jwt__SigningKey). Neither belongs in appsettings.json,
-// which is a tracked file — anything put there is committed and public forever.
+// Secrets live in appsettings.{Environment}.local.json locally, and in environment
+// variables on Render (ConnectionStrings__Production, Jwt__SigningKey).
+//
+// The .local.json suffix is the point: .gitignore excludes appsettings.*.local.json, so
+// that file cannot be committed. Plain appsettings.json is a tracked file — it has been
+// in the repository since the first commit, so anything written there is published the
+// moment the repo is pushed, and the only remedy is rotating the secret.
+//
+// Added last so it wins over appsettings.json and user-secrets: with one obvious file to
+// edit, there is no question about which source a value came from.
+builder.Configuration.AddJsonFile(
+    $"appsettings.{builder.Environment.EnvironmentName}.local.json",
+    optional: true,
+    reloadOnChange: true);
+
 var connectionString = builder.Configuration.GetConnectionString("Production")
     ?? throw new InvalidOperationException(
-        "ConnectionStrings:Production is not configured. Set it via user-secrets locally or an env var in hosting.");
+        "ConnectionStrings:Production is not configured. Locally, put it in "
+        + "UpcsgWeb.Api/appsettings.Development.local.json (git-ignored); in hosting, set "
+        + "the ConnectionStrings__Production environment variable.");
 
 var signingKey = builder.Configuration["Jwt:SigningKey"]
     ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");

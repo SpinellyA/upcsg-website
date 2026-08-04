@@ -1,0 +1,122 @@
+name: Deploy frontend to GitHub Pages
+
+# Publishes the Blazor WebAssembly app to GitHub Pages.
+#
+# Four things have to be fixed up after `dotnet publish`, and each of them breaks the site
+# completely if missed. They are done here rather than in the project file so that a local
+# publish still produces something that works at a domain root.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "UpcsgWeb.FrontEnd/**"
+      - "UpcsgWeb.Shared/**"
+      - ".github/workflows/pages.yml"
+
+  # Lets you deploy from any branch, which is how the first deployment happens before the
+  # work has been merged.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  # Never two deployments at once, but do not cancel one that is mid-upload: a half-written
+  # Pages deployment is a broken site rather than an old one.
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Publish
+        run: dotnet publish UpcsgWeb.FrontEnd/UpcsgWeb.FrontEnd.csproj -c Release -o publish
+
+      - name: Point the app at the API and Google, if configured
+        env:
+          API_BASE_URL: ${{ vars.API_BASE_URL }}
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+        run: |
+          set -euo pipefail
+
+          # Written at deploy time rather than committed, so standing up the API later is a
+          # repository-variable change instead of a code change. Both values are public:
+          # the browser downloads them on every visit.
+          python3 - <<'PY'
+          import json, os, pathlib
+
+          path = pathlib.Path("publish/wwwroot/appsettings.json")
+          data = json.loads(path.read_text(encoding="utf-8"))
+
+          api = os.environ.get("API_BASE_URL", "").strip().rstrip("/")
+          client = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
+
+          if api:
+              data.setdefault("Api", {})["BaseUrl"] = api
+              print(f"API base URL: {api}")
+          else:
+              print("No API_BASE_URL set - the site will serve the committed snapshot.")
+
+          if client:
+              data.setdefault("Google", {})["ClientId"] = client
+              print("Google client id: set")
+          else:
+              print("No GOOGLE_CLIENT_ID set - sign-in will show the development stand-ins.")
+
+          path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+          PY
+
+      - name: Fix up for Pages
+        run: |
+          set -euo pipefail
+          root="publish/wwwroot"
+
+          # 1. Base href. A project page is served from /<repo>/, so a root-relative base
+          #    makes every asset request miss. Derived from the repo name so renaming the
+          #    repository does not silently break the deployment.
+          repo="${GITHUB_REPOSITORY##*/}"
+          sed -i "s|<base href=\"/\" />|<base href=\"/$repo/\" />|" "$root/index.html"
+          grep -q "<base href=\"/$repo/\" />" "$root/index.html" \
+            || { echo "::error::base href was not rewritten"; exit 1; }
+          echo "base href -> /$repo/"
+
+          # 2. Jekyll. Pages runs it by default and it strips directories beginning with an
+          #    underscore - which is _framework, the entire .NET runtime.
+          touch "$root/.nojekyll"
+
+          # 3. SPA routing. Pages has no rewrite rule, so a deep link like /events/<id> is a
+          #    hard 404. Serving the app from 404.html lets the client router take over.
+          cp "$root/index.html" "$root/404.html"
+
+          # 4. Pages ignores Cache-Control, and every build re-fingerprints the runtime
+          #    (dotnet.<hash>.js). A browser holding a stale index.html asks for a hash that
+          #    no longer exists and gets a permanently blank page. This is the one problem
+          #    that cannot be fixed from here, so it is at least recorded in the output.
+          echo "note: returning visitors may need one hard refresh after a deploy"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: publish/wwwroot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

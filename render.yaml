@@ -1,0 +1,68 @@
+# Render service definition.
+#
+# Keeping this in the repository means the service can be recreated exactly, and a new
+# ExeCom can see what the deployment actually is rather than reconstructing it by clicking
+# through a dashboard.
+#
+# Values marked sync: false are set in the Render dashboard and never committed.
+
+services:
+  - type: web
+    name: upcsg-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore
+
+    # Touches the database, so a warm process holding a dead connection still reports
+    # unhealthy - and the write keeps the Supabase project from pausing.
+    healthCheckPath: /health
+
+    envVars:
+      # Not cosmetic. Features/Dev/DevSignInEndpoint can mint admin tokens and is excluded
+      # from the endpoint registry only when the environment is not Development. Getting
+      # this wrong is a complete authorisation bypass.
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+
+      # Supabase session pooler, port 5432. The transaction pooler on 6543 does not
+      # support prepared statements, which Npgsql uses by default.
+      - key: ConnectionStrings__Production
+        sync: false
+
+      # 32+ random bytes: openssl rand -base64 48
+      - key: Jwt__SigningKey
+        sync: false
+
+      # The GitHub Pages origin. Scheme and host only - no path, no trailing slash, even
+      # though the site lives at /upcsg-website/.
+      - key: Cors__AllowedOrigins__0
+        value: https://spinellya.github.io
+
+      # Used to build media URLs. Set to this service's own URL once Render assigns it.
+      - key: Api__SelfUrl
+        sync: false
+
+      # Google OAuth client id; the API checks the token was issued for it.
+      - key: Google__ClientId
+        sync: false
+
+      # Optional, recommended: restricts sign-in to UP accounts.
+      - key: Google__RequiredHostedDomain
+        value: up.edu.ph
+
+      # Supabase Storage, once the buckets exist. Unset, uploads fall back to local disk,
+      # which on Render is ephemeral - every deploy silently loses every uploaded image.
+      # The API logs its chosen provider at startup; check that line after deploying.
+      - key: Media__ServiceUrl
+        sync: false
+      - key: Media__Region
+        sync: false
+      - key: Media__AccessKeyId
+        sync: false
+      - key: Media__SecretAccessKey
+        sync: false
+      - key: Media__PublicBucket
+        sync: false
+      - key: Media__PublicBaseUrl
+        sync: false

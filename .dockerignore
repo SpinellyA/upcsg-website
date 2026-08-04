@@ -1,0 +1,19 @@
+# Keeps the build context small and, more importantly, keeps secrets out of it.
+# Anything sent to the daemon can end up in an image layer.
+
+**/appsettings.*.local.json
+**/bin
+**/obj
+**/.vs
+**/.vscode
+.git
+.github
+
+# The API references none of these. Copying the WebAssembly project in particular would
+# add a multi-minute build for something the image never serves.
+UpcsgWeb.FrontEnd/
+UpcsgWeb.Domain.Tests/
+_content-backup/
+scripts/
+publish/
+*.md

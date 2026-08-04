@@ -13,13 +13,17 @@
 *.sln.docstates
 *.DotSettings.user
 
-# Blazor WASM publish output
+# Publish output. `publish/` is the frontend; `out/` is what the documented API build
+# command produces. Neither is harmless to commit: a publish copies wwwroot/media, so it
+# carries uploaded GCash receipts - guilders' payment proofs - into the repository.
 publish/
+out/
 [Pp]ublish[Oo]utput/
 
-# Secrets — the Neon connection string and the JWT signing key live in
-# `dotnet user-secrets` (outside the repo) locally, and in environment
-# variables on Render. Nothing here should ever hold a real credential.
+# Secrets — the Supabase connection string and the JWT signing key live in
+# appsettings.Development.local.json locally (matched below, so it cannot be committed)
+# and in environment variables on Render. Nothing tracked should ever hold a credential;
+# appsettings.json in particular is tracked and has been since the first commit.
 appsettings.*.local.json
 *.pfx
 *.p12

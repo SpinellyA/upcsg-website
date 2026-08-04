@@ -63,8 +63,10 @@ services:
       #
       # Only the two keys are secret. The project ref and region are in every Supabase URL
       # the browser sees, so they are committed here rather than retyped per environment.
+      # The dedicated storage host, as shown in the Supabase dashboard. The older
+      # <ref>.supabase.co form answers too, but match what the dashboard says.
       - key: Media__ServiceUrl
-        value: https://bafxnyyeelwgmezcbtwj.supabase.co/storage/v1/s3
+        value: https://bafxnyyeelwgmezcbtwj.storage.supabase.co/storage/v1/s3
 
       # Must match the project's own region or Supabase rejects the request signature.
       # Read from the database host: aws-1-ap-south-1.pooler.supabase.com.
@@ -74,6 +76,10 @@ services:
       - key: Media__PublicBucket
         value: media
 
+      # The /v1/ is required. Without it every image URL is a 404 - the path without it is
+      # not a route at all, while with it the same request reaches the storage API and
+      # answers 400 for a missing object. Uploads succeed either way, so the mistake only
+      # shows up as images that never load.
       - key: Media__PublicBaseUrl
         value: https://bafxnyyeelwgmezcbtwj.supabase.co/storage/v1/object/public/media
 

@@ -48,8 +48,11 @@ the Google credential, the CORS list, and `appsettings.json`.
 
 ## 1. Supabase
 
-Create a project. Pick the region closest to Cebu — **Southeast Asia (Singapore)**,
-`ap-southeast-1`. Save the database password it generates; you cannot see it again.
+Create a project and note the region you choose. It appears in the database host and has
+to match `Media__Region` exactly, or Supabase rejects the request signature — this project
+is on `ap-south-1`, which the host `aws-1-ap-south-1.pooler.supabase.com` confirms.
+
+Save the database password it generates; you cannot see it again.
 
 ### 1a. Database
 
@@ -57,7 +60,7 @@ Create a project. Pick the region closest to Cebu — **Southeast Asia (Singapor
 (port `5432`), not the transaction pooler:
 
 ```
-Host=aws-0-ap-southeast-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.<project-ref>;Password=<password>;SSL Mode=Require
+Host=aws-1-ap-south-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.<project-ref>;Password=<password>;SSL Mode=Require
 ```
 
 > Use the **session** pooler, port 5432. The transaction pooler on 6543 does not support
@@ -65,10 +68,14 @@ Host=aws-0-ap-southeast-1.pooler.supabase.com;Port=5432;Database=postgres;Userna
 > `prepared statement "_p1" already exists` errors under load rather than a clean failure
 > at startup. If you must use 6543, add `Max Auto Prepare=0;No Reset On Close=true`.
 
-Store it in user-secrets once, then never type it again:
+Put it in `UpcsgWeb.Api/appsettings.Development.local.json`, which `.gitignore` excludes so
+it cannot be committed:
 
-```bash
-dotnet user-secrets set "ConnectionStrings:Production" "<connection-string>" --project UpcsgWeb.Api
+```json
+{
+  "ConnectionStrings": { "Production": "<connection-string>" },
+  "Jwt": { "SigningKey": "<32+ random bytes>" }
+}
 ```
 
 Apply the migrations with the helper, which reads that secret and passes it to EF for the
@@ -116,19 +123,22 @@ Your values:
 | Setting | Value |
 | --- | --- |
 | Endpoint | `https://<project-ref>.supabase.co/storage/v1/s3` |
-| Region | `ap-southeast-1` (must match the project) |
+| Region | `ap-south-1` (must match the project) |
 | Public base URL | `https://<project-ref>.supabase.co/storage/v1/object/public/media` |
 
 ---
 
 ## 2. Render (API)
 
-New **Web Service** pointed at this repo.
+**New → Blueprint**, pointed at this repo. Render reads `render.yaml`, which pins the
+Dockerfile, the health check, the branch and auto-deploy, and pre-fills everything that is
+not a secret. Only the values marked `sync: false` need typing.
 
-- Build: `dotnet publish UpcsgWeb.Api/UpcsgWeb.Api.csproj -c Release -o out`
-- Start: `dotnet out/UpcsgWeb.Api.dll`
-- Health check path: `/health` — it touches the database, so a warm process on a dead
-  connection still reports unhealthy.
+Docker rather than Render's native .NET builder: the runtime is .NET 10, and a managed
+builder that lags a release means debugging someone else's base image.
+
+The container binds to `$PORT`. Render assigns one per service, and a container listening
+on a fixed port is marked unhealthy with nothing obviously wrong in the logs.
 
 ### Environment variables
 
@@ -142,7 +152,7 @@ New **Web Service** pointed at this repo.
 | `Cors__AllowedOrigins__0` | your site origin, no trailing slash |
 | `Api__SelfUrl` | your API origin |
 | `Media__ServiceUrl` | `https://<project-ref>.supabase.co/storage/v1/s3` |
-| `Media__Region` | `ap-southeast-1` |
+| `Media__Region` | `ap-south-1` |
 | `Media__AccessKeyId` | from the S3 access key |
 | `Media__SecretAccessKey` | from the S3 access key |
 | `Media__PublicBucket` | `media` |
@@ -150,9 +160,10 @@ New **Web Service** pointed at this repo.
 
 Double underscores, not colons — a colon is not valid in an environment variable name.
 
-**Never put any of these in `appsettings.json`.** That file is tracked, so anything in it
-is committed and, once pushed, public forever — rotating the secret is then the only fix.
-Locally they belong in user-secrets; in hosting, in the dashboard.
+**Never put any of these in `appsettings.json`.** That file is tracked and has been since
+the first commit, so anything in it is committed and, once pushed, public forever —
+rotating the secret is then the only fix. Locally they belong in
+`appsettings.Development.local.json`, which is git-ignored; in hosting, in the dashboard.
 
 **`ASPNETCORE_ENVIRONMENT=Production` is not cosmetic.** `Features/Dev/DevSignInEndpoint`
 hands admin tokens to anyone who can reach it, and it is excluded from the endpoint

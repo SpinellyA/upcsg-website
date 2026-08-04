@@ -44,9 +44,9 @@ services:
       - key: Cors__AllowedOrigins__0
         value: https://spinellya.github.io
 
-      # Used to build media URLs. Set to this service's own URL once Render assigns it.
+      # Used to build media URLs for new uploads.
       - key: Api__SelfUrl
-        sync: false
+        value: https://upcsg-api.onrender.com
 
       # Google OAuth client id; the API checks the token was issued for it.
       - key: Google__ClientId
@@ -56,18 +56,31 @@ services:
       - key: Google__RequiredHostedDomain
         value: up.edu.ph
 
-      # Supabase Storage, once the buckets exist. Unset, uploads fall back to local disk,
+      # Supabase Storage. Until all six are present the API falls back to local disk,
       # which on Render is ephemeral - every deploy silently loses every uploaded image.
-      # The API logs its chosen provider at startup; check that line after deploying.
+      # Partial configuration is treated as unconfigured and named in the startup log, so
+      # check the "Media storage:" line after deploying.
+      #
+      # Only the two keys are secret. The project ref and region are in every Supabase URL
+      # the browser sees, so they are committed here rather than retyped per environment.
       - key: Media__ServiceUrl
-        sync: false
+        value: https://bafxnyyeelwgmezcbtwj.supabase.co/storage/v1/s3
+
+      # Must match the project's own region or Supabase rejects the request signature.
+      # Read from the database host: aws-1-ap-south-1.pooler.supabase.com.
       - key: Media__Region
-        sync: false
+        value: ap-south-1
+
+      - key: Media__PublicBucket
+        value: media
+
+      - key: Media__PublicBaseUrl
+        value: https://bafxnyyeelwgmezcbtwj.supabase.co/storage/v1/object/public/media
+
+      # Storage -> S3 access keys in the Supabase dashboard. These are not the anon or
+      # service_role keys, which are for Supabase's own REST API rather than the S3
+      # protocol this talks.
       - key: Media__AccessKeyId
         sync: false
       - key: Media__SecretAccessKey
-        sync: false
-      - key: Media__PublicBucket
-        sync: false
-      - key: Media__PublicBaseUrl
         sync: false

@@ -17,10 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // --- Configuration ------------------------------------------------------------------
 // Locally these come from user-secrets; on Render from environment variables
-// (ConnectionStrings__Neon, Jwt__SigningKey). Neither is ever committed.
-var connectionString = builder.Configuration.GetConnectionString("Neon")
+// (ConnectionStrings__Production, Jwt__SigningKey). Neither belongs in appsettings.json,
+// which is a tracked file — anything put there is committed and public forever.
+var connectionString = builder.Configuration.GetConnectionString("Production")
     ?? throw new InvalidOperationException(
-        "ConnectionStrings:Neon is not configured. Set it via user-secrets locally or an env var in hosting.");
+        "ConnectionStrings:Production is not configured. Set it via user-secrets locally or an env var in hosting.");
 
 var signingKey = builder.Configuration["Jwt:SigningKey"]
     ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");

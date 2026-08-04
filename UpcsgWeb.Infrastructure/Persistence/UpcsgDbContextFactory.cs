@@ -6,10 +6,15 @@ namespace UpcsgWeb.Infrastructure.Persistence;
 /// <summary>
 /// Lets the EF tools build the model without starting the API.
 ///
-/// Scaffolding a migration only needs the provider, not a reachable server, so the
-/// placeholder below is enough for `migrations add`. Applying one needs the real thing:
-/// set UPCSG_CONNECTION for `database update`, which also keeps the Neon credentials out
-/// of the repository.
+/// Scaffolding a migration only needs the provider, not a reachable server. Applying one
+/// needs the real thing, which comes from UPCSG_CONNECTION so the credentials stay out of
+/// the repository.
+///
+/// Use scripts/ef.ps1 rather than setting that variable by hand. Pasting a connection
+/// string into PowerShell truncates it at the first ';' if unquoted, and at a '#' in the
+/// password even when quoted with double quotes — producing a "Format of the
+/// initialization string does not conform to specification" error that points at a
+/// perfectly valid string.
 /// </summary>
 public class UpcsgDbContextFactory : IDesignTimeDbContextFactory<UpcsgDbContext>
 {
@@ -25,8 +30,8 @@ public class UpcsgDbContextFactory : IDesignTimeDbContextFactory<UpcsgDbContext>
             throw new InvalidOperationException(
                 "UPCSG_CONNECTION is not set. Design-time EF commands need the connection "
                 + "string explicitly so they cannot quietly target the wrong database. "
-                + "Read it from the API's user-secrets (ConnectionStrings:Neon) and set it "
-                + "for the command only.");
+                + "Run scripts/ef.ps1 instead, which reads it from the API's user-secrets "
+                + "(ConnectionStrings:Production) and sets it for the one command.");
         }
 
         var options = new DbContextOptionsBuilder<UpcsgDbContext>()

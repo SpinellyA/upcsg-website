@@ -122,9 +122,23 @@ builder.Services.AddFastEndpoints(o =>
 });
 builder.Services.SwaggerDocument(o => o.DocumentSettings = s => s.Title = "UPCSG API");
 
+// Startup diagnostics, held as a singleton so /health can report them without repeating
+// the queries on every ping.
+builder.Services.AddSingleton<SchemaCheck>();
+
 var app = builder.Build();
 
 app.Logger.LogInformation("Media storage: {Provider}", mediaProvider);
+
+// Deployment is automatic; migration deliberately is not. This is what makes the gap
+// between them visible, rather than surfacing later as a missing-column error on the
+// first request that touches a new table.
+using (var scope = app.Services.CreateScope())
+{
+    await scope.ServiceProvider.GetRequiredService<SchemaCheck>().RunAsync(
+        scope.ServiceProvider.GetRequiredService<UpcsgDbContext>(),
+        app.Logger);
+}
 
 // --- Pipeline -----------------------------------------------------------------------
 // Serves wwwroot/media for the local store. Harmless with R2 configured — nothing is
@@ -163,7 +177,7 @@ if (app.Environment.IsDevelopment())
 //
 // The write is throttled inside the SQL rather than here, so /health staying public and
 // unauthenticated does not make it an unlimited write endpoint.
-app.MapGet("/health", async (UpcsgDbContext db, CancellationToken ct) =>
+app.MapGet("/health", async (UpcsgDbContext db, SchemaCheck schema, CancellationToken ct) =>
 {
     var beat = await DatabaseHeartbeat.PingAsync(db, TimeSpan.FromMinutes(1), ct);
 
@@ -180,6 +194,12 @@ app.MapGet("/health", async (UpcsgDbContext db, CancellationToken ct) =>
     {
         status = "healthy",
         database = "reachable",
+
+        // Still 200: the database answers and most of the site works. But a deployment
+        // carrying unapplied migrations is a half-finished release, and this is where
+        // someone looks when a page starts failing right after a push.
+        schema = schema.IsUpToDate ? "up to date" : "MIGRATIONS PENDING",
+        pendingMigrations = schema.Pending,
 
         // False just means another request already wrote inside the throttle window.
         keptAlive = beat.Wrote,

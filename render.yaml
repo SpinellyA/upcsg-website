@@ -18,6 +18,11 @@ services:
     # unhealthy - and the write keeps the Supabase project from pausing.
     healthCheckPath: /health
 
+    # Stated rather than left to Render's default, so what triggers a production deploy is
+    # answerable from the repository instead of from someone's dashboard.
+    branch: main
+    autoDeploy: true
+
     envVars:
       # Not cosmetic. Features/Dev/DevSignInEndpoint can mint admin tokens and is excluded
       # from the endpoint registry only when the environment is not Development. Getting

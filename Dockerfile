@@ -41,6 +41,15 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app .
 
+# LocalMediaStore creates wwwroot/media at construction, and /app belongs to root while
+# the process does not. Without this the API dies at startup with "Access to the path
+# '/app/wwwroot' is denied" whenever no bucket is configured.
+#
+# It only reproduces from a clean checkout: UpcsgWeb.Api/wwwroot/media is git-ignored, so
+# a developer machine that has uploaded an image locally already has the directory and
+# copies it into the image, hiding the problem.
+RUN mkdir -p /app/wwwroot/media && chown -R $APP_UID:$APP_UID /app/wwwroot
+
 # Render assigns a port per service and passes it as $PORT; a container listening on a
 # fixed port is reported as unhealthy and the deploy fails with nothing obviously wrong in
 # the logs. 8080 is only the fallback for running this image locally.

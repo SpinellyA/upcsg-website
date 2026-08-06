@@ -110,7 +110,8 @@
                 committees, and keep the guild's programs moving.
             </p>
 
-            <FacePile Members="_members" Max="8" />
+            @* Drag it sideways; pick a face and the plate opposite becomes that person. *@
+            <FacePile Members="_members" Selected="_selected" SelectedChanged="SelectOfficer" />
 
             <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-6" Href="about">
                 Meet the ExeCom
@@ -120,16 +121,20 @@
         <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual" Delay="120">
             @* The lead officer's plate, large. Replaces a div that literally read
                "ExeCom photo — placeholder". *@
-            @if (_lead is not null)
+            @if (_selected is not null)
             {
-                <CosmicImage Src="@_lead.PhotoUrl"
-                             Alt="@_lead.Name"
-                             Seed="@_lead.Name"
+                @* Keyed on the name so Blazor replaces the plate rather than patching it.
+                   Without this the <img> keeps its old src while the new one decodes and
+                   the previous officer lingers under the new caption. *@
+                <CosmicImage @key="_selected.Name"
+                             Src="@_selected.PhotoUrl"
+                             Alt="@_selected.Name"
+                             Seed="@_selected.Name"
                              ShowInitials="true"
                              Class="upcsg-feature__plate">
                     <Overlay>
-                        <p class="upcsg-feature__plate-role">@_lead.Role</p>
-                        <p class="upcsg-feature__plate-name">@_lead.Name</p>
+                        <p class="upcsg-feature__plate-role">@_selected.Role</p>
+                        <p class="upcsg-feature__plate-name">@_selected.Name</p>
                     </Overlay>
                 </CosmicImage>
             }
@@ -239,8 +244,17 @@
     private List<MemberDto> _members = [];
     private AchievementDto? _latestAchievement;
     private MemberDto? _lead;
+
+    /// <summary>
+    /// Whose plate the officers section is showing. Starts at _lead and follows whatever
+    /// the visitor picks out of the strip.
+    /// </summary>
+    private MemberDto? _selected;
+
     private int _execCount;
     private bool _loading = true;
+
+    private void SelectOfficer(MemberDto member) => _selected = member;
 
     /// <summary>
     /// The month being published, so the heading matches the events under it. Reading
@@ -279,6 +293,10 @@
             .Where(m => m.Category == MemberCategory.ExeCom)
             .OrderBy(m => m.DisplayOrder)
             .FirstOrDefault();
+
+        // The section opens on the most senior officer, as it always did; the strip only
+        // changes who it moves on to.
+        _selected = _lead;
 
         _loading = false;
     }

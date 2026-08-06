@@ -46,13 +46,28 @@ public static class DependencyInjection
     }
 
     /// <summary>
-    /// Registers image storage: R2 when it's configured, local disk when it isn't.
+    /// Which store was chosen.
+    ///
+    /// <paramref name="UsingBucket"/> is reported as a fact rather than re-derived from
+    /// <paramref name="Provider"/>. The host uses it to decide whether the local upload
+    /// receiver may be registered at all, and an earlier version tested the display string
+    /// with StartsWith("Cloudflare") — which quietly became always-false the moment the
+    /// provider was renamed to "Supabase Storage", leaving the local receiver registered
+    /// in production.
+    /// </summary>
+    /// <param name="Provider">Human-readable; for the startup log only.</param>
+    /// <param name="UsingBucket">True when bytes go to object storage rather than disk.</param>
+    public readonly record struct MediaSetup(string Provider, bool UsingBucket);
+
+    /// <summary>
+    /// Registers image storage: the configured bucket when there is one, local disk when
+    /// there isn't.
     ///
     /// Returns the provider that was chosen so the host can say which one it's using at
     /// startup — silently writing to a disk that evaporates on redeploy is the kind of
     /// thing you want announced, not discovered.
     /// </summary>
-    public static string AddMediaStorage(
+    public static MediaSetup AddMediaStorage(
         this IServiceCollection services,
         IConfiguration configuration,
         string contentRoot,
@@ -66,7 +81,7 @@ public static class DependencyInjection
         if (options.IsConfigured)
         {
             services.AddSingleton<IMediaStore, S3MediaStore>();
-            return options.DescribeProvider();
+            return new MediaSetup(options.DescribeProvider(), UsingBucket: true);
         }
 
         // Partial configuration is a mistake worth naming rather than quietly ignoring.
@@ -76,8 +91,10 @@ public static class DependencyInjection
         services.AddSingleton<IMediaStore>(sp => new LocalMediaStore(
             sp.GetRequiredService<IOptions<MediaOptions>>(), contentRoot, localBaseUrl));
 
-        return partial
-            ? $"local disk — bucket storage is PARTIALLY configured, missing: {string.Join(", ", missing)}"
-            : "local disk (no bucket configuration found)";
+        return new MediaSetup(
+            partial
+                ? $"local disk — bucket storage is PARTIALLY configured, missing: {string.Join(", ", missing)}"
+                : "local disk (no bucket configuration found)",
+            UsingBucket: false);
     }
 }

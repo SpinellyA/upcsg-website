@@ -56,10 +56,10 @@ builder.Services.AddApplication();
 // and talks only to the repository interfaces the Domain owns.
 builder.Services.AddInfrastructure(connectionString);
 
-// Image storage: R2 when configured, local disk otherwise. The chosen provider is
-// reported at startup — writing to Render's ephemeral disk without noticing is exactly
-// the failure this announcement exists to prevent.
-var mediaProvider = builder.Services.AddMediaStorage(
+// Image storage: the configured bucket when there is one, local disk otherwise. The
+// chosen provider is reported at startup — writing to Render's ephemeral disk without
+// noticing is exactly the failure this announcement exists to prevent.
+var media = builder.Services.AddMediaStorage(
     builder.Configuration,
     builder.Environment.ContentRootPath,
     builder.Configuration["Api:SelfUrl"] ?? "http://localhost:5027");
@@ -111,9 +111,13 @@ builder.Services.AddFastEndpoints(o =>
     var isDevelopment = builder.Environment.IsDevelopment();
 
     // The local upload receiver only exists when there is no bucket to presign against.
-    // With R2 configured it must not be registered at all, or it would stand as a second,
-    // unsigned way to put bytes on the server.
-    var usingBucket = mediaProvider.StartsWith("Cloudflare", StringComparison.Ordinal);
+    // With a bucket configured it must not be registered at all, or it would stand as a
+    // second, unsigned way to put bytes on the server.
+    //
+    // Taken from the registration itself rather than sniffed out of the provider string:
+    // this was StartsWith("Cloudflare"), which stopped being true — and so stopped
+    // excluding anything — as soon as the provider was renamed to "Supabase Storage".
+    var usingBucket = media.UsingBucket;
 
     // Composed once: EndpointDiscoveryOptions.Filter is set-only, so it cannot be layered.
     o.Filter = endpointType =>
@@ -128,7 +132,7 @@ builder.Services.AddSingleton<SchemaCheck>();
 
 var app = builder.Build();
 
-app.Logger.LogInformation("Media storage: {Provider}", mediaProvider);
+app.Logger.LogInformation("Media storage: {Provider}", media.Provider);
 
 // Deployment is automatic; migration deliberately is not. This is what makes the gap
 // between them visible, rather than surfacing later as a missing-column error on the

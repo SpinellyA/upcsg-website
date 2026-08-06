@@ -95,7 +95,7 @@
                     </MudTableSortLabel>
                 </MudTh>
                 <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.PlacedAt)">Placed</MudTableSortLabel></MudTh>
-                <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.UserId)">Guilder</MudTableSortLabel></MudTh>
+                <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.GuilderName ?? string.Empty)">Guilder</MudTableSortLabel></MudTh>
                 <MudTh Class="upcsg-num">
                     <MudTableSortLabel T="OrderDto" SortBy="@(o => o.Lines.Sum(l => l.Quantity))">Items</MudTableSortLabel>
                 </MudTh>
@@ -104,11 +104,25 @@
                 <MudTh Style="width:3rem"></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Order"><strong>#@context.Id</strong></MudTd>
+                <MudTd DataLabel="Order"><strong>#@context.Reference</strong></MudTd>
                 <MudTd DataLabel="Placed">@context.PlacedAt.ToLocalTime().ToString("MMM d, h:mm tt")</MudTd>
 
-                @* No name on the DTO yet — see the note in OrderDto. *@
-                <MudTd DataLabel="Guilder">Guilder #@context.UserId</MudTd>
+                @* Falls back to the id only if the user row has gone, which would mean a
+                   deleted account with a live order — worth looking odd rather than blank. *@
+                <MudTd DataLabel="Guilder">
+                    @if (string.IsNullOrWhiteSpace(context.GuilderName))
+                    {
+                        <span class="upcsg-datatable__flag">Guilder @OrderReference.For(context.UserId)</span>
+                    }
+                    else
+                    {
+                        @context.GuilderName
+                        @if (!string.IsNullOrWhiteSpace(context.GuilderEmail))
+                        {
+                            <span class="upcsg-datatable__flag">@context.GuilderEmail</span>
+                        }
+                    }
+                </MudTd>
 
                 <MudTd DataLabel="Items" Class="upcsg-num">@context.Lines.Sum(l => l.Quantity)</MudTd>
                 <MudTd DataLabel="Total" Class="upcsg-num">
@@ -231,10 +245,18 @@
             return true;
         }
 
+        // The hyphen is dropped so "K7F3QM2X" finds "K7F3-QM2X" — an officer copying a
+        // reference out of a chat message rarely brings the punctuation with it.
         var term = _search.Trim().TrimStart('#');
+        var loose = term.Replace("-", string.Empty);
 
-        return order.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)
-            || order.UserId.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)
+        return order.Reference.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || order.Reference.Replace("-", string.Empty).Contains(loose, StringComparison.OrdinalIgnoreCase)
+            || (order.GuilderName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (order.GuilderEmail?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+
+            // Still searchable by full id: that is what a URL or a log line carries.
+            || order.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)
             || OrderStatusDisplay.Label(order.Status).Contains(term, StringComparison.OrdinalIgnoreCase)
             || order.Lines.Any(l => l.ItemName.Contains(term, StringComparison.OrdinalIgnoreCase));
     }

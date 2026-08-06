@@ -40,6 +40,26 @@ public class OrderDto
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
+
+    /// <summary>
+    /// Who placed it. Populated only on the officer-facing queries — a guilder listing
+    /// their own orders already knows who they are, and shipping other people's names to
+    /// every client that asks would be handing out the membership roll.
+    /// </summary>
+    public string? GuilderName { get; set; }
+
+    /// <summary>
+    /// Officer-facing only, same as <see cref="GuilderName"/>. Kept alongside the name
+    /// because two guilders can share one, and the email is what an officer chases them on.
+    /// </summary>
+    public string? GuilderEmail { get; set; }
+
+    /// <summary>
+    /// The short form of <see cref="Id"/> for display. Computed rather than sent, so it
+    /// cannot drift from the id it names.
+    /// </summary>
+    public string Reference => OrderReference.For(Id);
+
     public OrderStatusDto Status { get; set; }
     public DateTimeOffset PlacedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }

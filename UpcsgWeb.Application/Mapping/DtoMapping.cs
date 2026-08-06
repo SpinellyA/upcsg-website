@@ -113,10 +113,19 @@ public static class DtoMapping
         Role = u.Role,
     };
 
-    public static OrderDto ToDto(this UpcsgWeb.Domain.Orders.Order o) => new()
+    /// <param name="guilder">
+    /// Supplied by the officer-facing queries so the orders board can show a name. Left
+    /// null when a guilder reads their own orders: they already know who they are, and
+    /// filling it there would put member names on a response that has no use for them.
+    /// </param>
+    public static OrderDto ToDto(
+        this UpcsgWeb.Domain.Orders.Order o,
+        AppUser? guilder = null) => new()
     {
         Id = o.Id,
         UserId = o.UserId,
+        GuilderName = guilder?.Name,
+        GuilderEmail = guilder?.Email,
         Status = Enum.Parse<OrderStatusDto>(o.Status.ToString()),
         PlacedAt = o.PlacedAt,
         UpdatedAt = o.UpdatedAt,

@@ -58,7 +58,7 @@
                 <MudTh Style="width:3rem"></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="Order"><strong>#@context.Id</strong></MudTd>
+                <MudTd DataLabel="Order"><strong>#@context.Reference</strong></MudTd>
                 <MudTd DataLabel="Placed">@context.PlacedAt.ToLocalTime().ToString("MMM d, h:mm tt")</MudTd>
                 <MudTd DataLabel="Items" Class="upcsg-num">@context.Lines.Sum(l => l.Quantity)</MudTd>
                 <MudTd DataLabel="Total" Class="upcsg-num">&#8369;@context.Total.ToString("N2")</MudTd>

@@ -18,6 +18,12 @@ public class GetOrderQueryHandler(IUnitOfWork uow) : IQueryHandler<GetOrderQuery
             throw new ForbiddenException("That order is not yours.");
         }
 
-        return order.ToDto();
+        // Named only for officers. A guilder reading their own order gains nothing from
+        // their own name being echoed back, and this handler serves both callers.
+        var guilder = query.CallerIsOfficer
+            ? await uow.Users.GetByIdAsync(order.UserId, cancellationToken)
+            : null;
+
+        return order.ToDto(guilder);
     }
 }

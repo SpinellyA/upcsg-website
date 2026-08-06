@@ -16,6 +16,11 @@ public class ListOpenOrdersQueryHandler(IUnitOfWork uow)
             ? await uow.Orders.GetByStatusAsync(parsed, cancellationToken)
             : await uow.Orders.GetOpenAsync(cancellationToken);
 
-        return [.. orders.Select(o => o.ToDto())];
+        // One query for every guilder on the board rather than one per row: the board is
+        // the busiest officer screen and this runs on a free-tier database.
+        var guilders = await uow.Users.GetByIdsAsync(
+            orders.Select(o => o.UserId), cancellationToken);
+
+        return [.. orders.Select(o => o.ToDto(guilders.GetValueOrDefault(o.UserId)))];
     }
 }

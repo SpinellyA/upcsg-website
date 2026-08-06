@@ -8,7 +8,7 @@
 @inject IDialogService DialogService
 @inject NavigationManager Navigation
 
-<PageTitle>Order #@Id - UPCSG Admin</PageTitle>
+<PageTitle>Order #@OrderReference.For(Id) - UPCSG Admin</PageTitle>
 
 <div class="upcsg-page">
     <MudLink Href="admin/orders" Class="mb-3 d-inline-block">&larr; All orders</MudLink>
@@ -26,9 +26,16 @@
         <div class="upcsg-section-head">
             <div>
                 <p class="upcsg-kicker">
-                    Guilder #@_order.UserId &middot; placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")
+                    @(string.IsNullOrWhiteSpace(_order.GuilderName)
+                        ? $"Guilder {OrderReference.For(_order.UserId)}"
+                        : _order.GuilderName)
+                    &middot; placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")
                 </p>
-                <h1 class="upcsg-title-xl">Order #@_order.Id</h1>
+                <h1 class="upcsg-title-xl">Order #@_order.Reference</h1>
+                @if (!string.IsNullOrWhiteSpace(_order.GuilderEmail))
+                {
+                    <p class="upcsg-lede">@_order.GuilderEmail</p>
+                }
             </div>
             <span class="upcsg-statuspill upcsg-statuspill--@OrderStatusDisplay.Slug(_order.Status)">
                 @OrderStatusDisplay.Label(_order.Status)
@@ -360,7 +367,7 @@
         try
         {
             _order = await OrderService.ChangeStatusAsync(Id, next, null);
-            Snackbar.Add($"Order #{Id} → {OrderStatusDisplay.Label(next)}", Severity.Success);
+            Snackbar.Add($"Order #{OrderReference.For(Id)} → {OrderStatusDisplay.Label(next)}", Severity.Success);
         }
         catch (Exception ex) when (next == OrderStatusDto.Acknowledged && LooksLikeShortfall(ex.Message))
         {
@@ -448,7 +455,7 @@
     private async Task SettleRefundAsync()
     {
         var reference = await PromptAsync(
-            $"Record refund for #{Id}",
+            $"Record refund for #{OrderReference.For(Id)}",
             "GCash reference of the money you sent back");
 
         if (string.IsNullOrWhiteSpace(reference))
@@ -476,7 +483,7 @@
 
     private async Task RejectReceiptAsync()
     {
-        var reason = await PromptAsync($"Reject receipt for #{Id}", "What's wrong with it?");
+        var reason = await PromptAsync($"Reject receipt for #{OrderReference.For(Id)}", "What's wrong with it?");
         if (string.IsNullOrWhiteSpace(reason))
         {
             return;
@@ -501,7 +508,7 @@
 
     private async Task CancelAsync()
     {
-        var reason = await PromptAsync($"Cancel order #{Id}", "Reason (the guilder will see this)");
+        var reason = await PromptAsync($"Cancel order #{OrderReference.For(Id)}", "Reason (the guilder will see this)");
         if (string.IsNullOrWhiteSpace(reason))
         {
             return;
@@ -512,7 +519,7 @@
         try
         {
             _order = await OrderService.ChangeStatusAsync(Id, OrderStatusDto.Cancelled, reason);
-            Snackbar.Add($"Order #{Id} cancelled.", Severity.Success);
+            Snackbar.Add($"Order #{OrderReference.For(Id)} cancelled.", Severity.Success);
         }
         catch (Exception ex)
         {

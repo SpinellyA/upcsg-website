@@ -6,7 +6,7 @@
 @inject IMediaUploadService Media
 @inject ISnackbar Snackbar
 
-<PageTitle>Order #@Id - UPCSG</PageTitle>
+<PageTitle>Order #@OrderReference.For(Id) - UPCSG</PageTitle>
 
 <div class="upcsg-page">
     @if (_loading)
@@ -25,7 +25,7 @@
         <div class="upcsg-section-head">
             <div>
                 <p class="upcsg-kicker">Placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")</p>
-                <h1 class="upcsg-title-xl">Order #@_order.Id</h1>
+                <h1 class="upcsg-title-xl">Order #@_order.Reference</h1>
             </div>
             <span class="upcsg-chip">@OrderStatusDisplay.Label(_order.Status)</span>
         </div>

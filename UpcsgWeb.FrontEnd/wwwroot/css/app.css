@@ -58,39 +58,159 @@
         content: "An error has occurred."
     }
 
-.loading-progress {
-    position: absolute;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    inset: 20vh 0 auto 0;
-    margin: 0 auto 0 auto;
-}
+/* ---------------------------------------------------------------------------
+   First-load splash.
 
-    .loading-progress circle {
-        fill: none;
-        stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
+   Replaces the template's grey-and-#594AE2 ring, which was MudBlazor's default
+   rather than anything of ours.
 
-        .loading-progress circle:last-child {
-            stroke: #594AE2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
+   This is the only screen a first-time visitor is guaranteed to see: a
+   WebAssembly runtime is several MB, so on campus wifi it holds for ten seconds
+   or more. It therefore has to do three things a logo alone does not — show that
+   progress is real, avoid appearing at all when the load is instant, and offer a
+   way out when the load never finishes.
 
-.loading-progress-text {
-    position: absolute;
+   Lives in app.css but uses brand.css's tokens, which is safe because brand.css
+   is linked first. No JavaScript: everything below is driven either by the CSS
+   custom properties Blazor's loader sets on the root element, or by time.
+   --------------------------------------------------------------------------- */
+
+.upcsg-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 2rem;
     text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+
+    /* The hero's own ground, so the site fades into itself rather than cutting
+       from one screen to a different one. */
+    background:
+        radial-gradient(ellipse 80% 60% at 50% 40%, rgba(83, 37, 126, 0.55) 0%, transparent 70%),
+        linear-gradient(180deg, #16113A 0%, #0D0B26 100%);
+    color: #F6FFE9;
+
+    /* Held back so a warm load never flashes it. Blazor replaces #app the moment
+       it boots; from cache that happens well inside 300ms and this never paints. */
+    opacity: 0;
+    animation: upcsg-splash-in 0.5s ease-out 0.3s forwards;
 }
 
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+@keyframes upcsg-splash-in {
+    to { opacity: 1; }
+}
+
+/* Bloom behind the crest. Decorative and sized in vmin so it stays circular. */
+.upcsg-splash__glow {
+    position: absolute;
+    width: 70vmin;
+    height: 70vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(162, 83, 184, 0.32) 0%, transparent 65%);
+    animation: upcsg-splash-breathe 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes upcsg-splash-breathe {
+    0%, 100% { transform: scale(1);    opacity: 0.75; }
+    50%      { transform: scale(1.08); opacity: 1; }
+}
+
+.upcsg-splash__crest {
+    position: relative;
+    width: min(46vw, 240px);
+    height: auto;
+    filter: drop-shadow(0 0 40px rgba(162, 83, 184, 0.5));
+}
+
+.upcsg-splash__word {
+    position: relative;
+    margin: 0;
+    font-family: var(--upcsg-font-heading, 'Poppins', sans-serif);
+    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(246, 255, 233, 0.72);
+}
+
+/* Real progress, not a spinner. Blazor's loader writes --blazor-load-percentage
+   onto the root element, so a stalled download visibly stops moving — which is
+   the honest signal, and what tells someone their connection died rather than
+   leaving them to guess. */
+.upcsg-splash__track {
+    position: relative;
+    width: min(60vw, 260px);
+    height: 3px;
+    border-radius: 99px;
+    background: rgba(246, 255, 233, 0.14);
+    overflow: hidden;
+}
+
+.upcsg-splash__bar {
+    height: 100%;
+    width: var(--blazor-load-percentage, 0%);
+    border-radius: inherit;
+    background: linear-gradient(90deg, #A253B8 0%, #F6C875 100%);
+    transition: width 0.2s ease-out;
+}
+
+.upcsg-splash__pct {
+    position: relative;
+    margin: 0;
+    font-family: var(--upcsg-font-body, 'Inter', sans-serif);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: rgba(202, 197, 229, 0.75);
+}
+
+.upcsg-splash__pct::after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}
+
+/* The escape hatch.
+
+   Every deploy re-fingerprints the runtime (dotnet.<hash>.js), and a browser
+   holding a stale index.html asks for a hash that no longer exists — which
+   fails silently and leaves this screen up forever. Nothing client-side can fix
+   that, but saying so beats an endless shimmer, and a hard refresh does fix it.
+
+   Time-triggered rather than error-triggered on purpose: it should also appear
+   for a connection that has simply died, which raises no error either. */
+.upcsg-splash__slow {
+    position: relative;
+    max-width: 30rem;
+    margin: 0;
+    font-family: var(--upcsg-font-body, 'Inter', sans-serif);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: rgba(202, 197, 229, 0.85);
+
+    opacity: 0;
+    animation: upcsg-splash-in 0.6s ease-out 20s forwards;
+}
+
+.upcsg-splash__slow a {
+    color: var(--upcsg-liquid-chrome-gold, #F6C875);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    /* The fades stay — they are what stops the splash flashing on a warm load,
+       and removing them would make the experience worse, not calmer. Only the
+       looping animation goes. */
+    .upcsg-splash__glow {
+        animation: none;
     }
+
+    .upcsg-splash__bar {
+        transition: none;
+    }
+}
 
 code {
     color: #c02d76;

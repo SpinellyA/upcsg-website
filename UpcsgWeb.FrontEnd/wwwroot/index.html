@@ -15,6 +15,11 @@
     <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="img/favicon-crest.png" />
+
+    <!-- The splash's crest. Preloaded so it is requested alongside the runtime
+         rather than after the stylesheet has been parsed; without this the
+         loading screen's own centrepiece can arrive last. -->
+    <link rel="preload" as="image" href="img/upcsg-crest.png" />
     <link href="UpcsgWeb.FrontEnd.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
 
@@ -50,12 +55,39 @@
 </head>
 
 <body>
+    <!--
+      First-load splash. Styles in css/app.css.
+
+      Everything here is markup and CSS only; nothing waits on a script. The
+      progress bar reads the custom properties Blazor's loader writes onto the
+      root element, so it reports the real download rather than animating on a
+      timer and lying about a stalled connection.
+
+      role="status" rather than a live region that interrupts: a screen reader
+      should be able to poll this, not be talked over while it loads.
+    -->
     <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+        <div class="upcsg-splash" role="status">
+            <div class="upcsg-splash__glow" aria-hidden="true"></div>
+
+            <!-- Decorative: the wordmark below already carries the name, so
+                 announcing the crest as well would just repeat it. -->
+            <img class="upcsg-splash__crest" src="img/upcsg-crest.png" alt="" />
+
+            <p class="upcsg-splash__word">UP Computer Science Guild</p>
+
+            <div class="upcsg-splash__track" aria-hidden="true">
+                <div class="upcsg-splash__bar"></div>
+            </div>
+
+            <p class="upcsg-splash__pct"></p>
+
+            <p class="upcsg-splash__slow">
+                This is taking longer than usual. If the site was updated recently your
+                browser may be holding an old copy &mdash;
+                <a href=".">reload</a>, or hard-refresh with Ctrl+Shift+R.
+            </p>
+        </div>
     </div>
 
     <div id="blazor-error-ui">

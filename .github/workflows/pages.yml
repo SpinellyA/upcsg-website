@@ -118,5 +118,15 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # The action's default wait is 10 minutes. Pages on the free tier regularly queues
+      # for longer than that, and running out of patience here is expensive: the
+      # deployment is keyed on the commit SHA, so once one attempt ends in a terminal
+      # state that SHA is spent. Every re-run afterwards creates a deployment for the same
+      # SHA and is cancelled within seconds, and the only way forward is a new commit.
+      #
+      # Twenty minutes rides out a backlog instead. It hides nothing — a genuinely broken
+      # Pages configuration still fails, just later.
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 1200000

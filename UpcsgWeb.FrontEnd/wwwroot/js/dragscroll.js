@@ -33,7 +33,7 @@ export function attach(el) {
     let glide = 0;
 
     /** Movement beyond this is a drag, and the click that follows it is not a choice. */
-    const DRAG_THRESHOLD = 6;
+    const DRAG_THRESHOLD = 10;
 
     /** Per-frame retention. Higher coasts further; 0.95 is a long, low-friction wheel. */
     const FRICTION = 0.95;
@@ -67,7 +67,7 @@ export function attach(el) {
             // Without capture the drag still works; it just ends early if the pointer
             // leaves the element.
         }
-
+        startTime = performance.now();
         el.classList.add('is-dragging');
     }
 
@@ -135,11 +135,12 @@ export function attach(el) {
     // pointerup, so this runs in the capture phase and stops it before it reaches the
     // button — without which every throw would change the card underneath.
     function onClickCapture(e) {
-        if (travelled > DRAG_THRESHOLD) {
+        const heldFor = performance.now() - startTime;
+        if (travelled > DRAG_THRESHOLD && heldFor > 80) {
             e.preventDefault();
             e.stopPropagation();
-            travelled = 0;
         }
+        travelled = 0; // also worth always resetting here, not just on the swallow path
     }
 
     // Native drag-and-drop would otherwise start on the images and hijack the gesture,

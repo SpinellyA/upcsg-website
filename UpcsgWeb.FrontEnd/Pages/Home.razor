@@ -137,7 +137,9 @@
                         <p class="upcsg-feature__plate-name">@_selected.Name</p>
                     </Overlay>
                 </CosmicImage>
+                <MudText>@_selected.Name</MudText>
             }
+            
         </Reveal>
     </section>
 
@@ -254,7 +256,10 @@
     private int _execCount;
     private bool _loading = true;
 
-    private void SelectOfficer(MemberDto member) => _selected = member;
+    private void SelectOfficer(MemberDto member) { 
+        _selected = member;
+        StateHasChanged();
+    }
 
     /// <summary>
     /// The month being published, so the heading matches the events under it. Reading

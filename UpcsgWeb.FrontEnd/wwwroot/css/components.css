@@ -565,11 +565,12 @@
 .upcsg-facepile {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem; /* replaces whatever negative-margin overlap you had */
 
     /* Vertical padding leaves room for the selected face to lift without being clipped
        by the scroll container. */
     padding: 0.75rem 0.6rem;
-
     /* The strip is a picker now, so it scrolls rather than truncating at eight faces
        with a "+3" on the end. Dragging is layered on in js/dragscroll.js for mice only;
        wheel, trackpad, touch and keyboard all work off this rule alone, which is what
@@ -577,13 +578,10 @@
     overflow-x: auto;
     overflow-y: hidden;
     scroll-behavior: smooth;
-
     /* Stops a throw at either end from becoming a browser back-swipe or scrolling the
        page behind it. */
     overscroll-behavior-x: contain;
-
     cursor: grab;
-
     /* The bar would sit under the faces and flicker on every drag. Overflowing content
        and the grab cursor are the affordance instead. */
     scrollbar-width: none;

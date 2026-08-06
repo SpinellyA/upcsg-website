@@ -175,41 +175,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerGen();
 }
 
-// Endpoint for the uptime pinger, and the one thing keeping both halves of the free tier
-// alive: the web service sleeps when nothing calls it, and the Postgres project pauses
-// when nothing writes to it. A read would wake only the first, so this writes.
-//
-// The write is throttled inside the SQL rather than here, so /health staying public and
-// unauthenticated does not make it an unlimited write endpoint.
-app.MapGet("/health", async (UpcsgDbContext db, SchemaCheck schema, CancellationToken ct) =>
-{
-    var beat = await DatabaseHeartbeat.PingAsync(db, TimeSpan.FromMinutes(1), ct);
-
-    if (!beat.Reachable)
-    {
-        // 503, not 500: the API is up, its database is not. A pinger that treats every
-        // non-200 the same still alerts, and anyone reading the body learns which it was.
-        return Results.Json(
-            new { status = "unhealthy", database = "unreachable" },
-            statusCode: StatusCodes.Status503ServiceUnavailable);
-    }
-
-    return Results.Ok(new
-    {
-        status = "healthy",
-        database = "reachable",
-
-        // Still 200: the database answers and most of the site works. But a deployment
-        // carrying unapplied migrations is a half-finished release, and this is where
-        // someone looks when a page starts failing right after a push.
-        schema = schema.IsUpToDate ? "up to date" : "MIGRATIONS PENDING",
-        pendingMigrations = schema.Pending,
-
-        // False just means another request already wrote inside the throttle window.
-        keptAlive = beat.Wrote,
-        lastKeepAlive = beat.LastPingedAt,
-        pingCount = beat.PingCount,
-    });
-});
+// /health now lives in Features/Health/HealthEndpoint.cs alongside every other endpoint,
+// rather than being the one route defined inline here. It answers HEAD as well as GET,
+// which is what uptime monitors send by default.
 
 app.Run();

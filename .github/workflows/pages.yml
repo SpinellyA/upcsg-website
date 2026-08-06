@@ -78,18 +78,38 @@ jobs:
           PY
 
       - name: Fix up for Pages
+        env:
+          CUSTOM_DOMAIN: ${{ vars.CUSTOM_DOMAIN }}
         run: |
           set -euo pipefail
           root="publish/wwwroot"
 
-          # 1. Base href. A project page is served from /<repo>/, so a root-relative base
-          #    makes every asset request miss. Derived from the repo name so renaming the
-          #    repository does not silently break the deployment.
-          repo="${GITHUB_REPOSITORY##*/}"
-          sed -i "s|<base href=\"/\" />|<base href=\"/$repo/\" />|" "$root/index.html"
-          grep -q "<base href=\"/$repo/\" />" "$root/index.html" \
+          # 1. Base href, and it depends on how the site is reached.
+          #
+          #    A project page lives at https://<user>.github.io/<repo>/, so the base must
+          #    be /<repo>/ or every asset request misses. A custom domain serves the same
+          #    files from the root, where that same value makes every asset request miss
+          #    instead - the page loads, nothing else does, and the site is blank.
+          #
+          #    Driven by the CUSTOM_DOMAIN repository variable rather than detected,
+          #    because there is nothing in the build to detect it from.
+          domain="${CUSTOM_DOMAIN:-}"
+
+          if [ -n "$domain" ]; then
+            base="/"
+
+            # Pages needs this file in the artifact to keep serving the custom domain;
+            # without it a deployment can drop back to the github.io address.
+            printf '%s\n' "$domain" > "$root/CNAME"
+            echo "custom domain -> $domain"
+          else
+            base="/${GITHUB_REPOSITORY##*/}/"
+          fi
+
+          sed -i "s|<base href=\"/\" />|<base href=\"$base\" />|" "$root/index.html"
+          grep -q "<base href=\"$base\" />" "$root/index.html" \
             || { echo "::error::base href was not rewritten"; exit 1; }
-          echo "base href -> /$repo/"
+          echo "base href -> $base"
 
           # 2. Jekyll. Pages runs it by default and it strips directories beginning with an
           #    underscore - which is _framework, the entire .NET runtime.

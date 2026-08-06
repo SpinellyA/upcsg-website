@@ -39,9 +39,18 @@ services:
       - key: Jwt__SigningKey
         sync: false
 
-      # The GitHub Pages origin. Scheme and host only - no path, no trailing slash, even
-      # though the site lives at /upcsg-website/.
+      # Every origin the site is served from. Scheme and host only - no path, no trailing
+      # slash, even when the site lives under a subpath.
+      #
+      # A browser will not let the frontend read a response from an origin the API has not
+      # named, so a domain missing here fails as "blocked by CORS" in the console while the
+      # API itself looks perfectly healthy from curl.
       - key: Cors__AllowedOrigins__0
+        value: https://upcsg.spinelly.net
+
+      # The github.io address still resolves and still serves the site, so it stays allowed
+      # rather than being cut off the moment the custom domain works.
+      - key: Cors__AllowedOrigins__1
         value: https://spinellya.github.io
 
       # Used to build media URLs for new uploads.

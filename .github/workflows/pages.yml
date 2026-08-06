@@ -105,9 +105,18 @@ jobs:
           #    that cannot be fixed from here, so it is at least recorded in the output.
           echo "note: returning visitors may need one hard refresh after a deploy"
 
-      - uses: actions/upload-pages-artifact@v3
+      # v5 rather than v3: the older majors target Node 20, which the runners no longer
+      # provide and now force onto Node 24 with a deprecation warning.
+      #
+      # include-hidden-files is not optional here. v5 pulls in upload-artifact v7, which
+      # excludes dotfiles by default, and the artifact contains .nojekyll — without it
+      # Pages runs Jekyll, Jekyll strips directories beginning with an underscore, and
+      # _framework is the entire .NET runtime. That failure would publish successfully and
+      # serve a blank page.
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: publish/wwwroot
+          include-hidden-files: true
 
   deploy:
     needs: build
@@ -118,15 +127,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      # The action's default wait is 10 minutes. Pages on the free tier regularly queues
-      # for longer than that, and running out of patience here is expensive: the
-      # deployment is keyed on the commit SHA, so once one attempt ends in a terminal
-      # state that SHA is spent. Every re-run afterwards creates a deployment for the same
-      # SHA and is cancelled within seconds, and the only way forward is a new commit.
+      # v5 rather than v4. v4.0.5 dates from March 2024 and targets Node 20, which the
+      # runners no longer provide - every run logged "being forced to run on Node.js 24".
+      # Seven consecutive deployments failed under that forcing, across three different
+      # commits, while a re-run of an older artifact still succeeded; and the timeout below
+      # was ignored, the action giving up at its built-in 10 minutes despite being asked
+      # for 20. An action running on a runtime it was not built for explains both.
       #
-      # Twenty minutes rides out a backlog instead. It hides nothing — a genuinely broken
-      # Pages configuration still fails, just later.
+      # v5.0.0 is v4.0.5 plus the Node 24 update - same inputs, no behaviour change.
+      #
+      # The timeout matters because being impatient here is expensive: a Pages deployment
+      # is keyed on the commit SHA, so once an attempt ends in a terminal state that SHA is
+      # spent, and every re-run afterwards is cancelled within seconds. Only a new commit
+      # recovers it.
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
         with:
           timeout: 1200000   # 20 min, up from the 10 min default

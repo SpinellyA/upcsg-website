@@ -38,6 +38,31 @@ public sealed class MediaOptions
     public string? PublicBucket { get; set; }
 
     /// <summary>
+    /// Bucket for objects that must not be world-readable — today, GCash receipts.
+    ///
+    /// Optional, and its absence is a deliberate fallback rather than an error: leaving it
+    /// unset puts receipts back in the public bucket, which is what this deployment did
+    /// before the private bucket existed. That keeps a half-configured environment working
+    /// instead of breaking checkout, but it is the less safe of the two states — a receipt
+    /// there is readable by anyone who has, or guesses, the URL.
+    ///
+    /// The startup log says which one is in force.
+    /// </summary>
+    public string? PrivateBucket { get; set; }
+
+    /// <summary>True when receipts get a bucket of their own.</summary>
+    public bool HasPrivateBucket => !string.IsNullOrWhiteSpace(PrivateBucket);
+
+    /// <summary>
+    /// Lifetime of a presigned read URL for a private object.
+    ///
+    /// Long enough for an officer to open the image and look at it, short enough that a
+    /// URL copied out of the address bar and pasted somewhere is worthless by the time
+    /// anyone else follows it.
+    /// </summary>
+    public int ReadUrlMinutes { get; set; } = 15;
+
+    /// <summary>
     /// Origin the public bucket is served from.
     ///
     ///   Supabase   https://[project-ref].supabase.co/storage/v1/object/public/[bucket]
@@ -85,13 +110,17 @@ public sealed class MediaOptions
             return "unconfigured";
         }
 
-        if (ServiceUrl.Contains("supabase", StringComparison.OrdinalIgnoreCase))
-        {
-            return "Supabase Storage";
-        }
+        var vendor = ServiceUrl.Contains("supabase", StringComparison.OrdinalIgnoreCase)
+            ? "Supabase Storage"
+            : ServiceUrl.Contains("r2.cloudflarestorage", StringComparison.OrdinalIgnoreCase)
+                ? "Cloudflare R2"
+                : "S3-compatible storage";
 
-        return ServiceUrl.Contains("r2.cloudflarestorage", StringComparison.OrdinalIgnoreCase)
-            ? "Cloudflare R2"
-            : "S3-compatible storage";
+        // Named at startup because the unsafe state is the silent one: without a private
+        // bucket, receipts still upload and still display, and nothing looks wrong.
+        return HasPrivateBucket
+            ? $"{vendor} (receipts in '{PrivateBucket}')"
+            : $"{vendor} — NO PRIVATE BUCKET: receipts go to the public bucket and are "
+              + "readable by anyone with the URL. Set Media:PrivateBucket.";
     }
 }

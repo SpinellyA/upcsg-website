@@ -67,6 +67,20 @@ public sealed class LocalMediaStore : IMediaStore
 
     public string PublicUrl(string key) => $"{_baseUrl}/media/{key}";
 
+    /// <summary>
+    /// Always false. This store writes into the API's own wwwroot, which is served by
+    /// UseStaticFiles — there is nowhere here that is not world-readable, and claiming
+    /// otherwise would let a development run look safer than it is.
+    /// </summary>
+    public bool IsPrivate(string key) => false;
+
+    public Task<string> CreateReadUrlAsync(string keyOrUrl, CancellationToken ct = default) =>
+        Task.FromResult(
+            keyOrUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            || keyOrUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
+                ? keyOrUrl
+                : PublicUrl(keyOrUrl));
+
     /// <summary>Used by the local upload endpoint; not part of the port.</summary>
     public async Task SaveAsync(string key, Stream content, CancellationToken ct = default)
     {

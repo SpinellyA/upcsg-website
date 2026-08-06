@@ -107,13 +107,20 @@ to take the site down on a restart.
 **Storage → Create bucket**, twice:
 
 1. `media` — **public**. Merch photos, event posters, officer portraits.
-2. `receipts` — **private**. GCash proofs belong to individual guilders.
+2. a second bucket — **private**. GCash proofs belong to individual guilders.
 
-> ⚠️ **Receipts are not yet served privately.** Task #57 is open: the code currently writes
-> receipts to the public bucket and serves them from guessable URLs, so anyone with a link
-> can read someone else's payment proof. Creating the private bucket now costs nothing and
-> means the fix is a config change later — but until #57 lands, treat receipt URLs as
-> exposed. Decide knowingly before the first real drop.
+Name them whatever you like; what matters is that the names match `Media__PublicBucket` and
+`Media__PrivateBucket` and that the second one is not public.
+
+Anything under the `receipts/` prefix is written to the private bucket, and officers read it
+through a presigned GET the API mints per view, valid for `Media:ReadUrlMinutes` (15 by
+default). What the order row stores is the storage **key**, not a URL — a presigned URL saved
+on a record would be dead within the hour.
+
+> ⚠️ **`Media__PrivateBucket` is optional, and leaving it unset is the unsafe state.**
+> Without it receipts fall back to the public bucket at guessable URLs, uploads still
+> succeed and images still display, so nothing looks wrong. The startup `Media storage:`
+> line names the fallback in capitals — check it after any change to the media variables.
 
 **Project Settings → Storage → S3 access keys → New access key.** This is separate from the
 anon/service keys — those are for Supabase's own REST API, not the S3 protocol.
@@ -125,6 +132,11 @@ Your values:
 | Endpoint | `https://<project-ref>.supabase.co/storage/v1/s3` |
 | Region | `ap-south-1` (must match the project) |
 | Public base URL | `https://<project-ref>.supabase.co/storage/v1/object/public/media` |
+
+`media` is a choice, not a fixed name — but it goes verbatim into the presigned upload path,
+so whatever you use must match `Media__PublicBucket` exactly and must already exist in the
+project. Neither is checked at startup: a wrong or absent bucket fails the browser's upload
+PUT with an S3 `NoSuchBucket` error, which comes from Supabase rather than from this API.
 
 ---
 
@@ -155,8 +167,13 @@ on a fixed port is marked unhealthy with nothing obviously wrong in the logs.
 | `Media__Region` | `ap-south-1` |
 | `Media__AccessKeyId` | from the S3 access key |
 | `Media__SecretAccessKey` | from the S3 access key |
-| `Media__PublicBucket` | `media` |
+| `Media__PublicBucket` | `media` — exactly as the bucket was created |
 | `Media__PublicBaseUrl` | `https://<project-ref>.supabase.co/storage/v1/object/public/media` |
+| `Media__PrivateBucket` | your **private** bucket, for GCash receipts |
+
+The last two must name the same bucket. Changing one without the other is the quiet
+failure: uploads land correctly and every URL saved on an entity points at a bucket that
+isn't there, so the images break rather than the upload.
 
 Double underscores, not colons — a colon is not valid in an environment variable name.
 

@@ -31,6 +31,24 @@ public interface IMediaStore
 
     /// <summary>The URL a browser should use to read a public object.</summary>
     string PublicUrl(string key);
+
+    /// <summary>
+    /// True when this key lives somewhere the world cannot read. What the database records
+    /// for such an object is a key, not a URL, so every view of it has to be minted.
+    /// </summary>
+    bool IsPrivate(string key);
+
+    /// <summary>
+    /// A URL that will read this object, valid only briefly.
+    ///
+    /// For a public object this is just <see cref="PublicUrl"/>. For a private one it is a
+    /// presigned GET that expires, which is the point: a receipt link that leaks after the
+    /// fact is worthless, unlike a permanent public URL.
+    ///
+    /// Accepts a value that is already an absolute URL and returns it unchanged, so
+    /// receipts recorded before the private bucket existed keep rendering.
+    /// </summary>
+    Task<string> CreateReadUrlAsync(string keyOrUrl, CancellationToken ct = default);
 }
 
 /// <param name="Key">Storage key; what the database records.</param>

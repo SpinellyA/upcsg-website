@@ -63,25 +63,47 @@ services:
       #
       # Only the two keys are secret. The project ref and region are in every Supabase URL
       # the browser sees, so they are committed here rather than retyped per environment.
-      # The dedicated storage host, as shown in the Supabase dashboard. The older
-      # <ref>.supabase.co form answers too, but match what the dashboard says.
+      #
+      # Both <ref>.supabase.co/storage/v1/s3 and the dedicated <ref>.storage.supabase.co
+      # host are served. This is the one the running service uses, and it is known good:
+      # it returned a signed, well-formed S3 error for a missing bucket. Recorded as
+      # deployed rather than as the dashboard prefers, so a blueprint re-sync cannot swap
+      # a working endpoint out from under the service.
       - key: Media__ServiceUrl
-        value: https://bafxnyyeelwgmezcbtwj.storage.supabase.co/storage/v1/s3
+        value: https://bafxnyyeelwgmezcbtwj.supabase.co/storage/v1/s3
 
       # Must match the project's own region or Supabase rejects the request signature.
       # Read from the database host: aws-1-ap-south-1.pooler.supabase.com.
       - key: Media__Region
         value: ap-south-1
 
+      # The literal bucket name, which goes straight into the presigned URL path. It must
+      # exist in the Supabase project and be marked public, or the browser's upload PUT
+      # comes back as an S3 NoSuchBucket error.
       - key: Media__PublicBucket
         value: media
 
+      # Must name the same bucket as Media__PublicBucket. Changing one without the other
+      # is the quiet failure: the upload lands correctly and every saved URL points at a
+      # bucket that isn't there, so the images break rather than the upload.
+      #
       # The /v1/ is required. Without it every image URL is a 404 - the path without it is
       # not a route at all, while with it the same request reaches the storage API and
       # answers 400 for a missing object. Uploads succeed either way, so the mistake only
       # shows up as images that never load.
       - key: Media__PublicBaseUrl
         value: https://bafxnyyeelwgmezcbtwj.supabase.co/storage/v1/object/public/media
+
+      # GCash receipts. This bucket must NOT be public: it holds guilders' payment proof,
+      # which carries their name, the amount and the transaction reference. There is no
+      # PublicBaseUrl to match it — officers read receipts through presigned GETs the API
+      # mints per view, which expire after Media:ReadUrlMinutes.
+      #
+      # Leaving this unset is a working configuration, not a broken one, which is exactly
+      # why it is dangerous: receipts fall back to the public bucket at guessable URLs and
+      # nothing looks wrong. The startup "Media storage:" line says so in capitals.
+      - key: Media__PrivateBucket
+        value: upcsg-file-private
 
       # Storage -> S3 access keys in the Supabase dashboard. These are not the anon or
       # service_role keys, which are for Supabase's own REST API rather than the S3

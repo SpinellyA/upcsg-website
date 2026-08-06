@@ -93,7 +93,11 @@ public class MediaUploadService(HttpClient http, IJSRuntime js, ISessionStore se
 
         var confirmed = await confirmResponse.Content.ReadFromJsonAsync<ConfirmUploadDto>(UpcsgJson.Options);
 
-        return new UploadResult(confirmed?.PublicUrl, null, confirmed?.SizeBytes ?? 0, picked.OriginalSize);
+        // StoredReference, not PublicUrl: for a receipt in the private bucket the former is
+        // the storage key and the latter is deliberately empty. Saving PublicUrl here would
+        // record an empty screenshot on the order and the domain would reject the receipt.
+        return new UploadResult(
+            confirmed?.StoredReference, null, confirmed?.SizeBytes ?? 0, picked.OriginalSize);
     }
 
     private static async Task<string> DescribeAsync(HttpResponseMessage response)

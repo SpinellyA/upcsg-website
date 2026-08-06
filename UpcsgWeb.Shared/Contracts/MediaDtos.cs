@@ -27,6 +27,22 @@ public class ConfirmUploadRequest
 public class ConfirmUploadDto
 {
     public string Key { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Empty for an object in the private bucket, which by definition has no public URL.
+    /// Anything being saved should use <see cref="StoredReference"/> instead.
+    /// </summary>
     public string PublicUrl { get; set; } = string.Empty;
+
+    /// <summary>
+    /// What the caller persists on the record: the public URL for site content, the
+    /// storage key for a private object such as a receipt.
+    ///
+    /// The distinction matters because a private object's URL is presigned and expires. A
+    /// receipt row holding one would render a broken image within the hour, and the
+    /// officer looking at it could not tell that from an upload that never arrived.
+    /// </summary>
+    public string StoredReference { get; set; } = string.Empty;
+
     public long SizeBytes { get; set; }
 }

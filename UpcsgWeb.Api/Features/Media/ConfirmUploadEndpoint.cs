@@ -65,10 +65,15 @@ public class ConfirmUploadEndpoint(IMediaStore media, IOptions<MediaOptions> opt
             return;
         }
 
+        // A private object has no public URL to give out, and inventing one would put a
+        // dead link on the record. The caller saves StoredReference either way.
+        var isPrivate = media.IsPrivate(req.Key);
+
         await Send.OkAsync(new ConfirmUploadDto
         {
             Key = req.Key,
-            PublicUrl = media.PublicUrl(req.Key),
+            PublicUrl = isPrivate ? string.Empty : media.PublicUrl(req.Key),
+            StoredReference = isPrivate ? req.Key : media.PublicUrl(req.Key),
             SizeBytes = stored.SizeBytes,
         }, ct);
     }

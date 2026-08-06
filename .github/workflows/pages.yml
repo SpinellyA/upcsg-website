@@ -120,3 +120,5 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          timeout: 1200000   # 20 min, up from the 10 min default

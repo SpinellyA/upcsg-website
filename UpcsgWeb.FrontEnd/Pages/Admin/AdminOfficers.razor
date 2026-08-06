@@ -9,22 +9,29 @@
 
 <PageTitle>Officers - UPCSG Admin</PageTitle>
 
-<div class="upcsg-page upcsg-admin">
-    <AdminNav />
-
-    <div class="upcsg-admin__head">
+@* Structure deliberately mirrors AdminEvents/AdminMerch/AdminOrders: page shell, section
+   head, AdminNav, then one upcsg-datatable. This page used to carry its own vocabulary —
+   upcsg-admin__head, upcsg-ink-panel, upcsg-ink-table, upcsg-mono — none of which was ever
+   defined in brand.css, so it rendered as unstyled markup rather than as a variant. *@
+<div class="upcsg-page">
+    <div class="upcsg-section-head">
         <div>
-            <p class="upcsg-kicker">Access</p>
-            <h1 class="upcsg-admin__title">Officers</h1>
-            <p class="upcsg-admin__lede">
-                These addresses get officer rights when they sign in with Google. Everyone else
-                signs in as an ordinary guilder. Roles are not set per account &mdash; this list
-                is the only thing that decides them.
-            </p>
+            <p class="upcsg-kicker">Guild CMS</p>
+            <h1 class="upcsg-title-xl">Officers</h1>
         </div>
     </div>
 
-    <MudPaper Elevation="0" Class="upcsg-ink-panel pa-4 mb-4">
+    <AdminNav />
+
+    <p class="upcsg-lede mt-4">
+        These addresses get officer rights when they sign in with Google. Everyone else signs
+        in as an ordinary guilder. Roles are not set per account &mdash; this list is the only
+        thing that decides them.
+    </p>
+
+    @* Adding is two fields, so it stays on the page rather than becoming its own route the
+       way merch and events do — there is nothing here a form page would give room to. *@
+    <section class="upcsg-section upcsg-band mt-4">
         <MudForm @ref="_form">
             <MudGrid Spacing="2" Class="align-center">
                 <MudItem xs="12" md="5">
@@ -57,27 +64,41 @@
                 </MudItem>
             </MudGrid>
         </MudForm>
-    </MudPaper>
+    </section>
 
     <MudTable Items="_officers"
-              Dense="true"
+              T="OfficerEmailDto"
               Hover="true"
-              Loading="_loading"
+              Class="upcsg-datatable mt-4"
               Elevation="0"
-              Class="upcsg-ink-table"
-              LoadingProgressColor="Color.Secondary"
-              NoRecordsText="No officers yet. That should be impossible — add one now.">
+              Dense="true"
+              Loading="_loading"
+              LoadingProgressColor="Color.Primary"
+              Filter="new Func<OfficerEmailDto, bool>(Matches)"
+              AllowUnsorted="false"
+              RowClass="upcsg-datatable__row">
+        <ToolBarContent>
+            <MudTextField @bind-Value="_search"
+                          Immediate="true"
+                          DebounceInterval="150"
+                          Placeholder="Search officers"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Small"
+                          Variant="Variant.Text"
+                          Clearable="true"
+                          Class="upcsg-datatable__search mt-0" />
+        </ToolBarContent>
         <HeaderContent>
-            <MudTh>Email</MudTh>
-            <MudTh>Who</MudTh>
-            <MudTh>Added</MudTh>
-            <MudTh>Status</MudTh>
-            <MudTh Style="text-align:right">&nbsp;</MudTh>
+            <MudTh><MudTableSortLabel T="OfficerEmailDto" SortBy="@(o => o.Email)" InitialDirection="SortDirection.Ascending">Email</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="OfficerEmailDto" SortBy="@(o => o.Note ?? string.Empty)">Who</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="OfficerEmailDto" SortBy="@(o => o.AddedAt)">Added</MudTableSortLabel></MudTh>
+            <MudTh><MudTableSortLabel T="OfficerEmailDto" SortBy="@(o => o.HasSignedIn)">Status</MudTableSortLabel></MudTh>
+            <MudTh Style="width:6rem"></MudTh>
         </HeaderContent>
-
         <RowTemplate>
             <MudTd DataLabel="Email">
-                <span class="upcsg-mono">@context.Email</span>
+                @context.Email
                 @if (IsMe(context.Email))
                 {
                     <MudChip T="string" Size="Size.Small" Class="ml-2">you</MudChip>
@@ -106,6 +127,16 @@
                 </MudButton>
             </MudTd>
         </RowTemplate>
+        <NoRecordsContent>
+            <p class="upcsg-lede my-4">
+                @(string.IsNullOrWhiteSpace(_search)
+                    ? "No officers yet. That should be impossible — add one now."
+                    : $"No officer matches \"{_search}\".")
+            </p>
+        </NoRecordsContent>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="PageSizes" InfoFormat="{first_item}-{last_item} of {all_items} officers" />
+        </PagerContent>
     </MudTable>
 
     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-4">
@@ -116,10 +147,13 @@
 </div>
 
 @code {
+    private static readonly int[] PageSizes = [10, 25, 50];
+
     private MudForm? _form;
     private List<OfficerEmailDto> _officers = [];
     private string _email = string.Empty;
     private string? _note;
+    private string _search = string.Empty;
     private bool _loading = true;
     private bool _busy;
     private string? _myEmail;
@@ -130,6 +164,19 @@
         _myEmail = state.User.FindFirst(c => c.Type.EndsWith("emailaddress") || c.Type == "email")?.Value;
 
         await LoadAsync();
+    }
+
+    private bool Matches(OfficerEmailDto item)
+    {
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            return true;
+        }
+
+        var term = _search.Trim();
+
+        return item.Email.Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (item.Note?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
     private async Task LoadAsync()

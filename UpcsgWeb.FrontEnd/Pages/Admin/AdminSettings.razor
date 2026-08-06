@@ -30,30 +30,47 @@
     }
     else
     {
-        <section class="upcsg-section upcsg-band mt-4" style="max-width: 40rem;">
-            <p class="upcsg-kicker">Events page</p>
-            <h2 class="upcsg-title-xl" style="font-size: 1.5rem;">Calendar month</h2>
+        @* ---------- Calendar month ---------- *@
+        @* Same shape as the snapshot section below: section head with kicker and title, no
+           inline sizing. The heading used to override upcsg-title-xl with a hard-coded
+           font-size and the section carried an inline max-width, so the two blocks on this
+           one page disagreed about how a settings panel looks. *@
+        <section class="upcsg-section upcsg-band mt-4">
+            <div class="upcsg-section-head">
+                <div>
+                    <p class="upcsg-kicker">Events page</p>
+                    <h2 class="upcsg-title-xl">Calendar month</h2>
+                </div>
+            </div>
+
             <p class="upcsg-lede">
                 The public events page shows one month at a time. Normally that's the real
                 current month, but you can pin it ahead to publish next month's lineup early.
             </p>
 
             <MudSwitch T="bool" @bind-Value="_followCurrent" Color="Color.Success"
-                       Label="Follow the current month automatically" Class="mb-4" />
+                       Label="Follow the current month automatically" Class="my-4" />
 
             @if (!_followCurrent)
             {
-                <div class="upcsg-monthnav mb-4">
-                    <MudSelect T="int" @bind-Value="_month" Label="Month" Variant="Variant.Outlined" Dense="true">
-                        @for (var m = 1; m <= 12; m++)
-                        {
-                            var value = m;
-                            <MudSelectItem T="int" Value="@value">@(new DateTime(2000, value, 1).ToString("MMMM"))</MudSelectItem>
-                        }
-                    </MudSelect>
-                    <MudNumericField T="int" @bind-Value="_year" Label="Year" Variant="Variant.Outlined"
-                                     Min="2020" Max="@(DateTime.Now.Year + 5)" Class="ml-3" />
-                </div>
+                @* MudGrid rather than upcsg-monthnav: that class is the events page's
+                   chevron navigator — a 0.5rem flex row sized for two icon buttons around a
+                   label — and it packed these two full-width fields against each other. *@
+                <MudGrid Spacing="2" Class="align-center mb-4">
+                    <MudItem xs="12" sm="7">
+                        <MudSelect T="int" @bind-Value="_month" Label="Month" Variant="Variant.Outlined" Dense="true">
+                            @for (var m = 1; m <= 12; m++)
+                            {
+                                var value = m;
+                                <MudSelectItem T="int" Value="@value">@(new DateTime(2000, value, 1).ToString("MMMM"))</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="5">
+                        <MudNumericField T="int" @bind-Value="_year" Label="Year" Variant="Variant.Outlined"
+                                         Min="2020" Max="@(DateTime.Now.Year + 5)" />
+                    </MudItem>
+                </MudGrid>
             }
 
             <MudAlert Severity="Severity.Info" Dense="true" Class="mb-4">

@@ -1,18 +1,7 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-05T17:56:53.5748575Z",
+  "generatedAt": "2026-08-07T17:11:56.3957986Z",
   "members": [
-    {
-      "id": "019fd246-62c0-7674-9143-f59c528cc94b",
-      "name": "Andrei Brent T. Wahing",
-      "role": "Senior Citizen",
-      "category": "ExeCom",
-      "committee": "Wahing Satisfaction Committee",
-      "photoUrl": "offline-media/21edc8dfc65a15bc.webp",
-      "quote": "I am Mr. Komsai himself",
-      "bio": "everything.",
-      "displayOrder": 1
-    },
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
       "name": "Chriscia Xanelle Llamas",
@@ -114,11 +103,11 @@
     },
     {
       "id": "019fcda6-e092-7f62-afc0-cee471ee048d",
-      "name": "Erik Caliskis",
+      "name": "Erik James M. Caliskis",
       "role": "Communications & Logistics Director",
       "category": "ExeCom",
       "committee": "Directorates",
-      "photoUrl": "offline-media/290c3e89a0d61e6d.webp",
+      "photoUrl": "offline-media/a45ce7fd682bbbc1.webp",
       "quote": "The venue, the schedule, and the group chat.",
       "bio": "Erik keeps events standing up: booking, equipment, timelines, and the internal communication that gets everyone to the right place.",
       "displayOrder": 10
@@ -149,7 +138,7 @@
       "id": "019fd218-6b41-74ab-8ebd-a379667bf19d",
       "title": "UPCSG General Assembly",
       "description": "The UP Cebu Student Government (UPCSG or UPC USC) general assembly serves as the supreme deliberative gathering of the student body, uniting students to review council accomplishments, debate pressing academic and national policies, and vote on progressive student-led resolutions and welfare initiatives.",
-      "startDateTime": "2026-08-17T05:00:00Z",
+      "startDateTime": "2026-08-18T05:00:00Z",
       "endDateTime": null,
       "location": "Peformance Arts Hall",
       "posterUrl": "offline-media/c4ee45ee7d5b3be5.webp"

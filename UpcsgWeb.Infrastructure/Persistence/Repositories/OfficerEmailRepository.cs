@@ -11,10 +11,6 @@ public class OfficerEmailRepository(UpcsgDbContext db)
         string normalisedEmail, CancellationToken ct = default) =>
         await Query.FirstOrDefaultAsync(o => o.Email == normalisedEmail, ct);
 
-    /// <summary>
-    /// AnyAsync rather than loading the row: this runs on every sign-in and only the
-    /// yes/no matters.
-    /// </summary>
     public async Task<bool> IsOfficerAsync(string normalisedEmail, CancellationToken ct = default) =>
         await Set.AsNoTracking().AnyAsync(o => o.Email == normalisedEmail, ct);
 

@@ -1,4 +1,4 @@
-﻿@page "/admin/members"
+@page "/admin/members"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -28,8 +28,6 @@
     }
     else
     {
-        @* Grouping stays: Faculty and ExeCom are different kinds of people, not
-           two values of one column. Sorting applies inside each group. *@
         <MudTable Items="_members"
                   T="MemberDto"
                   Hover="true"
@@ -56,7 +54,6 @@
                               Class="upcsg-datatable__search mt-0" />
             </ToolBarContent>
             <HeaderContent>
-                @* Display order is the running order of the public page, so it leads. *@
                 <MudTh Class="upcsg-num">
                     <MudTableSortLabel T="MemberDto" SortBy="@(m => m.DisplayOrder)" InitialDirection="SortDirection.Ascending">Order</MudTableSortLabel>
                 </MudTh>
@@ -132,9 +129,6 @@
         }
     }
 
-    // Editing lives at /admin/members/{id}: a person carries a portrait, a quote and a
-    // bio, which is more than a dialog can hold without becoming a scroll trap. Deleting
-    // lives there too, with the whole record in view.
     private void OpenMember(MemberDto? item)
     {
         if (item is not null)

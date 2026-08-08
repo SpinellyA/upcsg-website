@@ -3,7 +3,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Application.Features.Orders.SubmitReceipt;
 
-/// <summary>Guilder attaches GCash proof, moving their order into the officers' queue.</summary>
 public record SubmitReceiptCommand(
     Guid OrderId,
     Guid CallerId,

@@ -1,14 +1,12 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace UpcsgWeb.Infrastructure.Migrations
 {
-    /// <inheritdoc />
     public partial class AddHeartbeat : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -30,7 +28,6 @@ namespace UpcsgWeb.Infrastructure.Migrations
                 values: new object[] { new Guid("11111111-2222-4333-8444-555555555555"), new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 0L });
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

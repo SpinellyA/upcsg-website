@@ -180,7 +180,6 @@
 
         try
         {
-            // Absolute quantity; zero removes the line.
             _cart = await CartService.SetQuantityAsync(line.MerchItemId, line.Variant, quantity);
         }
         catch (Exception ex)
@@ -201,9 +200,6 @@
         {
             var order = await CartService.CheckoutAsync(_note);
 
-            // Straight to the receipt step — an order sitting in AwaitingPayment is
-            // invisible to officers, so leaving the guilder on the cart page would
-            // strand it there.
             Navigation.NavigateTo($"orders/{order.Id}");
         }
         catch (Exception ex)

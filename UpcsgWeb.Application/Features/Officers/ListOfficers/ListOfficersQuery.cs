@@ -22,10 +22,6 @@ public class ListOfficersQueryHandler(IApplicationDbContext context)
                 Note = o.Note,
                 AddedAt = o.AddedAt,
 
-                // Whether anyone has actually signed in with this address yet. An
-                // allowlisted address that has never appeared is the normal state right
-                // after a handover, and it is worth showing so a typo is visible before
-                // someone finds out the hard way.
                 HasSignedIn = context.Users.Any(u => u.Email.ToLower() == o.Email),
             })
             .ToListAsync(cancellationToken);

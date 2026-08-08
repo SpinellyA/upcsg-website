@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>The officer queue: everything not yet received or cancelled.</summary>
 public class ListOpenOrdersEndpoint(ISender sender) : EndpointWithoutRequest<List<OrderDto>>
 {
     public override void Configure()

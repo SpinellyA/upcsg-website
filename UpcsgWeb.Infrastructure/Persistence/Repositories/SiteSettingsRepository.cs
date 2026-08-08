@@ -15,8 +15,6 @@ public class SiteSettingsRepository(UpcsgDbContext db)
             return settings;
         }
 
-        // First run: materialise the row immediately rather than staging it, so a caller
-        // that only reads settings still gets a persisted aggregate back.
         settings = SiteSettings.Create();
         Add(settings);
         await Db.SaveChangesAsync(ct);

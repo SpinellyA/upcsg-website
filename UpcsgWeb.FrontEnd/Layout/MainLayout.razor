@@ -1,14 +1,10 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @using UpcsgWeb.Shared.Contracts
 @inject UpcsgAuthenticationStateProvider AuthState
 @inject NavigationManager Navigation
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="true" />
 <MudPopoverProvider />
-@* FullWidth by default: without it a dialog shrinks to fit its content, so the
-   paste-a-link box came out 417px with a 367px field to hold a URL, while the
-   message boxes next to it were 600. Set here rather than at each call site so
-   every dialog in the app agrees. *@
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
 <MudSnackbarProvider />
 
@@ -40,25 +36,13 @@
                         <NavLink class="upcsg-navlink" href="admin">Admin</NavLink>
                     </AuthorizeView>
 
-                    @* Orders and Sign out live in here now rather than sitting loose in
-                       the bar: they're about the person signed in, so they belong behind
-                       the thing that represents them.
-
-                       The card hangs off the avatar's right edge — anchoring at the
-                       avatar's top-right and growing from the card's top-left. *@
                     <MudMenu AnchorOrigin="Origin.TopRight"
                              TransformOrigin="Origin.TopLeft"
                              PopoverClass="upcsg-usermenu"
                              ListClass="pa-0"
                              AriaLabel="Your account"
                              Class="ml-2">
-                        @* Custom activator content is not wired for you — MudBlazor only
-                           auto-wires its own default button — so the avatar has to call
-                           the menu context itself. Without this the wrapper's keyboard
-                           handler works and clicking does nothing at all.
 
-                           Named context so MudMenu's own doesn't shadow the AuthorizeView
-                           one this markup needs. *@
                         <ActivatorContent Context="menu">
                             <MudAvatar Class="upcsg-useravatar" Size="Size.Medium"
                                        @onclick="@menu.ToggleAsync">
@@ -131,7 +115,6 @@
     </MudDrawer>
 
     <MudMainContent Class="upcsg-main">
-        @* Pages wrap their own content in .upcsg-page; anything outside it can run full-bleed. *@
         @Body
 
         <div class="upcsg-container" style="padding-inline: 1.5rem;">
@@ -207,8 +190,6 @@
             ? "Account"
             : name.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
 
-    // UPCSG brandbook (2026-2027, "Starry Night" cosmic-tech theme) — light mode kept close to the
-    // dark palette on purpose, the brand doesn't define a light variant so we lighten the surfaces only.
     private readonly PaletteLight _lightPalette = new()
     {
         Black = "#16113A",

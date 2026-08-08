@@ -1,9 +1,5 @@
 @using UpcsgWeb.FrontEnd.Services
 
-@* One image, uploaded rather than linked. PhotoStrip covers the many-photo case;
-   this is its counterpart for records that carry exactly one — an event poster,
-   a portrait, a hall-of-fame shot. *@
-
 <div class="upcsg-posterfield">
     @if (!string.IsNullOrWhiteSpace(Url))
     {
@@ -37,8 +33,6 @@
         <p class="upcsg-photostrip__status">@_status</p>
     }
 
-    @* Same escape hatch as the strip: something already hosted elsewhere shouldn't
-       have to be downloaded and re-uploaded just to be referenced. *@
     <MudLink Component="button" Class="upcsg-photostrip__link" @onclick="PasteLinkAsync">
         or paste a link
     </MudLink>
@@ -48,7 +42,6 @@
     [Parameter] public string? Url { get; set; }
     [Parameter] public EventCallback<string?> UrlChanged { get; set; }
 
-    /// <summary>Storage folder: merch, events, members, achievements.</summary>
     [Parameter, EditorRequired] public string Folder { get; set; } = "events";
 
     [Parameter] public string Alt { get; set; } = "Uploaded image";
@@ -71,7 +64,7 @@
 
             if (result is null)
             {
-                return; // Picker cancelled.
+                return;
             }
 
             if (result.Error is not null)

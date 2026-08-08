@@ -11,7 +11,6 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.ToTable("Users");
         builder.HasKey(u => u.Id);
 
-        // Create assigns the id, so the store must never substitute one.
         builder.Property(u => u.Id).ValueGeneratedNever();
 
         builder.Property(u => u.GoogleSubject).HasMaxLength(100).IsRequired();
@@ -20,7 +19,6 @@ public class AppUserConfiguration : IEntityTypeConfiguration<AppUser>
         builder.Property(u => u.PictureUrl).HasMaxLength(1000);
         builder.Property(u => u.Role).HasMaxLength(50).IsRequired();
 
-        // The database refuses duplicates even if two sign-ins race each other.
         builder.HasIndex(u => u.GoogleSubject).IsUnique();
         builder.HasIndex(u => u.Email);
 

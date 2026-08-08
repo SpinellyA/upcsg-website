@@ -12,7 +12,6 @@ public class MerchVariantConfiguration : IEntityTypeConfiguration<MerchVariant>
         builder.ToTable("MerchVariants");
         builder.HasKey(v => v.Id);
 
-        // Create assigns the id, so the store must never substitute one.
         builder.Property(v => v.Id).ValueGeneratedNever();
 
         builder.Property(v => v.Name).HasMaxLength(120).IsRequired();
@@ -39,9 +38,6 @@ public class MerchVariantConfiguration : IEntityTypeConfiguration<MerchVariant>
 
         builder.Ignore(v => v.PhotoUrls);
 
-        // Cart and order lines match variants by name, so two variants of one item sharing
-        // a name would make those lines ambiguous. The aggregate rejects it; this makes the
-        // database refuse it too.
         builder.HasIndex(v => new { v.MerchItemId, v.Name }).IsUnique();
 
         builder.HasIndex(v => new { v.MerchItemId, v.DisplayOrder });

@@ -3,10 +3,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
-/// <summary>
-/// Officer-side writes for site content. Grouped into one client rather than four,
-/// because the CMS is a single screen family and this keeps the DI surface small.
-/// </summary>
 public interface IAdminContentService
 {
     Task<List<MerchItemDto>> GetMerchAsync();
@@ -32,17 +28,11 @@ public interface IAdminContentService
     Task<OfficerEmailDto> AddOfficerAsync(AddOfficerRequest request);
     Task RemoveOfficerAsync(Guid id);
 
-    /// <summary>
-    /// Every public record in one document, as raw JSON so it can be written to a file
-    /// byte for byte. Deserialising and re-serialising would risk the committed snapshot
-    /// differing from what the API actually serves.
-    /// </summary>
     Task<string> GetSnapshotJsonAsync();
 }
 
 public class AdminContentService(HttpClient http, ApiOptions options) : IAdminContentService
 {
-    // --- Merch ----------------------------------------------------------------------
 
     public async Task<List<MerchItemDto>> GetMerchAsync()
     {
@@ -55,8 +45,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
 
     public Task DeleteMerchAsync(Guid id) => DeleteAsync($"api/merch/{id}");
 
-    // --- Events ---------------------------------------------------------------------
-
     public async Task<List<EventDto>> GetEventsAsync(int year, int month)
     {
         EnsureConfigured();
@@ -67,8 +55,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
         SaveAsync(item, "api/events", item.Id);
 
     public Task DeleteEventAsync(Guid id) => DeleteAsync($"api/events/{id}");
-
-    // --- Members --------------------------------------------------------------------
 
     public async Task<List<MemberDto>> GetMembersAsync()
     {
@@ -81,8 +67,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
 
     public Task DeleteMemberAsync(Guid id) => DeleteAsync($"api/members/{id}");
 
-    // --- Achievements ---------------------------------------------------------------
-
     public async Task<List<AchievementDto>> GetAchievementsAsync()
     {
         EnsureConfigured();
@@ -93,8 +77,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
         SaveAsync(item, "api/achievements", item.Id);
 
     public Task DeleteAchievementAsync(Guid id) => DeleteAsync($"api/achievements/{id}");
-
-    // --- Settings -------------------------------------------------------------------
 
     public async Task<SiteSettingsDto> GetSettingsAsync()
     {
@@ -114,8 +96,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
 
         return await response.Content.ReadFromJsonAsync<SiteSettingsDto>(UpcsgJson.Options) ?? new SiteSettingsDto();
     }
-
-    // --- Officers -------------------------------------------------------------------
 
     public async Task<List<OfficerEmailDto>> GetOfficersAsync()
     {
@@ -139,8 +119,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
 
     public Task RemoveOfficerAsync(Guid id) => DeleteAsync($"api/admin/officers/{id}");
 
-    // --- Snapshot -------------------------------------------------------------------
-
     public async Task<string> GetSnapshotJsonAsync()
     {
         EnsureConfigured();
@@ -154,9 +132,6 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
         return await response.Content.ReadAsStringAsync();
     }
 
-    // --- Shared -------------------------------------------------------------------
-
-    /// <summary>An empty id means create; anything else updates in place.</summary>
     private async Task<T> SaveAsync<T>(T payload, string collectionUrl, Guid id)
     {
         EnsureConfigured();

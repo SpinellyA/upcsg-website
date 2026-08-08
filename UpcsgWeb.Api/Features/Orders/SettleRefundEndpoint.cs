@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>Records a refund that has already been sent, with its GCash reference.</summary>
 public class SettleRefundEndpoint(ISender sender) : Endpoint<SettleRefundRequest, OrderDto>
 {
     public override void Configure()

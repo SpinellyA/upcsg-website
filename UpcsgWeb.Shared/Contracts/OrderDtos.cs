@@ -1,6 +1,5 @@
 namespace UpcsgWeb.Shared.Contracts;
 
-/// <summary>Wire-level mirror of the domain's OrderStatus.</summary>
 public enum OrderStatusDto
 {
     AwaitingPayment,
@@ -11,7 +10,6 @@ public enum OrderStatusDto
     Cancelled,
 }
 
-/// <summary>Wire-level mirror of the domain's OrderLineStatus.</summary>
 public enum OrderLineStatusDto
 {
     ToFulfil,
@@ -30,7 +28,6 @@ public class OrderLineDto
 
     public OrderLineStatusDto Status { get; set; }
 
-    /// <summary>Why this line could not be filled. Shown to the guilder verbatim.</summary>
     public string? ShortfallReason { get; set; }
 
     public bool IsRefundDue => Status == OrderLineStatusDto.RefundDue;
@@ -41,23 +38,10 @@ public class OrderDto
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
 
-    /// <summary>
-    /// Who placed it. Populated only on the officer-facing queries — a guilder listing
-    /// their own orders already knows who they are, and shipping other people's names to
-    /// every client that asks would be handing out the membership roll.
-    /// </summary>
     public string? GuilderName { get; set; }
 
-    /// <summary>
-    /// Officer-facing only, same as <see cref="GuilderName"/>. Kept alongside the name
-    /// because two guilders can share one, and the email is what an officer chases them on.
-    /// </summary>
     public string? GuilderEmail { get; set; }
 
-    /// <summary>
-    /// The short form of <see cref="Id"/> for display. Computed rather than sent, so it
-    /// cannot drift from the id it names.
-    /// </summary>
     public string Reference => OrderReference.For(Id);
 
     public OrderStatusDto Status { get; set; }
@@ -71,16 +55,12 @@ public class OrderDto
     public string Currency { get; set; } = "PHP";
     public List<OrderLineDto> Lines { get; set; } = [];
 
-    /// <summary>What was actually handed over. Null until an officer confirms the receipt.</summary>
     public decimal? AmountPaid { get; set; }
 
-    /// <summary>Owed back for lines that could not be filled and have not been settled.</summary>
     public decimal RefundDue { get; set; }
 
-    /// <summary>What the guilder is actually receiving, after shortfalls.</summary>
     public decimal FulfilledTotal { get; set; }
 
-    /// <summary>GCash reference for money sent back. Null until it has been.</summary>
     public string? RefundReference { get; set; }
 
     public DateTimeOffset? RefundSettledAt { get; set; }
@@ -90,37 +70,26 @@ public class OrderDto
     public bool RefundHasBeenSettled => RefundReference is not null;
 }
 
-/// <summary>Officer records that a refund actually went out.</summary>
 public class SettleRefundRequest
 {
     public string Reference { get; set; } = string.Empty;
 }
 
-/// <summary>Officer fills a previously short line after a restock.</summary>
 public class RefulfilLineRequest
 {
     public Guid MerchItemId { get; set; }
     public string? Variant { get; set; }
 }
 
-/// <summary>What a bulk release actually did.</summary>
 public class ReleaseConfirmedDto
 {
     public int ReleasedCount { get; set; }
 
     public List<Guid> ReleasedOrderIds { get; set; } = [];
 
-    /// <summary>
-    /// Orders the domain refused, one line each. Reported rather than swallowed: an
-    /// officer who pressed "release all" needs to know which ones didn't move.
-    /// </summary>
     public List<string> Skipped { get; set; } = [];
 }
 
-/// <summary>
-/// What a guilder submits. Deliberately carries no price — the server snapshots the
-/// current one, so a client cannot name its own.
-/// </summary>
 public class PlaceOrderRequest
 {
     public string? Note { get; set; }
@@ -134,18 +103,11 @@ public class PlaceOrderLine
     public int Quantity { get; set; } = 1;
 }
 
-/// <summary>Officer-driven status move. The domain decides whether it's legal.</summary>
 public class ChangeOrderStatusRequest
 {
     public OrderStatusDto Status { get; set; }
 
-    /// <summary>Required when cancelling.</summary>
     public string? Reason { get; set; }
 
-    /// <summary>
-    /// Acknowledge even though stock is short, owing the difference back. Off by default:
-    /// creating a refund obligation must be a deliberate act, not what happens when a
-    /// field is left alone.
-    /// </summary>
     public bool AllowShortfall { get; set; }
 }

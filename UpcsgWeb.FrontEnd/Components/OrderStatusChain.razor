@@ -1,10 +1,5 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* Lifecycle chain for the detail view, on MudTimeline.
-
-   Only PlacedAt, Receipt.SubmittedAt and UpdatedAt exist on the DTO, so a timestamp is
-   shown only where one is genuinely known — inventing a time per stage would be worse
-   than leaving it blank. A full per-transition history needs an audit trail server-side. *@
 <MudTimeline TimelinePosition="TimelinePosition.Start"
              TimelineOrientation="TimelineOrientation.Vertical"
              Class="upcsg-chain">
@@ -37,8 +32,6 @@
             var reached = i <= CurrentIndex;
             var current = i == CurrentIndex;
 
-            @* Filled + coloured for stages already passed, hollow for stages still ahead —
-               so the dot alone tells you where the order sits. *@
             <MudTimelineItem Size="Size.Small" Elevation="0"
                              Color="@(reached ? Color.Success : Color.Default)"
                              Variant="@(reached ? Variant.Filled : Variant.Outlined)"
@@ -51,8 +44,6 @@
                         @when.ToLocalTime().ToString("MMM d, yyyy h:mm tt")
                     </MudText>
                 }
-                @* The "what to do next" line lives in the Actions card, next to the buttons
-                   that do it — repeating it here just says the same thing twice on one screen. *@
             </MudTimelineItem>
         }
     }
@@ -82,13 +73,11 @@
         _ => OrderStatusDisplay.Label(status),
     };
 
-    /// <summary>Returns a time only where the DTO actually records one.</summary>
     private DateTimeOffset? TimeFor(OrderStatusDto step) => step switch
     {
         OrderStatusDto.AwaitingPayment => Order.PlacedAt,
         OrderStatusDto.Pending => Order.Receipt?.SubmittedAt,
 
-        // The latest transition is the only other timestamp we hold.
         _ when step == Order.Status => Order.UpdatedAt,
         _ => null,
     };

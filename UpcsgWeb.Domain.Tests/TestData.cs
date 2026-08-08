@@ -8,19 +8,6 @@ internal static class TestData
 {
     public static readonly Guid UserId = Guid.CreateVersion7();
 
-    // There used to be an AssignId helper here that reflected over Entity.Id to fake a
-    // database-assigned key, because Cart.AddItem and Order.AddLine both reject an item
-    // with no id. Create assigns the id now, so the reflection is gone and these builders
-    // produce objects that are already valid to reference.
-
-    /// <summary>
-    /// All three sizes at the same price, so tests that don't care about variant pricing
-    /// keep reading the way they did. <see cref="HoodieWithPricedSizes"/> covers the case
-    /// where they differ.
-    ///
-    /// Stocked generously by default so tests about the lifecycle aren't accidentally
-    /// testing stock. Pass a smaller number to exercise running out.
-    /// </summary>
     public static MerchItem Hoodie(decimal price = 750m, bool inStock = true, int stock = 100)
     {
         var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover", Money.Of(price));
@@ -39,7 +26,6 @@ internal static class TestData
         return item;
     }
 
-    /// <summary>Sizes that cost different amounts — the case PriceFor has to get right.</summary>
     public static MerchItem HoodieWithPricedSizes()
     {
         var item = MerchItem.Create("Cosmic Hoodie", "Midnight indigo pullover", Money.Of(750m));
@@ -64,7 +50,6 @@ internal static class TestData
     public static IReadOnlyDictionary<Guid, MerchItem> Catalog(params MerchItem[] items) =>
         items.ToDictionary(i => i.Id);
 
-    /// <summary>An order sitting in the officers' queue, receipt already submitted.</summary>
     public static Order PendingOrder(out MerchItem item)
     {
         item = Hoodie();

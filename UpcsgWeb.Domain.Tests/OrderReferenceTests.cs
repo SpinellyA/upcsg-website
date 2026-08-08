@@ -3,20 +3,10 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Domain.Tests;
 
-/// <summary>
-/// The reference is what officers and guilders actually say to each other, so the
-/// properties that matter are readability and telling two orders apart — not anything
-/// the compiler can check.
-/// </summary>
 public class OrderReferenceTests
 {
-    /// <summary>Crockford base32 minus I, L, O and U, in two groups of four.</summary>
     private static readonly Regex Shape = new("^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$");
 
-    /// <summary>
-    /// Ids that share a leading "0198c4e2-6b1f-7", which is what Guid.CreateVersion7
-    /// produces for orders placed in the same millisecond — a merch drop opening.
-    /// </summary>
     private static Guid ClusteredId(int n) =>
         Guid.Parse($"0198c4e2-6b1f-7000-8000-{n:x12}");
 
@@ -29,8 +19,6 @@ public class OrderReferenceTests
 
             Assert.Matches(Shape, reference);
 
-            // The excluded letters are the whole point: someone reading a reference off a
-            // phone screen at a merch table must not have to guess between O and 0.
             Assert.DoesNotContain('I', reference);
             Assert.DoesNotContain('L', reference);
             Assert.DoesNotContain('O', reference);
@@ -45,17 +33,9 @@ public class OrderReferenceTests
 
         Assert.Equal(OrderReference.For(id), OrderReference.For(id));
 
-        // Not string.GetHashCode, which is randomised per process — a reference printed on
-        // a claim slip has to still match after the API restarts.
         Assert.Equal("#" + OrderReference.For(id), OrderReference.Display(id));
     }
 
-    /// <summary>
-    /// The regression this exists for: an earlier design would have sliced the reference
-    /// out of the id's leading bytes, which for time-ordered v7 ids gives every order from
-    /// the same afternoon a nearly identical code — precisely when officers most need to
-    /// tell them apart.
-    /// </summary>
     [Fact]
     public void Spreads_ids_that_share_a_timestamp_prefix()
     {
@@ -65,8 +45,6 @@ public class OrderReferenceTests
 
         Assert.Equal(references.Count, references.Distinct().Count());
 
-        // Every character position has to carry information. If the reference were derived
-        // from the shared prefix, the leading group would be constant across all of them.
         for (var position = 0; position < 4; position++)
         {
             var distinct = references.Select(r => r[position]).Distinct().Count();

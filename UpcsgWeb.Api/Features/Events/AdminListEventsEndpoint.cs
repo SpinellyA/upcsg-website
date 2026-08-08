@@ -6,10 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Events;
 
-/// <summary>
-/// Month browsing for the CMS, so officers can edit past and future months — not just
-/// whichever one the public page happens to be pinned to.
-/// </summary>
 public class AdminListEventsEndpoint(IEventRepository events) : EndpointWithoutRequest<List<EventDto>>
 {
     public override void Configure()

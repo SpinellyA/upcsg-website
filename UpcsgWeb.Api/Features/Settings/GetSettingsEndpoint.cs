@@ -4,7 +4,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Settings;
 
-/// <summary>Public: the events page has to know which month to render.</summary>
 public class GetSettingsEndpoint(ISiteSettingsRepository settings)
     : EndpointWithoutRequest<SiteSettingsDto>
 {

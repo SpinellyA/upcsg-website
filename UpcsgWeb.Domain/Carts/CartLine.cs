@@ -2,24 +2,12 @@ using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.Carts;
 
-/// <summary>
-/// A line in a cart. Note what it does NOT hold: a price.
-///
-/// A cart is a shopping intention, not a commitment, so it must always reflect the
-/// current price. Snapshotting happens exactly once, at checkout, when the guilder
-/// actually commits. Storing a price here would let a stale cart lock in an old one.
-///
-/// An Entity, not an AggregateRoot: it is only ever reached through its Cart, which is
-/// why no repository can load one on its own.
-/// </summary>
 public class CartLine : Entity
 {
-    private CartLine() { } // EF
+    private CartLine() { }
 
     internal CartLine(Guid merchItemId, string? variant, int quantity)
     {
-        // Assigned here, not by the database: a line must be identifiable inside its
-        // cart before anything is saved, or removing an unsaved one cannot find it.
         Id = Guid.CreateVersion7();
         MerchItemId = merchItemId;
         Variant = variant;

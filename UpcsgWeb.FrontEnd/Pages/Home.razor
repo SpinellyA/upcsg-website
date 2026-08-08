@@ -9,11 +9,6 @@
 
 <PageTitle>UPCSG</PageTitle>
 
-@* The hero is untouched — it was the one part that landed. Everything below it used to
-   be six sections of the same shape (kicker, title, button, tinted band), which is what
-   made the page read as flat: no change of rhythm, no imagery, and two grey boxes
-   labelled "placeholder". *@
-
 <section class="upcsg-hero" @ref="_hero">
     <div class="upcsg-flare upcsg-hero__flare--orchid"></div>
     <img class="upcsg-hero__burst" src="img/starburst.png" alt="" aria-hidden="true" />
@@ -49,13 +44,10 @@
     </a>
 </section>
 
-@* A ticker directly under the hero: the first thing past the fold now moves, which is
-   what stops the page dying at the fold. *@
 <Marquee Items="@Ticker" DurationSeconds="46" Class="upcsg-marquee--hero" />
 
 <div class="upcsg-page upcsg-page--after-hero">
 
-    @* ---------- Events: poster cards, staggered in ---------- *@
     <section id="explore" class="upcsg-section">
         <SectionHeading Kicker="@_month.ToString("MMMM yyyy")"
                         Title="What's on this month">
@@ -90,7 +82,6 @@
             <div class="upcsg-cardgrid upcsg-cardgrid--3">
                 @foreach (var (evt, i) in _events.Take(3).Select((e, i) => (e, i)))
                 {
-                    @* 80ms apart: the row arrives as one gesture rather than a flash. *@
                     <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 80)">
                         <EventCard Event="evt" />
                     </Reveal>
@@ -99,7 +90,6 @@
         }
     </section>
 
-    @* ---------- Officers: real faces, not a count ---------- *@
     <section class="upcsg-section upcsg-feature">
         <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__body">
             <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Know your officers</p>
@@ -110,7 +100,6 @@
                 committees, and keep the guild's programs moving.
             </p>
 
-            @* Drag it sideways; pick a face and the plate opposite becomes that person. *@
             <FacePile Members="_members" Selected="_selected" SelectedChanged="SelectOfficer" />
 
             <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-6" Href="about">
@@ -119,13 +108,8 @@
         </Reveal>
 
         <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual" Delay="120">
-            @* The lead officer's plate, large. Replaces a div that literally read
-               "ExeCom photo — placeholder". *@
             @if (_selected is not null)
             {
-                @* Keyed on the name so Blazor replaces the plate rather than patching it.
-                   Without this the <img> keeps its old src while the new one decodes and
-                   the previous officer lingers under the new caption. *@
                 <CosmicImage @key="_selected.Name"
                              Src="@_selected.PhotoUrl"
                              Alt="@_selected.Name"
@@ -139,11 +123,10 @@
                 </CosmicImage>
                 <MudText>@_selected.Name</MudText>
             }
-            
+
         </Reveal>
     </section>
 
-    @* ---------- Merch: the real product photos, finally ---------- *@
     <section class="upcsg-section upcsg-band">
         <SectionHeading Kicker="Guild store" Title="Wear the crest">
             <Action>
@@ -175,7 +158,6 @@
         }
     </section>
 
-    @* ---------- Hall of fame: the win itself, not a tally ---------- *@
     @if (_latestAchievement is not null)
     {
         <section class="upcsg-section upcsg-feature upcsg-feature--reverse">
@@ -191,8 +173,6 @@
                 <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Hall of fame</p>
                 <h2 class="upcsg-title-xl">@_latestAchievement.Title</h2>
 
-                @* First paragraph only. These entries run to several hundred words, and
-                   the whole thing here would bury the sections either side of it. *@
                 <p class="upcsg-lede">@FirstParagraph(_latestAchievement.Description)</p>
 
                 <div class="upcsg-statrow">
@@ -209,13 +189,9 @@
         </section>
     }
 
-    @* ---------- Closing CTA ---------- *@
     <section class="upcsg-section upcsg-closing">
         <div class="upcsg-flare upcsg-closing__flare"></div>
 
-        @* Not "Join the guild": every CS student at UP Cebu is a guilder automatically.
-           Inviting them to join something they are already in is both wrong and a wasted
-           call to action — what is actually optional is how involved they get. *@
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
             <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Already one of us</p>
             <h2 class="upcsg-title-xl">You're a guilder from day one</h2>
@@ -247,29 +223,18 @@
     private AchievementDto? _latestAchievement;
     private MemberDto? _lead;
 
-    /// <summary>
-    /// Whose plate the officers section is showing. Starts at _lead and follows whatever
-    /// the visitor picks out of the strip.
-    /// </summary>
     private MemberDto? _selected;
 
     private int _execCount;
     private bool _loading = true;
 
-    private void SelectOfficer(MemberDto member) { 
+    private void SelectOfficer(MemberDto member) {
         _selected = member;
         StateHasChanged();
     }
 
-    /// <summary>
-    /// The month being published, so the heading matches the events under it. Reading
-    /// DateTime.Now here put an August heading over July's events.
-    /// </summary>
     private DateTime _month = DateTime.Now;
 
-    // Only things the site itself evidences. An earlier version of this list carried a
-    // founding year that I had no source for — an invented fact on the org's own front
-    // page is worse than a shorter ticker.
     private static readonly string[] Ticker =
     [
         "Academic support", "Competitive programming", "Industry nights", "General assemblies",
@@ -293,14 +258,11 @@
         _members = await MemberService.GetMembersAsync();
         _execCount = _members.Count(m => m.Category == MemberCategory.ExeCom);
 
-        // DisplayOrder is the officers' own ranking, so the lowest is the most senior.
         _lead = _members
             .Where(m => m.Category == MemberCategory.ExeCom)
             .OrderBy(m => m.DisplayOrder)
             .FirstOrDefault();
 
-        // The section opens on the most senior officer, as it always did; the strip only
-        // changes who it moves on to.
         _selected = _lead;
 
         _loading = false;
@@ -310,8 +272,6 @@
     {
         if (firstRender)
         {
-            // Publishes scroll depth to CSS so the hero can drift and fade as the page
-            // moves under it.
             await Motion.TrackScrollAsync(_hero);
         }
     }

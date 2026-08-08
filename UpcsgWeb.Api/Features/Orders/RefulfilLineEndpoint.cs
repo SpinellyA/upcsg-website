@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>Fills a line that previously fell short, now that stock exists again.</summary>
 public class RefulfilLineEndpoint(ISender sender) : Endpoint<RefulfilLineRequest, OrderDto>
 {
     public override void Configure()

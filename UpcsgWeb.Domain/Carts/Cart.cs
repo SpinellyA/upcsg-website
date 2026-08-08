@@ -3,18 +3,13 @@ using UpcsgWeb.Domain.Merch;
 
 namespace UpcsgWeb.Domain.Carts;
 
-/// <summary>
-/// One open cart per guilder. Root of its own aggregate; it references merch by id and
-/// knows nothing about orders — checkout is what bridges the two.
-/// </summary>
 public class Cart : AggregateRoot
 {
-    /// <summary>Guards against a fat-fingered quantity emptying the merch table.</summary>
     public const int MaxQuantityPerLine = 25;
 
     private readonly List<CartLine> _lines = [];
 
-    private Cart() { } // EF
+    private Cart() { }
 
     private Cart(Guid userId)
     {
@@ -39,11 +34,6 @@ public class Cart : AggregateRoot
 
     public static Cart Create(Guid userId) => new(userId);
 
-    /// <summary>
-    /// Adds to the cart, or tops up an existing line for the same item and variant.
-    /// Takes the MerchItem so stock and variant validity are checked against the real
-    /// thing rather than trusted from the request.
-    /// </summary>
     public void AddItem(MerchItem item, string? variant, int quantity)
     {
         if (quantity <= 0)
@@ -69,9 +59,6 @@ public class Cart : AggregateRoot
         var existing = Find(item.Id, variant);
         var newQuantity = (existing?.Quantity ?? 0) + quantity;
 
-        // Checked but NOT reserved. Reserving here would let an abandoned cart sit on the
-        // last hoodie; the real deduction happens when payment is acknowledged. This just
-        // narrows overselling to orders paid inside the same window.
         if (!item.CanFulfil(variant, newQuantity))
         {
             var left = item.StockFor(variant);
@@ -97,7 +84,6 @@ public class Cart : AggregateRoot
         Touch();
     }
 
-    /// <summary>Sets an absolute quantity. Zero removes the line.</summary>
     public void SetQuantity(Guid merchItemId, string? variant, int quantity)
     {
         if (quantity < 0)
@@ -134,7 +120,6 @@ public class Cart : AggregateRoot
         Touch();
     }
 
-    /// <summary>Emptied by checkout once the order has taken ownership of the lines.</summary>
     public void Clear()
     {
         _lines.Clear();

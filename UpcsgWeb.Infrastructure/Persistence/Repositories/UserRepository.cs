@@ -20,8 +20,6 @@ public class UserRepository(UpcsgDbContext db) : Repository<AppUser>(db), IUserR
 
         if (distinct.Length == 0)
         {
-            // EF would happily translate this to "WHERE id IN ()", but a round trip that
-            // cannot match anything is still a round trip on a free-tier database.
             return new Dictionary<Guid, AppUser>();
         }
 

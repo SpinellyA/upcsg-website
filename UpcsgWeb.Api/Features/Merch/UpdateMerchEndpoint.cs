@@ -28,7 +28,6 @@ public class UpdateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
 
         try
         {
-            // Repricing is safe: existing order lines hold their own snapshots.
             MerchWrites.Apply(item, req);
         }
         catch (DomainException ex)

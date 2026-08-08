@@ -9,10 +9,6 @@
 
 <PageTitle>Officers - UPCSG Admin</PageTitle>
 
-@* Structure deliberately mirrors AdminEvents/AdminMerch/AdminOrders: page shell, section
-   head, AdminNav, then one upcsg-datatable. This page used to carry its own vocabulary —
-   upcsg-admin__head, upcsg-ink-panel, upcsg-ink-table, upcsg-mono — none of which was ever
-   defined in brand.css, so it rendered as unstyled markup rather than as a variant. *@
 <div class="upcsg-page">
     <div class="upcsg-section-head">
         <div>
@@ -29,8 +25,6 @@
         thing that decides them.
     </p>
 
-    @* Adding is two fields, so it stays on the page rather than becoming its own route the
-       way merch and events do — there is nothing here a form page would give room to. *@
     <section class="upcsg-section upcsg-band mt-4">
         <MudForm @ref="_form">
             <MudGrid Spacing="2" Class="align-center">
@@ -107,8 +101,6 @@
             <MudTd DataLabel="Who">@(context.Note ?? "—")</MudTd>
             <MudTd DataLabel="Added">@context.AddedAt.ToLocalTime().ToString("MMM d, yyyy")</MudTd>
             <MudTd DataLabel="Status">
-                @* An allowlisted address nobody has signed in with is normal right after a
-                   handover, and a useful signal that it might be a typo. *@
                 @if (context.HasSignedIn)
                 {
                     <span class="upcsg-statuspill upcsg-statuspill--received">Active</span>
@@ -201,7 +193,6 @@
         !string.IsNullOrWhiteSpace(_myEmail)
         && string.Equals(email, _myEmail, StringComparison.OrdinalIgnoreCase);
 
-    // Mirrors the domain's shape check so a typo is caught before the round trip.
     private static string? ValidateEmail(string value) =>
         string.IsNullOrWhiteSpace(value) || System.Text.RegularExpressions.Regex.IsMatch(
             value.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -233,8 +224,6 @@
 
     private async Task RemoveAsync(OfficerEmailDto officer)
     {
-        // Removing yourself is legitimate during a handover, but it is the one action here
-        // that logs the person doing it out of the CMS, so it gets its own warning.
         var warning = IsMe(officer.Email)
             ? "This is your own address. You will lose access to these admin pages the next "
               + "time you sign in. Continue?"

@@ -29,7 +29,6 @@ else
 {
     <article class="upcsg-article">
 
-        @* ---------- Masthead ---------- *@
         <header class="upcsg-article__head">
             <div class="upcsg-article__headinner">
                 <p class="upcsg-eyebrow">
@@ -58,7 +57,6 @@ else
             </div>
         </header>
 
-        @* ---------- Lead image ---------- *@
         <Reveal Variant="Reveal.RevealMotion.Scale">
             <figure class="upcsg-article__figure">
                 <CosmicImage Src="@_entry.ImageUrl"
@@ -75,7 +73,6 @@ else
             </figure>
         </Reveal>
 
-        @* ---------- Body ---------- *@
         <div class="upcsg-article__body">
             @if (Body.Count == 0)
             {
@@ -139,16 +136,8 @@ else
 
     private string Standfirst => Prose.Standfirst(_entry?.Description);
 
-    /// <summary>
-    /// Body is everything after the standfirst — the opening paragraph is already shown
-    /// large in the masthead, and repeating it reads like a mistake.
-    /// </summary>
     private IReadOnlyList<string> Body => [.. Prose.Rest(_entry?.Description)];
 
-    /// <summary>
-    /// 200 wpm, rounded up, floored at 1. Covers the whole entry including the standfirst,
-    /// since that's what the reader actually reads.
-    /// </summary>
     private int ReadingTime
     {
         get

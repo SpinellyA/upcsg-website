@@ -2,15 +2,10 @@ using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.Users;
 
-/// <summary>
-/// A signed-in guilder. Root of its own aggregate — orders point at it by id rather
-/// than hanging off it, so loading a user never drags their order history along.
-/// </summary>
 public class AppUser : AggregateRoot
 {
-    private AppUser() { } // EF
+    private AppUser() { }
 
-    /// <summary>Google's stable subject id. Survives the user changing their email.</summary>
     public string GoogleSubject { get; private set; } = string.Empty;
 
     public string Email { get; private set; } = string.Empty;
@@ -43,8 +38,6 @@ public class AppUser : AggregateRoot
             Name = string.IsNullOrWhiteSpace(name) ? email : name,
             PictureUrl = pictureUrl,
 
-            // Everyone starts as a member. Promotion is a separate, deliberate act —
-            // see GrantAdmin. Signing in can never confer it.
             Role = GuildRoles.Member,
         };
 
@@ -52,7 +45,6 @@ public class AppUser : AggregateRoot
         return user;
     }
 
-    /// <summary>Refreshes profile fields on each sign-in. Never touches Role.</summary>
     public void RefreshProfile(string email, string name, string? pictureUrl)
     {
         Email = email;

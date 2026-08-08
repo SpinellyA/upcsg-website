@@ -6,19 +6,8 @@ using UpcsgWeb.FrontEnd.Services;
 
 namespace UpcsgWeb.Domain.Tests;
 
-/// <summary>
-/// Guards the client's dependency graph.
-///
-/// Regression cover for a startup hang: AuthTokenHandler used to depend on IAuthService,
-/// which depends on HttpClient, which is built *from* the handler. Because that cycle ran
-/// through a factory delegate, DI could not detect it — resolution simply recursed until
-/// the WebAssembly stack overflowed and the app froze at "100%" with no error in console.
-///
-/// A build succeeds either way, so only actually resolving the graph catches it.
-/// </summary>
 public class ServiceGraphTests
 {
-    /// <summary>Mirrors the registrations in Program.cs.</summary>
     private static ServiceProvider BuildProvider()
     {
         var services = new ServiceCollection();
@@ -38,12 +27,8 @@ public class ServiceGraphTests
             return new HttpClient(handler) { BaseAddress = new Uri("http://localhost:5180/") };
         });
 
-        // SnapshotService logs when no snapshot is committed.
         services.AddLogging();
 
-        // Its own HttpClient, based at the site rather than the API — mirroring Program.cs,
-        // where fetching the offline fallback through the API client would defeat the point
-        // of having a fallback.
         services.AddScoped<ISnapshotService>(sp => new SnapshotService(
             new HttpClient { BaseAddress = new Uri("http://localhost:5000/") },
             sp.GetRequiredService<ILogger<SnapshotService>>()));
@@ -57,8 +42,6 @@ public class ServiceGraphTests
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IAdminContentService, AdminContentService>();
 
-        // validateScopes/validateOnBuild surface graph problems eagerly rather than on
-        // first navigation, which is where the original hang happened.
         return services.BuildServiceProvider(new ServiceProviderOptions
         {
             ValidateScopes = true,
@@ -84,7 +67,6 @@ public class ServiceGraphTests
         using var provider = BuildProvider();
         using var scope = provider.CreateScope();
 
-        // The pair that used to deadlock the container.
         var auth = scope.ServiceProvider.GetRequiredService<IAuthService>();
         var http = scope.ServiceProvider.GetRequiredService<HttpClient>();
 
@@ -111,7 +93,6 @@ public class ServiceGraphTests
     }
 }
 
-/// <summary>Minimal IJSRuntime stand-in; these tests never invoke JS.</summary>
 internal static class Mock
 {
     public static IJSRuntime JsRuntime { get; } = new NoopJsRuntime();

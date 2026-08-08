@@ -15,8 +15,6 @@ public class SubmitReceiptCommandHandler(IUnitOfWork uow)
         var order = await uow.Orders.GetByIdAsync(command.OrderId, cancellationToken)
             ?? throw new NotFoundException("That order");
 
-        // Paying is the guilder's own act. Officers can move statuses but must not be
-        // able to fabricate a receipt on someone's behalf, so there is no admin bypass.
         if (order.UserId != command.CallerId)
         {
             throw new ForbiddenException("That order is not yours.");

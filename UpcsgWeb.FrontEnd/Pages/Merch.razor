@@ -12,10 +12,6 @@
     <div class="upcsg-banner__inner">
         <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guild store</p>
         <h1 class="upcsg-banner__title">Merch</h1>
-        @* This used to read "no checkout here, just message us". The site has had a cart,
-           a checkout and a GCash receipt step for a while, and the navbar carries a cart
-           icon — so the page was sending guilders to Facebook to buy something they could
-           already order two clicks away. *@
         <p class="upcsg-lede" style="margin-bottom: 0;">
             Rep the guild. Pick your size, order online, and pay with GCash &mdash; officers
             confirm each order and tell you when to claim it.
@@ -59,14 +55,12 @@
     }
     else
     {
-        @* ---------- Featured drop ---------- *@
         <section class="upcsg-section">
             <Reveal Variant="Reveal.RevealMotion.Scale">
                 <MerchCard Item="_featured" Variant="MerchCard.Density.Feature" />
             </Reveal>
         </section>
 
-        @* ---------- Catalog ---------- *@
         @if (_catalog.Count > 0)
         {
             <section class="upcsg-section">
@@ -85,10 +79,6 @@
         }
     }
 
-    @* ---------- How ordering works ----------
-       Rewritten to describe the flow the app actually implements. The previous version
-       walked guilders through DMing the org and paying the Treasurer in person, which is
-       not what any of these buttons do. *@
     <section class="upcsg-section upcsg-band">
         <SectionHeading Kicker="From cart to claim" Title="How ordering works" />
 
@@ -120,7 +110,6 @@
         </div>
     </section>
 
-    @* ---------- Closing CTA ---------- *@
     <section class="upcsg-section upcsg-closing">
         <div class="upcsg-flare upcsg-closing__flare"></div>
 
@@ -154,8 +143,6 @@
     {
         var merch = await MerchService.GetMerchAsync();
 
-        // The flagship drop leads the page; everything else fills the catalog. Once the
-        // CMS lands this is the spot to swap in an editor-controlled "featured" flag.
         _featured = merch.FirstOrDefault(m => m.InStock) ?? merch.FirstOrDefault();
         _catalog = [.. merch.Where(m => m.Id != _featured?.Id)];
 

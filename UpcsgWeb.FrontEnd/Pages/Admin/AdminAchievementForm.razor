@@ -43,8 +43,6 @@
             <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
         }
 
-        @* Laid out like the article it produces: the photo that heads the story, then
-           the story. *@
         <div class="upcsg-merchform mt-4">
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Photo</MudText>
@@ -73,8 +71,6 @@
                                  Label="Year" Variant="Variant.Outlined"
                                  Min="1900" Max="@(DateTime.Now.Year + 1)" Class="mb-4" />
 
-                @* Free text with suggestions: the public page derives its filter chips
-                   from whatever is stored here, so consistency matters more than choice. *@
                 <MudAutocomplete T="string" Value="_item.Category" ValueChanged="OnCategoryChanged"
                                  Label="Category"
                                  Variant="Variant.Outlined"
@@ -132,11 +128,6 @@
     private bool _dirty;
     private string? _error;
 
-    /// <summary>
-    /// True while the form is being populated. The numeric and autocomplete fields raise
-    /// their Changed callbacks when a bound value is first set, not only when someone
-    /// edits — without this, opening a record marks it dirty for no reason.
-    /// </summary>
     private bool _populating;
 
     private bool IsNew => Id is null;
@@ -167,7 +158,6 @@
                 }
                 else
                 {
-                    // Armed immediately before the controls first receive these values.
                     _populating = true;
                     _item = found;
                 }
@@ -224,8 +214,6 @@
             var saved = await Admin.SaveAchievementAsync(_item);
             Snackbar.Add("Saved.", Severity.Success);
 
-            // A new entry now has an id; land on its own URL so a reload doesn't create
-            // a second copy.
             if (IsNew)
             {
                 Navigation.NavigateTo($"admin/achievements/{saved.Id}", replace: true);

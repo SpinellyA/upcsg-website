@@ -7,13 +7,6 @@ namespace UpcsgWeb.Application.Features.Snapshot;
 
 public record GetSnapshotQuery : IQuery<ContentSnapshot>;
 
-/// <summary>
-/// Reads the whole public catalogue in one go.
-///
-/// Five queries rather than one join: these are unrelated aggregates, and joining them
-/// would multiply rows for no gain. The dataset is small — a guild's worth of officers,
-/// events and merch — so the simple thing is also the fast thing.
-/// </summary>
 public class GetSnapshotQueryHandler(IApplicationDbContext context, IUnitOfWork uow)
     : IQueryHandler<GetSnapshotQuery, ContentSnapshot>
 {
@@ -36,8 +29,6 @@ public class GetSnapshotQueryHandler(IApplicationDbContext context, IUnitOfWork 
             .OrderByDescending(a => a.Year)
             .ToListAsync(cancellationToken);
 
-        // Through the repository, which includes the variants. Without them every item
-        // would snapshot with no sizes and no prices anyone can actually pay.
         var merch = await uow.Merch.GetAllAsync(cancellationToken);
 
         var settings = await uow.SiteSettings.GetAsync(cancellationToken);

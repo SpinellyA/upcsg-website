@@ -1,7 +1,5 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* Progress trail for an order. Cancelled orders get a single terminal marker rather
-   than a half-lit trail, since they never continue. *@
 @if (Status == OrderStatusDto.Cancelled)
 {
     <div class="upcsg-trail upcsg-trail--cancelled">
@@ -41,6 +39,4 @@ else
 
     private int CurrentIndex => Array.IndexOf(Steps, Status);
 
-    // Labels come from OrderStatusDisplay so the member trail and the admin views can
-    // never call the same stage by different names.
 }

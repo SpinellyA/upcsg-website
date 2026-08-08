@@ -5,13 +5,6 @@ using UpcsgWeb.FrontEnd.Services;
 
 namespace UpcsgWeb.FrontEnd.Auth;
 
-/// <summary>
-/// Auth state derived from the session our API issued.
-///
-/// This is a UI convenience only. Claims here come from localStorage, which the user can
-/// edit — nothing on the client may be treated as a security boundary. Every privileged
-/// action must be re-authorised by the API against the JWT signature.
-/// </summary>
 public class UpcsgAuthenticationStateProvider(IAuthService auth) : AuthenticationStateProvider
 {
     private static readonly AuthenticationState Anonymous =
@@ -32,7 +25,6 @@ public class UpcsgAuthenticationStateProvider(IAuthService auth) : Authenticatio
         return new AuthenticationState(BuildPrincipal(session.User));
     }
 
-    /// <summary>Called after a successful sign-in so the UI updates immediately.</summary>
     public void NotifySignedIn(AppUserDto user)
     {
         CurrentUser = user;

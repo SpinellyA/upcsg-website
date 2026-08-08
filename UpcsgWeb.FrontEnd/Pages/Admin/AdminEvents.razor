@@ -15,8 +15,6 @@
             <p class="upcsg-kicker">Guild CMS</p>
             <h1 class="upcsg-title-xl">Events</h1>
         </div>
-        @* Carries the month being browsed, so a new event lands where the officer is
-           looking rather than in whatever month today falls in. *@
         <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
                    StartIcon="@Icons.Material.Filled.Add"
                    Href="@($"admin/events/new?year={_year}&month={_month}")">
@@ -26,7 +24,6 @@
 
     <AdminNav />
 
-    @* Events are stored per month, so the editor browses by month too. *@
     <div class="upcsg-monthnav mt-4">
         <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="() => ShiftMonthAsync(-1)" />
         <span class="upcsg-monthnav__label">@(new DateTime(_year, _month, 1).ToString("MMMM yyyy"))</span>
@@ -65,7 +62,6 @@
                               Class="upcsg-datatable__search mt-0" />
             </ToolBarContent>
             <HeaderContent>
-                @* Chronological by default: that's how a month is read. *@
                 <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.StartDateTime)" InitialDirection="SortDirection.Ascending">When</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.Title)">Title</MudTableSortLabel></MudTh>
                 <MudTh><MudTableSortLabel T="EventDto" SortBy="@(e => e.Location)">Location</MudTableSortLabel></MudTh>
@@ -113,7 +109,6 @@
             || (item.Description?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
-    /// <summary>Set when returning from an event's own page, which carries its month.</summary>
     [Parameter, SupplyParameterFromQuery] public int? Year { get; set; }
 
     [Parameter, SupplyParameterFromQuery] public int? Month { get; set; }
@@ -127,9 +122,6 @@
         }
         else
         {
-            // Open on the month the site is actually publishing, not on today's. An
-            // officer who pinned the calendar to July is working on July; landing them
-            // in August makes the setting look like it didn't take.
             var (year, month) = await Events.GetDisplayMonthAsync();
             _year = year;
             _month = month;
@@ -172,10 +164,6 @@
         await LoadAsync();
     }
 
-    // Editing lives at /admin/events/{id}, like merch: an event carries a poster, a
-    // description of real length and a time range, which is more than a dialog can hold
-    // without becoming a scroll trap. Deleting lives there too, with the whole record
-    // in view. The month travels in the URL so returning lands where the officer was.
     private void OpenEvent(EventDto? item)
     {
         if (item is not null)

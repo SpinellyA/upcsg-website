@@ -1,8 +1,5 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* The variant form: the same shape as the item form, minus the variant list — a variant
-   can't have variants of its own. *@
-
 <MudDialog>
     <DialogContent>
         <div class="upcsg-variantform">
@@ -63,6 +60,5 @@
 
     [Parameter, EditorRequired] public MerchVariantDto Model { get; set; } = default!;
 
-    /// <summary>Hides the stock field: a preorder has no count to keep.</summary>
     [Parameter] public bool IsPreorder { get; set; }
 }

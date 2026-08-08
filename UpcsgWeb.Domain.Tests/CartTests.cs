@@ -106,8 +106,6 @@ public class CartTests
     [Fact]
     public void CartHoldsNoPrices()
     {
-        // Carts price live; only checkout snapshots. CartLine having no price field is
-        // the guarantee, so assert the type surface rather than a value.
         var priceProperties = typeof(CartLine)
             .GetProperties()
             .Where(p => p.PropertyType == typeof(Money));
@@ -142,7 +140,6 @@ public class CheckoutServiceTests
 
         CheckoutService.Checkout(cart, Catalog(hoodie));
 
-        // Otherwise a double-submit would order the same goods twice.
         Assert.True(cart.IsEmpty);
     }
 
@@ -186,7 +183,6 @@ public class CheckoutServiceTests
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 1);
 
-        // Catalog no longer contains it.
         var ex = Assert.Throws<DomainException>(() => CheckoutService.Checkout(cart, Catalog()));
         Assert.Contains("no longer available", ex.Message);
     }
@@ -201,7 +197,6 @@ public class CheckoutServiceTests
 
         Assert.Throws<DomainException>(() => CheckoutService.Checkout(cart, Catalog(hoodie)));
 
-        // The guilder must not lose their cart because one item lapsed.
         Assert.False(cart.IsEmpty);
     }
 
@@ -240,7 +235,6 @@ public class CheckoutServiceTests
         Assert.True(cart.IsEmpty);
         Assert.NotNull(order.Receipt);
 
-        // Acknowledging is what moves stock, not checkout.
         Assert.Equal(stockBefore - 1, hoodie.StockFor("M"));
     }
 }

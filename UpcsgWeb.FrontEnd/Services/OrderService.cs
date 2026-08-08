@@ -9,7 +9,6 @@ public interface IOrderService
     Task<OrderDto?> GetAsync(Guid id);
     Task<OrderDto> SubmitReceiptAsync(Guid orderId, string screenshotUrl, string? reference);
 
-    // Officer actions
     Task<List<OrderDto>> GetQueueAsync(OrderStatusDto? status);
     Task<OrderDto> ChangeStatusAsync(Guid orderId, OrderStatusDto status, string? reason, bool allowShortfall = false);
     Task<OrderDto> RejectReceiptAsync(Guid orderId, string reason);
@@ -53,7 +52,6 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
     {
         EnsureConfigured();
 
-        // No status means "everything still open", which is the officer default.
         var url = status is null ? "api/orders" : $"api/orders?status={status}";
         return await http.GetFromJsonAsync<List<OrderDto>>(url, UpcsgJson.Options) ?? [];
     }
@@ -129,7 +127,6 @@ public class OrderService(HttpClient http, ApiOptions options) : IOrderService
     {
         if (!response.IsSuccessStatusCode)
         {
-            // 409 carries the domain's explanation of why the transition was refused.
             throw new ApiException(await CartService.DescribeAsync(response));
         }
 

@@ -18,7 +18,6 @@ public class UpdateEventEndpoint(IEventRepository events, IUnitOfWork uow)
 
     public override async Task HandleAsync(EventDto req, CancellationToken ct)
     {
-        // Route id wins over the body, so a mismatched payload can't retarget the write.
         var existing = await events.GetByIdAsync(Route<Guid>("id"), ct);
         if (existing is null)
         {

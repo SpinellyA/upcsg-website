@@ -12,8 +12,6 @@ public class EventRepository(UpcsgDbContext db) : Repository<GuildEvent>(db), IE
     public async Task<IReadOnlyList<GuildEvent>> GetForMonthAsync(
         int year, int month, CancellationToken ct = default)
     {
-        // Half-open range on a UTC boundary, so it uses the StartDateTime index rather
-        // than forcing a per-row date function.
         var start = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
         var end = start.AddMonths(1);
 

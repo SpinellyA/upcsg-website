@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>Releases every confirmed order in one go, for a busy merch handover.</summary>
 public class ReleaseConfirmedEndpoint(ISender sender) : EndpointWithoutRequest<ReleaseConfirmedDto>
 {
     public override void Configure()

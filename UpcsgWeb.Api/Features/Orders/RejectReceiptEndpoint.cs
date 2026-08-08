@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>Officer sends a receipt back so the guilder can resubmit.</summary>
 public class RejectReceiptEndpoint(ISender sender) : Endpoint<RejectReceiptRequest, OrderDto>
 {
     public override void Configure()

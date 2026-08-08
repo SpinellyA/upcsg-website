@@ -1,12 +1,5 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* One merch item, as a tile or as the leading drop. Shared by the home strip, the store
-   and the foot of the item page.
-
-   The home page used to draw a star glyph here regardless of what the item had, so the
-   hoodie's real photographs never appeared anywhere but its detail page. This shows the
-   actual product and only falls back when there genuinely is nothing. *@
-
 <a class="upcsg-merchcard upcsg-merchcard--@Variant.ToString().ToLowerInvariant() @(Item.InStock ? null : "upcsg-merchcard--out")"
    href="@($"merch/{Item.Id}")">
 
@@ -49,8 +42,6 @@
 
                 <span class="upcsg-merchcard__now">&#8369;@Item.PriceFrom.ToString("N2")</span>
 
-                @* Struck-through original only when a sale is actually running, so the
-                   discount is never implied by a stale percentage. *@
                 @if (Item.HasActiveSale && Item.ListPriceFrom > Item.PriceFrom)
                 {
                     <span class="upcsg-merchcard__was">&#8369;@Item.ListPriceFrom.ToString("N2")</span>
@@ -77,10 +68,8 @@
 @code {
     public enum Density
     {
-        /// <summary>A tile in the catalog grid.</summary>
         Card,
 
-        /// <summary>The leading drop: photo beside the copy, with a blurb.</summary>
         Feature,
     }
 
@@ -88,10 +77,6 @@
 
     [Parameter] public Density Variant { get; set; } = Density.Card;
 
-    /// <summary>
-    /// First photo is the listing shot by convention; ImageUrl is the older single-photo
-    /// field and still populated for some items.
-    /// </summary>
     private string? Photo =>
         Item.PhotoUrls.FirstOrDefault(u => !string.IsNullOrWhiteSpace(u)) ?? Item.ImageUrl;
 

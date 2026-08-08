@@ -1,22 +1,10 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* The full profile behind a roster card.
-
-   MudDialog rather than an inline expander: an expanding card reflows the grid, so every
-   other officer jumps down the page while you read one.
-
-   ContentClass strips MudBlazor's default padding so the portrait can run edge to edge.
-   Without it the plate sits in a 24px frame and reads as a picture pasted into a box
-   rather than as the head of the card. *@
-
 <MudDialog ContentClass="upcsg-mdlg__content" ActionsClass="upcsg-mdlg__actions">
     <DialogContent>
         <div class="upcsg-mdlg">
 
             <div class="upcsg-mdlg__head">
-                @* Keyed on the member so Blazor replaces the plate instead of patching
-                   it when paging: without the key the previous officer's colours linger
-                   on the new name for a frame. *@
                 <CosmicImage @key="Current.Id"
                              Src="@Current.PhotoUrl"
                              Alt="@Current.Name"
@@ -68,7 +56,6 @@
     </DialogContent>
 
     <DialogActions>
-        @* Paging only earns its place when there is somewhere to go. *@
         @if (Members.Count > 1)
         {
             <div class="upcsg-mdlg__nav">
@@ -99,7 +86,6 @@
 
     [Parameter, EditorRequired] public IReadOnlyList<MemberDto> Members { get; set; } = [];
 
-    /// <summary>Which officer to open on.</summary>
     [Parameter] public int Index { get; set; }
 
     private int _index;
@@ -109,13 +95,10 @@
     protected override void OnParametersSet() =>
         _index = Math.Clamp(Index, 0, Math.Max(0, Members.Count - 1));
 
-    // Wraps at both ends: reaching the last officer and being unable to continue reads
-    // as a broken button, and the roster is a ring, not a document.
     private void Previous() => _index = (_index - 1 + Members.Count) % Members.Count;
 
     private void Next() => _index = (_index + 1) % Members.Count;
 
-    /// <summary>First name of the neighbour, so the buttons say who is next, not "next".</summary>
     private string Neighbour(int offset)
     {
         var i = (_index + offset + Members.Count) % Members.Count;

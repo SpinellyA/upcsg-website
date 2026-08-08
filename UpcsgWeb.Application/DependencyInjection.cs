@@ -15,8 +15,6 @@ public static class ApplicationServiceCollectionExtensions
             cfg.RegisterServicesFromAssembly(assembly);
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 
-            // After validation, so it only ever runs against a response that exists. It
-            // wraps the handler, so the presigned URL is minted from the order as saved.
             cfg.AddOpenBehavior(typeof(ResolveReceiptUrlBehavior<,>));
         });
 

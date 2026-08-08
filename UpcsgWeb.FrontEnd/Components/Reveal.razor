@@ -2,12 +2,6 @@
 @inject MotionInterop Motion
 @implements IAsyncDisposable
 
-@* Wraps any content in a scroll-triggered entrance.
-
-   A component rather than a CSS class because the element has to be handed to the
-   observer after Blazor puts it in the DOM, and OnAfterRenderAsync is the only place
-   that is reliably true. *@
-
 <div @ref="_element"
      class="upcsg-reveal upcsg-reveal--@Variant.ToString().ToLowerInvariant() @Class"
      style="--reveal-delay: @(Delay)ms; @Style">
@@ -17,19 +11,14 @@
 @code {
     public enum RevealMotion
     {
-        /// <summary>Rises into place. The default; suits stacked sections.</summary>
         Up,
 
-        /// <summary>Fades only. For text that should not shift under the reader.</summary>
         Fade,
 
-        /// <summary>Settles in from slightly small. For cards and tiles.</summary>
         Scale,
 
-        /// <summary>Slides in from the left. For split layouts.</summary>
         Left,
 
-        /// <summary>Slides in from the right.</summary>
         Right,
     }
 
@@ -40,10 +29,6 @@
 
     [Parameter] public RevealMotion Variant { get; set; } = RevealMotion.Up;
 
-    /// <summary>
-    /// Milliseconds to hold before starting. Staggering a row by 60-90ms per item reads
-    /// as one gesture; firing them together reads as a page flash.
-    /// </summary>
     [Parameter] public int Delay { get; set; }
 
     [Parameter] public string? Class { get; set; }
@@ -52,8 +37,6 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Guarded on a flag rather than firstRender: content that arrives from the API
-        // renders again afterwards, and observing twice would double-register.
         if (_observed)
         {
             return;

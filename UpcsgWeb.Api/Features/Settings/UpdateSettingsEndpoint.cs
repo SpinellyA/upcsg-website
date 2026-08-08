@@ -22,8 +22,6 @@ public class UpdateSettingsEndpoint(ISiteSettingsRepository settings, IUnitOfWor
 
         try
         {
-            // A partial request (follow=false but no month supplied) falls back to
-            // following the calendar rather than pinning to a nonsense date.
             if (req.FollowCurrentMonth || req.EventsYear is null || req.EventsMonth is null)
             {
                 current.FollowCurrentMonth();

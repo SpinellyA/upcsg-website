@@ -6,10 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
-/// <summary>
-/// The CMS grid. Identical to the public list today, but kept separate so the public
-/// view can start filtering (drafts, scheduled drops) without changing the admin one.
-/// </summary>
 public class AdminListMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<List<MerchItemDto>>
 {
     public override void Configure()

@@ -8,9 +8,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Auth;
 
-/// <summary>
-/// Trades a Google ID token for one of ours, registering the guilder on first sign-in.
-/// </summary>
 public class GoogleSignInEndpoint(
     IUserRepository users,
     IUnitOfWork uow,
@@ -43,7 +40,6 @@ public class GoogleSignInEndpoint(
             return;
         }
 
-        // Optional tenant lock. Unset, any Google account may register.
         var requiredDomain = configuration["Google:RequiredHostedDomain"];
         if (!string.IsNullOrWhiteSpace(requiredDomain)
             && !string.Equals(identity.HostedDomain, requiredDomain, StringComparison.OrdinalIgnoreCase))
@@ -53,8 +49,6 @@ public class GoogleSignInEndpoint(
             return;
         }
 
-        // Keyed on the Google subject, not email: a user can change their address, and
-        // matching on email would eventually hand the account to whoever inherits it.
         var user = await users.GetByGoogleSubjectAsync(identity.Subject, ct);
 
         if (user is null)
@@ -65,14 +59,9 @@ public class GoogleSignInEndpoint(
         }
         else
         {
-            // Refreshes profile fields only — the aggregate gives no way to change Role
-            // here, so a sign-in can never escalate privileges by itself.
             user.RefreshProfile(identity.Email, identity.Name, identity.PictureUrl);
         }
 
-        // Role is decided by the officer allowlist and by nothing in the token. This is
-        // what makes the admin screen effective in both directions: an address added
-        // there gets its rights at the next sign-in, and one removed loses them.
         if (await SyncOfficerRole.ApplyAsync(uow, user, ct))
         {
             logger.LogInformation("{Email} signed in as {Role}.", user.Email, user.Role);

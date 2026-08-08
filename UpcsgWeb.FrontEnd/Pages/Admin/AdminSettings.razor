@@ -1,4 +1,4 @@
-﻿@page "/admin/settings"
+@page "/admin/settings"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -30,11 +30,6 @@
     }
     else
     {
-        @* ---------- Calendar month ---------- *@
-        @* Same shape as the snapshot section below: section head with kicker and title, no
-           inline sizing. The heading used to override upcsg-title-xl with a hard-coded
-           font-size and the section carried an inline max-width, so the two blocks on this
-           one page disagreed about how a settings panel looks. *@
         <section class="upcsg-section upcsg-band mt-4">
             <div class="upcsg-section-head">
                 <div>
@@ -53,9 +48,6 @@
 
             @if (!_followCurrent)
             {
-                @* MudGrid rather than upcsg-monthnav: that class is the events page's
-                   chevron navigator — a 0.5rem flex row sized for two icon buttons around a
-                   label — and it packed these two full-width fields against each other. *@
                 <MudGrid Spacing="2" Class="align-center mb-4">
                     <MudItem xs="12" sm="7">
                         <MudSelect T="int" @bind-Value="_month" Label="Month" Variant="Variant.Outlined" Dense="true">
@@ -83,7 +75,6 @@
             </MudButton>
         </section>
 
-        @* ---------- Offline snapshot ---------- *@
         <section class="upcsg-section">
             <div class="upcsg-section-head">
                 <div>
@@ -132,8 +123,6 @@
 
         try
         {
-            // Raw JSON, written to the file exactly as the API produced it — round-tripping
-            // through objects here could quietly change what gets committed.
             var json = await Admin.GetSnapshotJsonAsync();
 
             await using var module = await JS.InvokeAsync<IJSObjectReference>(
@@ -211,8 +200,6 @@
                 EventsMonth = _followCurrent ? null : _month,
             });
 
-            // The month is cached for the life of the tab, so without this the officer
-            // saves July and the site keeps showing August until a hard reload.
             Events.ForgetDisplayMonth();
 
             Snackbar.Add(

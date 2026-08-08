@@ -11,8 +11,6 @@ public class HeartbeatConfiguration : IEntityTypeConfiguration<Heartbeat>
         builder.HasKey(h => h.Id);
         builder.Property(h => h.Id).ValueGeneratedNever();
 
-        // Seeded, not inserted at runtime. The health check only ever updates, so there
-        // is no path where a concurrent pinger could race to create the row.
         builder.HasData(new Heartbeat
         {
             Id = Heartbeat.SingletonId,

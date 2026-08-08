@@ -15,12 +15,9 @@ public class MemberDto
     public string? Committee { get; set; }
     public string? PhotoUrl { get; set; }
 
-    /// <summary>A short personal quote the member chose to share.</summary>
     public string? Quote { get; set; }
 
-    /// <summary>Formal description of what this member does in the guild.</summary>
     public string? Bio { get; set; }
 
     public int DisplayOrder { get; set; }
 }
-

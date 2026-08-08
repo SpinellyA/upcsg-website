@@ -11,7 +11,6 @@ public class AchievementConfiguration : IEntityTypeConfiguration<Achievement>
         builder.ToTable("Achievements");
         builder.HasKey(a => a.Id);
 
-        // Create assigns the id, so the store must never substitute one.
         builder.Property(a => a.Id).ValueGeneratedNever();
 
         builder.Property(a => a.Title).HasMaxLength(250).IsRequired();

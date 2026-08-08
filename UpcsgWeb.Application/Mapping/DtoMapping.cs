@@ -4,18 +4,11 @@ using UpcsgWeb.Domain.Orders;
 using UpcsgWeb.Domain.Users;
 using UpcsgWeb.Shared.Contracts;
 
-// Domain and wire contract both define MemberCategory; alias keeps the mapping explicit
-// about which side of the boundary each value is on.
 using DomainMemberCategory = UpcsgWeb.Domain.Content.MemberCategory;
 using WireMemberCategory = UpcsgWeb.Shared.Contracts.MemberCategory;
 
 namespace UpcsgWeb.Application.Mapping;
 
-/// <summary>
-/// Domain to wire-contract projection, kept in one place so the API surface can't drift
-/// between endpoints. It sits beside the handlers that return these DTOs so the API layer
-/// has nothing left to decide but a status code; the domain still doesn't know they exist.
-/// </summary>
 public static class DtoMapping
 {
     public static EventDto ToDto(this GuildEvent e) => new()
@@ -44,7 +37,6 @@ public static class DtoMapping
         IsPreorder = m.IsPreorder,
         PreorderClosesAt = m.PreorderClosesAt,
 
-        // Computed server-side so every client agrees on the headline number.
         PriceFrom = m.PriceFrom.Amount,
         ListPriceFrom = m.ListPriceFrom.Amount,
         HasPriceRange = m.HasPriceRange,
@@ -87,10 +79,6 @@ public static class DtoMapping
         Category = a.Category,
     };
 
-    /// <summary>
-    /// Resolves the displayed month as part of mapping, because every caller needs it and
-    /// none of them should be re-deriving "pinned month, or today in Cebu" themselves.
-    /// </summary>
     public static SiteSettingsDto ToDto(this UpcsgWeb.Domain.Settings.SiteSettings s)
     {
         var (year, month) = s.ResolveEventsMonth();
@@ -113,11 +101,6 @@ public static class DtoMapping
         Role = u.Role,
     };
 
-    /// <param name="guilder">
-    /// Supplied by the officer-facing queries so the orders board can show a name. Left
-    /// null when a guilder reads their own orders: they already know who they are, and
-    /// filling it there would put member names on a response that has no use for them.
-    /// </param>
     public static OrderDto ToDto(
         this UpcsgWeb.Domain.Orders.Order o,
         AppUser? guilder = null) => new()

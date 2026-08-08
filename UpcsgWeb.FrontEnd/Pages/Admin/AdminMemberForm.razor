@@ -39,7 +39,6 @@
             <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
         }
 
-        @* Laid out like the About page it produces: portrait beside the writing. *@
         <div class="upcsg-merchform mt-4">
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Portrait</MudText>
@@ -135,12 +134,6 @@
     private bool _dirty;
     private string? _error;
 
-    /// <summary>
-    /// True while the form is being populated. MudBlazor's select and numeric fields
-    /// raise their Changed callbacks when a bound value is first set, not only when
-    /// someone edits — without this, merely opening a record marks it dirty and the
-    /// discard prompt stops meaning anything.
-    /// </summary>
     private bool _populating;
 
     private bool IsNew => Id is null;
@@ -169,21 +162,16 @@
                 }
                 else
                 {
-                    // Armed immediately before the controls first receive these values.
                     _populating = true;
                     _item = found;
                 }
             }
             else
             {
-                // Fetched before the flag is armed, not after: an await here lets a
-                // render slip through and clear it, and the form opens already dirty.
                 var next = await NextOrderAsync();
 
                 _populating = true;
 
-                // New people join the ExeCom far more often than the faculty, and land
-                // at the end of the list rather than silently ahead of someone.
                 _item = new MemberDto { Category = MemberCategory.ExeCom, DisplayOrder = next };
             }
         }
@@ -206,7 +194,6 @@
         }
         catch
         {
-            // Ordering is a nicety; failing to guess it must not block adding someone.
             return 1;
         }
     }
@@ -247,8 +234,6 @@
             var saved = await Admin.SaveMemberAsync(_item);
             Snackbar.Add("Saved.", Severity.Success);
 
-            // A new person now has an id; land on their own URL so a reload doesn't
-            // create a second copy.
             if (IsNew)
             {
                 Navigation.NavigateTo($"admin/members/{saved.Id}", replace: true);

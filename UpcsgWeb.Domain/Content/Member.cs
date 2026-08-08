@@ -2,10 +2,9 @@ using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.Content;
 
-/// <summary>A person listed on the About page: faculty adviser or executive committee.</summary>
 public class Member : AggregateRoot
 {
-    private Member() { } // EF
+    private Member() { }
 
     public string Name { get; private set; } = string.Empty;
     public string Role { get; private set; } = string.Empty;

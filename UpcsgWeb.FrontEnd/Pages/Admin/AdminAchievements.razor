@@ -1,4 +1,4 @@
-﻿@page "/admin/achievements"
+@page "/admin/achievements"
 @attribute [Authorize(Policy = "ExeCom")]
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
@@ -57,7 +57,6 @@
                               Class="upcsg-datatable__search mt-0" />
             </ToolBarContent>
             <HeaderContent>
-                @* Most recent first — the newest win is the one being added. *@
                 <MudTh Class="upcsg-num">
                     <MudTableSortLabel T="AchievementDto" SortBy="@(a => a.Year)" InitialDirection="SortDirection.Descending">Year</MudTableSortLabel>
                 </MudTh>
@@ -126,9 +125,6 @@
         }
     }
 
-    // Editing lives at /admin/achievements/{id}: an entry carries a photo and a story
-    // of real length, which is more than a dialog can hold without becoming a scroll
-    // trap. Deleting lives there too, with the whole record in view.
     private void OpenEntry(AchievementDto? item)
     {
         if (item is not null)

@@ -2,10 +2,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Components;
 
-/// <summary>
-/// One place that turns an order status into words and a CSS slug, so the table, the
-/// pills, the chain and the member pages can never disagree about what a stage is called.
-/// </summary>
 public static class OrderStatusDisplay
 {
     public static string Label(OrderStatusDto status) => status switch
@@ -19,7 +15,6 @@ public static class OrderStatusDisplay
         _ => status.ToString(),
     };
 
-    /// <summary>Short label for tight spaces like the member-facing trail.</summary>
     public static string ShortLabel(OrderStatusDto status) => status switch
     {
         OrderStatusDto.AwaitingPayment => "Awaiting payment",
@@ -42,7 +37,6 @@ public static class OrderStatusDisplay
         _ => "awaiting",
     };
 
-    /// <summary>What the officer is waiting on, phrased as the next action.</summary>
     public static string OfficerHint(OrderStatusDto status) => status switch
     {
         OrderStatusDto.AwaitingPayment => "Waiting on the guilder's GCash receipt. Nothing to do yet.",

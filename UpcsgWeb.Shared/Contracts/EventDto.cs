@@ -10,4 +10,3 @@ public class EventDto
     public string Location { get; set; } = string.Empty;
     public string? PosterUrl { get; set; }
 }
-

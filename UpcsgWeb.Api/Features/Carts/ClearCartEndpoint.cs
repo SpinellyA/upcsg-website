@@ -24,7 +24,6 @@ public class ClearCartEndpoint(ICartRepository carts, IUnitOfWork uow) : Endpoin
             await uow.SaveChangesAsync(ct);
         }
 
-        // Idempotent: clearing an absent cart is a success, not a 404.
         await Send.NoContentAsync(ct);
     }
 }

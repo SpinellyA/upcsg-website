@@ -6,10 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>
-/// Moves an order along its lifecycle. The handler picks which method to call; the
-/// aggregate decides whether the move is legal, so the rules live in exactly one place.
-/// </summary>
 public class ChangeOrderStatusEndpoint(ISender sender) : Endpoint<ChangeOrderStatusRequest, OrderDto>
 {
     public override void Configure()

@@ -5,13 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace UpcsgWeb.Api.Auth;
 
-/// <summary>
-/// Mints the API's own JWT. Google proves who someone is; this token says what they may
-/// do, which is why the role argument comes from our own user row.
-///
-/// Takes primitives rather than the AppUser aggregate: token shape is a delivery
-/// concern, and the domain shouldn't acquire a dependency on it.
-/// </summary>
 public class JwtIssuer(IConfiguration configuration)
 {
     public const string Issuer = "upcsg-api";

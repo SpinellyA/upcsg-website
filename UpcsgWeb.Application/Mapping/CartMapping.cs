@@ -6,11 +6,6 @@ namespace UpcsgWeb.Application.Mapping;
 
 public static class CartMapping
 {
-    /// <summary>
-    /// Builds the cart view by resolving each line against the merch table right now.
-    /// Prices are read live on purpose — a cart is not a price lock, and showing a
-    /// stale figure here would mean the checkout total silently disagrees with it.
-    /// </summary>
     public static CartDto ToDto(this Cart cart, IReadOnlyDictionary<Guid, MerchItem> items)
     {
         var lines = new List<CartLineDto>();
@@ -19,14 +14,10 @@ public static class CartMapping
         {
             items.TryGetValue(line.MerchItemId, out var item);
 
-            // Deleted or sold out since it was added: still shown, but flagged, so the
-            // guilder sees why checkout is blocked instead of hitting a bare error.
             var available = item is not null
                 && item.InStock
                 && (line.Variant is null || item.HasVariant(line.Variant));
 
-            // PriceFor, so a cart line for the dearest size shows and charges that size's
-            // price rather than the item's base.
             var unitPrice = item?.PriceFor(line.Variant).Amount ?? 0m;
 
             lines.Add(new CartLineDto
@@ -38,8 +29,6 @@ public static class CartMapping
                 UnitPrice = unitPrice,
                 LineTotal = unitPrice * line.Quantity,
 
-                // The variant's photo when it has one, so the cart row matches what was
-                // chosen on the detail page.
                 ImageUrl = item?.PhotosFor(line.Variant).FirstOrDefault(),
                 Available = available,
             });

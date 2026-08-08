@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>Guilder submits GCash proof, moving their order into the officers' queue.</summary>
 public class SubmitReceiptEndpoint(ISender sender) : Endpoint<SubmitReceiptRequest, OrderDto>
 {
     public override void Configure()

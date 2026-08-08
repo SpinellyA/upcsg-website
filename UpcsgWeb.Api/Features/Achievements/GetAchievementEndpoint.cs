@@ -5,10 +5,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Achievements;
 
-/// <summary>
-/// Backs the Hall of Fame detail page. Fetching by id rather than filtering the full
-/// list keeps a shared link working no matter how long the record grows.
-/// </summary>
 public class GetAchievementEndpoint(IAchievementRepository achievements)
     : EndpointWithoutRequest<AchievementDto>
 {

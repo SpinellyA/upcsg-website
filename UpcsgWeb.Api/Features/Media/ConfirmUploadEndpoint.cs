@@ -8,14 +8,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Media;
 
-/// <summary>
-/// Checks what actually landed in storage, and deletes it if it isn't acceptable.
-///
-/// This step exists because a presigned URL uploads without the API seeing the bytes. The
-/// signature binds the content type, but nothing binds the SIZE — so an officer could
-/// upload a 200 MB file and quietly consume the whole free tier. Reading the object back
-/// is the only honest way to know what is really there.
-/// </summary>
 public class ConfirmUploadEndpoint(IMediaStore media, IOptions<MediaOptions> options)
     : Endpoint<ConfirmUploadRequest, ConfirmUploadDto>
 {
@@ -23,7 +15,6 @@ public class ConfirmUploadEndpoint(IMediaStore media, IOptions<MediaOptions> opt
     {
         Post("/media/confirm");
 
-        // Matches the grant endpoint: members may confirm a receipt, nothing else.
         Roles(UpcsgRoles.Member, UpcsgRoles.Admin);
     }
 
@@ -48,7 +39,6 @@ public class ConfirmUploadEndpoint(IMediaStore media, IOptions<MediaOptions> opt
 
         if (stored.SizeBytes > limit)
         {
-            // Don't leave the oversized object sitting in the bucket costing storage.
             await media.DeleteAsync(req.Key, ct);
 
             AddError($"That image is {stored.SizeBytes / 1024 / 1024} MB. The limit is {limit / 1024 / 1024} MB.");
@@ -65,8 +55,6 @@ public class ConfirmUploadEndpoint(IMediaStore media, IOptions<MediaOptions> opt
             return;
         }
 
-        // A private object has no public URL to give out, and inventing one would put a
-        // dead link on the record. The caller saves StoredReference either way.
         var isPrivate = media.IsPrivate(req.Key);
 
         await Send.OkAsync(new ConfirmUploadDto

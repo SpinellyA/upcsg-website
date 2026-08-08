@@ -14,7 +14,6 @@ public class RefulfilLineCommandHandler(IUnitOfWork uow)
         var order = await uow.Orders.GetByIdAsync(command.OrderId, cancellationToken)
             ?? throw new NotFoundException("That order");
 
-        // Tracked, because filling the line takes the stock with it.
         var items = await uow.Merch.GetManyAsync(
             order.Lines.Select(l => l.MerchItemId), cancellationToken);
 

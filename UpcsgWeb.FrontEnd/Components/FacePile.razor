@@ -2,19 +2,6 @@
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
-@* A draggable belt of officer portraits, one of which is selected.
-
-   Was a static overlapping row capped at eight with a "+3" on the end. Overlapping reads
-   well as decoration but badly as a control: the faces underneath are half-hidden, and
-   three officers were represented by a number. Since the strip is now something you pick
-   from, everyone gets a whole face and the row scrolls instead of truncating.
-
-   Still overlapping slightly, because a row of separated circles loses the "group of
-   people" reading the original had — just not so far that a face is unclickable.
-
-   Each face is a real <button>, so it is reachable by Tab and operable by Enter without
-   any of the keyboard handling being reimplemented here. *@
-
 <div class="upcsg-facepile" role="group" aria-label="Officers">
     @foreach (var (member, index) in Members.Select((m, i) => (m, i)))
     {
@@ -39,18 +26,12 @@
 @code {
     [Parameter, EditorRequired] public IReadOnlyList<MemberDto> Members { get; set; } = [];
 
-    /// <summary>The face currently showing in the card beside the strip.</summary>
     [Parameter] public MemberDto? Selected { get; set; }
 
     [Parameter] public EventCallback<MemberDto> SelectedChanged { get; set; }
 
     private ElementReference _belt;
 
-    /// <summary>
-    /// Matched on name rather than by reference. The list is refetched on navigation, so
-    /// the selected instance is not necessarily the one now in Members, and reference
-    /// equality would quietly stop highlighting anything.
-    /// </summary>
     private bool IsSelected(MemberDto member) =>
         Selected is not null
         && string.Equals(Selected.Name, member.Name, StringComparison.Ordinal);

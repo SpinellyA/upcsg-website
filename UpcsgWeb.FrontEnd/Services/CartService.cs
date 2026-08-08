@@ -12,17 +12,11 @@ public interface ICartService
     Task ClearAsync();
     Task<OrderDto> CheckoutAsync(string? note);
 
-    /// <summary>Item count for the nav badge. Zero when signed out or unconfigured.</summary>
     Task<int> GetItemCountAsync();
 
-    /// <summary>Raised after any mutation so the nav badge can refresh.</summary>
     event Action? Changed;
 }
 
-/// <summary>
-/// Cart client. There is no seed fallback: a cart is inherently server state, and
-/// pretending otherwise would let someone "check out" into nothing.
-/// </summary>
 public class CartService(HttpClient http, ApiOptions options) : ICartService
 {
     public event Action? Changed;
@@ -33,7 +27,6 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
 
         var response = await http.GetAsync("api/cart");
 
-        // Signed out: an empty cart is the honest answer, not an error page.
         if (response.StatusCode is HttpStatusCode.Unauthorized)
         {
             return new CartDto();
@@ -116,7 +109,6 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
         }
         catch
         {
-            // The badge must never break the page it sits in.
             return 0;
         }
     }
@@ -139,7 +131,6 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
         return await response.Content.ReadFromJsonAsync<CartDto>(UpcsgJson.Options) ?? new CartDto();
     }
 
-    /// <summary>Surfaces the domain's own message instead of a bare status code.</summary>
     internal static async Task<string> DescribeAsync(HttpResponseMessage response)
     {
         if (response.StatusCode == HttpStatusCode.Unauthorized)
@@ -158,14 +149,12 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
         }
         catch
         {
-            // Not a problem-details body; fall through.
         }
 
         return $"Request failed ({(int)response.StatusCode}).";
     }
 }
 
-/// <summary>Shape FastEndpoints uses for validation and domain failures.</summary>
 public class ApiErrorResponse
 {
     public Dictionary<string, List<string>>? Errors { get; set; }

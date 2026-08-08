@@ -39,7 +39,6 @@
             </MudAlert>
         }
 
-        @* A bounced receipt is the one state where the guilder must act again. *@
         @if (_order.Status == OrderStatusDto.AwaitingPayment && !string.IsNullOrWhiteSpace(_order.ReceiptRejectionReason))
         {
             <MudAlert Severity="Severity.Warning" Class="my-4">
@@ -47,7 +46,6 @@
             </MudAlert>
         }
 
-        @* Money owed back, said up front rather than buried in the table. *@
         @if (_order.HasRefundDue)
         {
             <MudAlert Severity="Severity.Warning" Class="my-4">
@@ -70,7 +68,6 @@
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Items</MudText>
 
-                @* Matches the officers' copy of the same order, down to the markup. *@
                 <MudTable Items="_order.Lines"
                           T="OrderLineDto"
                           Dense="true"
@@ -92,8 +89,6 @@
                         <MudTd DataLabel="Item">
                             @context.ItemName
 
-                            @* Told plainly, with the reason. Finding out at pickup that
-                               something isn't coming is a worse way to learn it. *@
                             @if (context.Status == OrderLineStatusDto.RefundDue)
                             {
                                 <span class="upcsg-datatable__flag">Being refunded</span>
@@ -146,8 +141,6 @@
                         the screenshot. Officers only see your order once this is in.
                     </p>
 
-                    @* The screenshot is uploaded, not linked. Asking a student to host an
-                       image somewhere and paste a URL is asking them to get it wrong. *@
                     <div class="upcsg-receiptdrop">
                         @if (_screenshotUrl is not null)
                         {
@@ -196,9 +189,6 @@
                         shows the amount, the time and the reference, so it's all we need.
                     </p>
 
-                    @* Optional: the screenshot carries the reference already. It's here
-                       because typing it makes an officer's search of the GCash log quicker,
-                       not because anyone should be retyping digits off their own screen. *@
                     <MudTextField @bind-Value="_reference"
                                   Label="Reference number (optional)"
                                   Variant="Variant.Outlined"
@@ -227,8 +217,6 @@
                         <span>Submitted</span>
                         <span>@_order.Receipt.SubmittedAt.ToLocalTime().ToString("MMM d, h:mm tt")</span>
                     </div>
-                    @* Show the proof itself rather than a link to it — it's their own
-                       receipt, and one glance confirms the right image went in. *@
                     @if (!string.IsNullOrWhiteSpace(_order.Receipt.ScreenshotUrl))
                     {
                         <img class="upcsg-receiptdrop__preview mt-3"
@@ -250,7 +238,6 @@
 @code {
     [Parameter] public Guid Id { get; set; }
 
-    /// <summary>Mirrors MediaKeys.ReceiptsFolder on the API — the only folder a guilder may write to.</summary>
     private const string ReceiptsFolder = "receipts";
 
     private OrderDto? _order;
@@ -270,7 +257,6 @@
         {
             var result = await Media.PickAndUploadAsync(ReceiptsFolder);
 
-            // Null means they closed the picker without choosing anything.
             if (result is null)
             {
                 return;

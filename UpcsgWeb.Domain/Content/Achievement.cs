@@ -2,10 +2,9 @@ using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.Content;
 
-/// <summary>A Hall of Fame entry: a win, award, or milestone the ExeCom has verified.</summary>
 public class Achievement : AggregateRoot
 {
-    private Achievement() { } // EF
+    private Achievement() { }
 
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;

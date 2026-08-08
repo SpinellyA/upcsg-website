@@ -3,17 +3,6 @@ using UpcsgWeb.Domain.Abstractions;
 
 namespace UpcsgWeb.Infrastructure.Media;
 
-/// <summary>
-/// Writes to the API's own wwwroot so uploads work with no cloud credentials at all.
-///
-/// For development only, and it says so at startup. Render's disk is ephemeral: anything
-/// written here disappears on the next deploy or cold start, which is exactly why the
-/// production path is a bucket.
-///
-/// There is no presigned URL to give out, so the grant points back at an API endpoint the
-/// browser POSTs to instead. The shape of the flow stays identical either way, which is
-/// what makes swapping providers a config change rather than a rewrite.
-/// </summary>
 public sealed class LocalMediaStore : IMediaStore
 {
     private readonly string _root;
@@ -67,11 +56,6 @@ public sealed class LocalMediaStore : IMediaStore
 
     public string PublicUrl(string key) => $"{_baseUrl}/media/{key}";
 
-    /// <summary>
-    /// Always false. This store writes into the API's own wwwroot, which is served by
-    /// UseStaticFiles — there is nowhere here that is not world-readable, and claiming
-    /// otherwise would let a development run look safer than it is.
-    /// </summary>
     public bool IsPrivate(string key) => false;
 
     public Task<string> CreateReadUrlAsync(string keyOrUrl, CancellationToken ct = default) =>
@@ -81,7 +65,6 @@ public sealed class LocalMediaStore : IMediaStore
                 ? keyOrUrl
                 : PublicUrl(keyOrUrl));
 
-    /// <summary>Used by the local upload endpoint; not part of the port.</summary>
     public async Task SaveAsync(string key, Stream content, CancellationToken ct = default)
     {
         var path = PathFor(key);
@@ -91,11 +74,6 @@ public sealed class LocalMediaStore : IMediaStore
         await content.CopyToAsync(file, ct);
     }
 
-    /// <summary>
-    /// Resolves a key under the media root and refuses anything that escapes it. Keys are
-    /// server-generated, but this endpoint takes one from the request, so "../.." has to
-    /// be impossible rather than merely unlikely.
-    /// </summary>
     private string PathFor(string key)
     {
         var combined = Path.GetFullPath(Path.Combine(_root, key));

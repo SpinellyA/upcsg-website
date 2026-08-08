@@ -6,7 +6,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Orders;
 
-/// <summary>Single order. Officers see any; guilders see only their own.</summary>
 public class GetOrderEndpoint(ISender sender) : EndpointWithoutRequest<OrderDto>
 {
     public override void Configure() => Get("/orders/{id:guid}");
@@ -20,7 +19,6 @@ public class GetOrderEndpoint(ISender sender) : EndpointWithoutRequest<OrderDto>
             return;
         }
 
-        // The ownership rule lives in the handler; this only reports who is asking.
         var order = await sender.Send(
             new GetOrderQuery(Route<Guid>("id"), userId.Value, User.IsAdmin()), ct);
 

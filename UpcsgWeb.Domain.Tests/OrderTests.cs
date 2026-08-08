@@ -19,8 +19,6 @@ public class OrderLifecycleTests
 
     private static PaymentReceipt Receipt() => PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890");
 
-    // --- Initial state ---------------------------------------------------------------
-
     [Fact]
     public void CheckoutDoesNotMeanPaid_OrderStartsAwaitingPayment()
     {
@@ -48,14 +46,11 @@ public class OrderLifecycleTests
         Assert.Equal(OrderStatus.Received, order.Status);
     }
 
-    // --- The payment gate ------------------------------------------------------------
-
     [Fact]
     public void OfficerCannotAcknowledgeBeforeAReceiptArrives()
     {
         var order = AwaitingPaymentOrder(out var item);
 
-        // This is the whole point of the AwaitingPayment stage.
         var ex = Assert.Throws<DomainException>(() => order.Acknowledge(Catalog(item)));
         Assert.Contains("AwaitingPayment", ex.Message);
     }
@@ -66,7 +61,6 @@ public class OrderLifecycleTests
         var order = AwaitingPaymentOrder(out var item);
         order.SubmitReceipt(Receipt());
 
-        // Prevents swapping the proof after an officer has started looking at it.
         Assert.Throws<DomainException>(() => order.SubmitReceipt(Receipt()));
     }
 
@@ -88,8 +82,6 @@ public class OrderLifecycleTests
     [Fact]
     public void ReceiptDoesNotRequireAReferenceNumber()
     {
-        // The screenshot already shows the reference. Making a guilder retype it off
-        // their own screen only adds a way to get it wrong.
         var receipt = PaymentReceipt.FromScreenshot("https://cdn/receipt.png");
 
         Assert.Null(receipt.ReferenceNumber);
@@ -99,8 +91,6 @@ public class OrderLifecycleTests
     [Fact]
     public void ABlankReferenceIsStoredAsNoReferenceAtAll()
     {
-        // Otherwise every screenshot-only receipt would carry an empty string that the
-        // officer's view has to special-case anyway.
         var receipt = PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "   ");
 
         Assert.Null(receipt.ReferenceNumber);
@@ -117,8 +107,6 @@ public class OrderLifecycleTests
         var order = Order.Create(UserId);
         Assert.Throws<DomainException>(() => order.SubmitReceipt(Receipt()));
     }
-
-    // --- Receipt rejection -----------------------------------------------------------
 
     [Fact]
     public void RejectingReceiptSendsItBackToTheGuilder()
@@ -171,8 +159,6 @@ public class OrderLifecycleTests
 
         Assert.Throws<DomainException>(() => order.RejectReceipt("too late"));
     }
-
-    // --- Illegal transitions ---------------------------------------------------------
 
     [Fact]
     public void CannotSkipAcknowledged()
@@ -242,8 +228,6 @@ public class OrderLifecycleTests
         Assert.Throws<DomainException>(() => order.Cancel("  "));
     }
 
-    // --- Editing ---------------------------------------------------------------------
-
     [Fact]
     public void LinesFreezeOnceAReceiptIsSubmitted()
     {
@@ -255,8 +239,6 @@ public class OrderLifecycleTests
         Assert.False(order.IsEditable);
         Assert.Throws<DomainException>(() => order.AddLine(item, "L", 1));
     }
-
-    // --- Pricing ---------------------------------------------------------------------
 
     [Fact]
     public void RepricingMerchDoesNotRewriteExistingOrders()
@@ -274,13 +256,11 @@ public class OrderLifecycleTests
     public void TotalSumsLines()
     {
         var order = Order.Create(UserId);
-        order.AddLine(Hoodie(), "M", 2);       // 1500
-        order.AddLine(Tote(), "One size", 1);  //  250
+        order.AddLine(Hoodie(), "M", 2);
+        order.AddLine(Tote(), "One size", 1);
 
         Assert.Equal(1750m, order.Total.Amount);
     }
-
-    // --- Variant pricing -------------------------------------------------------------
 
     [Fact]
     public void LineTakesTheVariantsPriceNotTheItemBase()
@@ -288,8 +268,6 @@ public class OrderLifecycleTests
         var order = Order.Create(UserId);
         order.AddLine(HoodieWithPricedSizes(), "XL", 1);
 
-        // Base is 750; XL is 820. Charging the base here would sell the biggest size at
-        // the smallest one's price.
         Assert.Equal(820m, order.Lines[0].UnitPrice.Amount);
     }
 
@@ -299,8 +277,8 @@ public class OrderLifecycleTests
         var item = HoodieWithPricedSizes();
         var order = Order.Create(UserId);
 
-        order.AddLine(item, "S", 1);   // 750
-        order.AddLine(item, "XL", 1);  // 820
+        order.AddLine(item, "S", 1);
+        order.AddLine(item, "XL", 1);
 
         Assert.Equal(1570m, order.Total.Amount);
     }
@@ -319,15 +297,14 @@ public class OrderLifecycleTests
 
 public class RefundDueTests
 {
-    /// <summary>An order for 2 hoodies and a tote, with only 1 hoodie on the shelf.</summary>
     private static Order ShortOrder(out MerchItem hoodie, out MerchItem tote)
     {
         hoodie = Hoodie(stock: 1, price: 750m);
         tote = Tote(price: 250m);
 
         var order = Order.Create(UserId);
-        order.AddLine(hoodie, "M", 2);        // 1500, only 1 available
-        order.AddLine(tote, "One size", 1);   //  250
+        order.AddLine(hoodie, "M", 2);
+        order.AddLine(tote, "One size", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
         return order;
@@ -344,7 +321,6 @@ public class RefundDueTests
         Assert.Single(shortfall);
         Assert.Equal("Cosmic Hoodie", shortfall[0].ItemName);
 
-        // The tote was filled and its stock taken; the hoodie line was not touched.
         Assert.Equal(99, tote.StockFor("One size"));
         Assert.Equal(1, hoodie.StockFor("M"));
     }
@@ -355,7 +331,6 @@ public class RefundDueTests
         var order = ShortOrder(out var hoodie, out var tote);
         order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
 
-        // Quietly shrinking the total would erase the evidence that money is owed.
         Assert.Equal(1750m, order.Total.Amount);
         Assert.Equal(1750m, order.AmountPaid!.Amount);
         Assert.Equal(1500m, order.RefundDue.Amount);
@@ -379,13 +354,9 @@ public class RefundDueTests
         order.AddLine(hoodie, "M", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
-        // Acknowledging an order that delivers nothing is just a cancellation wearing a
-        // different hat, and it would leave the guilder waiting for goods that never come.
         var ex = Assert.Throws<DomainException>(() => order.AcknowledgeWithShortfall(Catalog(hoodie)));
         Assert.Contains("Cancel and refund it in full", ex.Message);
     }
-
-    // --- Restocking rescues it -------------------------------------------------------
 
     [Fact]
     public void RestockingLetsAnOfficerFillTheLineAfterAll()
@@ -401,14 +372,12 @@ public class RefundDueTests
         Assert.Equal(0m, order.RefundDue.Amount);
         Assert.Equal(1750m, order.FulfilledTotal.Amount);
 
-        // And the restock was actually consumed.
         Assert.Equal(9, hoodie.StockFor("M"));
     }
 
     [Fact]
     public void RefulfillingNeedsEnoughStockForTheWholeLine()
     {
-        // 3 ordered, 1 on the shelf.
         var hoodie = Hoodie(stock: 1);
         var tote = Tote();
 
@@ -418,7 +387,6 @@ public class RefundDueTests
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
         order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
 
-        // A partial restock is not enough — lines are filled whole or not at all.
         hoodie.Restock("M", 1);
 
         var ex = Assert.Throws<DomainException>(
@@ -437,14 +405,11 @@ public class RefundDueTests
 
         hoodie.Restock("M", 10);
 
-        // You cannot un-send GCash.
         var ex = Assert.Throws<DomainException>(
             () => order.RefulfilLine(hoodie.Id, "M", Catalog(hoodie, tote)));
 
         Assert.Contains("already been sent", ex.Message);
     }
-
-    // --- Settling --------------------------------------------------------------------
 
     [Fact]
     public void SettlingRecordsTheReferenceAndClosesTheObligation()
@@ -458,7 +423,6 @@ public class RefundDueTests
         Assert.Equal("0009999999999", order.RefundReference);
         Assert.NotNull(order.RefundSettledAt);
 
-        // Nothing outstanding any more, but the line still shows what happened.
         Assert.False(order.HasRefundDue);
         Assert.Equal(OrderLineStatus.Refunded, order.Lines[0].Status);
     }
@@ -469,7 +433,6 @@ public class RefundDueTests
         var order = ShortOrder(out var hoodie, out var tote);
         order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
 
-        // Without it the Auditor has no way to verify the money moved.
         var ex = Assert.Throws<DomainException>(() => order.SettleRefund("   "));
         Assert.Contains("GCash reference", ex.Message);
     }
@@ -489,7 +452,6 @@ public class RefundDueTests
         var order = ShortOrder(out var hoodie, out var tote);
         order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
 
-        // The refund is orthogonal to the lifecycle: the tote still gets handed over.
         order.Release();
         order.MarkReceived();
 
@@ -502,7 +464,6 @@ public class RefundDueTests
     {
         var order = ShortOrder(out var hoodie, out var tote);
 
-        // The plain path must never quietly produce a refund obligation.
         Assert.Throws<DomainException>(() => order.Acknowledge(Catalog(hoodie, tote)));
         Assert.Equal(OrderStatus.Pending, order.Status);
         Assert.False(order.HasRefundDue);
@@ -514,11 +475,11 @@ public class MerchSaleTests
     [Fact]
     public void SaleComesOffTheVariantPriceNotTheBase()
     {
-        var item = HoodieWithPricedSizes();   // S 750, L 780, XL 820
+        var item = HoodieWithPricedSizes();
         item.SetSale(true, 20m);
 
-        Assert.Equal(656m, item.PriceFor("XL").Amount);   // 820 - 20%
-        Assert.Equal(600m, item.PriceFor("S").Amount);    // 750 - 20%
+        Assert.Equal(656m, item.PriceFor("XL").Amount);
+        Assert.Equal(600m, item.PriceFor("S").Amount);
     }
 
     [Fact]
@@ -539,7 +500,6 @@ public class MerchSaleTests
         item.SetSale(true, 20m);
         Assert.Equal(656m, item.PriceFor("XL").Amount);
 
-        // The percentage is stored, not the discounted amount, so nothing was lost.
         item.SetSale(false, 20m);
         Assert.Equal(820m, item.PriceFor("XL").Amount);
     }
@@ -551,8 +511,6 @@ public class MerchSaleTests
         item.SetSale(true, 20m);
         item.SetSale(true, 20m);
 
-        // Not 524.80. The discount is computed from the list price every time rather than
-        // stored, so setting the same sale again is idempotent.
         Assert.Equal(656m, item.PriceFor("XL").Amount);
     }
 
@@ -581,7 +539,7 @@ public class MerchSaleTests
         var item = HoodieWithPricedSizes();
         item.SetSale(true, 10m);
 
-        Assert.Equal(675m, item.PriceFrom.Amount);       // 750 - 10%
+        Assert.Equal(675m, item.PriceFrom.Amount);
         Assert.Equal(750m, item.ListPriceFrom.Amount);
     }
 
@@ -594,7 +552,6 @@ public class MerchSaleTests
         var order = Order.Create(UserId);
         order.AddLine(item, "XL", 1);
 
-        // The guilder is charged the sale price; ending the sale must not reprice history.
         Assert.Equal(656m, order.Lines[0].UnitPrice.Amount);
 
         item.SetSale(false, 0m);
@@ -616,7 +573,6 @@ public class MerchStockTests
 
         Assert.Equal(3, item.StockFor("M"));
 
-        // Only the variant that sold moves.
         Assert.Equal(5, item.StockFor("S"));
     }
 
@@ -628,14 +584,11 @@ public class MerchStockTests
         order.AddLine(item, "M", 1);
         order.SubmitReceipt(PaymentReceipt.FromScreenshot("https://cdn/receipt.png", "0001234567890"));
 
-        // Somebody else's order was acknowledged first.
         item.DeductStock("M", 1);
 
         var ex = Assert.Throws<DomainException>(() => order.Acknowledge(Catalog(item)));
         Assert.Contains("1 ordered, 0 left", ex.Message);
 
-        // Left in Pending so an officer can restock or refund, rather than being handed a
-        // half-finished transition.
         Assert.Equal(OrderStatus.Pending, order.Status);
     }
 
@@ -653,7 +606,6 @@ public class MerchStockTests
 
         Assert.Throws<DomainException>(() => order.Acknowledge(Catalog(hoodie, tote)));
 
-        // Everything is checked before anything is taken.
         Assert.Equal(5, hoodie.StockFor("M"));
     }
 
@@ -736,7 +688,6 @@ public class MerchPreorderTests
     {
         var item = Preorder();
 
-        // Produced to demand, so "how many are left" has no answer.
         Assert.True(item.CanFulfil("M", 500));
         Assert.Equal(int.MaxValue, item.StockFor("M"));
     }
@@ -813,7 +764,6 @@ public class MerchPricingTests
     {
         Assert.True(HoodieWithPricedSizes().HasPriceRange);
 
-        // Hoodie() gives every size the same price, so there is no range to advertise.
         Assert.False(Hoodie().HasPriceRange);
     }
 
@@ -823,8 +773,6 @@ public class MerchPricingTests
         var item = MerchItem.Create("Tee", "Cotton", Money.Of(450m));
         item.AddVariant("M", string.Empty, Money.Of(450m));
 
-        // Cart and order lines match variants by name, so a duplicate would make an
-        // existing line ambiguous about which variant it meant.
         var ex = Assert.Throws<DomainException>(
             () => item.AddVariant("m", string.Empty, Money.Of(500m)));
 
@@ -841,7 +789,6 @@ public class MerchPricingTests
 
         Assert.Equal(["red.jpg"], item.PhotosFor("Red"));
 
-        // A variant without its own photos should look like the item, not blank.
         Assert.Equal(["item-front.jpg", "item-back.jpg"], item.PhotosFor("Blue"));
     }
 }

@@ -18,8 +18,6 @@ public class ChangeOrderStatusCommandHandler(IUnitOfWork uow)
         switch (command.Status)
         {
             case OrderStatusDto.Acknowledged:
-                // Tracked entities: acknowledging is what deducts their stock, so the
-                // same unit of work has to save both the order and the merch.
                 var items = await uow.Merch.GetManyAsync(
                     order.Lines.Select(l => l.MerchItemId), cancellationToken);
 
@@ -49,8 +47,6 @@ public class ChangeOrderStatusCommandHandler(IUnitOfWork uow)
                 break;
 
             default:
-                // AwaitingPayment and Pending are reached by the guilder submitting or an
-                // officer rejecting a receipt, not by setting a status.
                 throw new DomainException(
                     $"{command.Status} is not a status an officer can set directly.");
         }

@@ -11,7 +11,6 @@ public class GuildEventConfiguration : IEntityTypeConfiguration<GuildEvent>
         builder.ToTable("Events");
         builder.HasKey(e => e.Id);
 
-        // Create assigns the id, so the store must never substitute one.
         builder.Property(e => e.Id).ValueGeneratedNever();
 
         builder.Property(e => e.Title).HasMaxLength(200).IsRequired();
@@ -19,7 +18,6 @@ public class GuildEventConfiguration : IEntityTypeConfiguration<GuildEvent>
         builder.Property(e => e.Description).HasMaxLength(4000);
         builder.Property(e => e.PosterUrl).HasMaxLength(500);
 
-        // Every event read is a month range, so this is the index that matters.
         builder.HasIndex(e => e.StartDateTime);
     }
 }

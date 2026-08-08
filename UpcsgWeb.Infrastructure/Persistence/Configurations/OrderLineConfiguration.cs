@@ -11,16 +11,12 @@ public class OrderLineConfiguration : IEntityTypeConfiguration<OrderLine>
         builder.ToTable("OrderLines");
         builder.HasKey(l => l.Id);
 
-        // Create assigns the id, so the store must never substitute one.
         builder.Property(l => l.Id).ValueGeneratedNever();
 
         builder.Property(l => l.ItemName).HasMaxLength(200).IsRequired();
         builder.Property(l => l.Variant).HasMaxLength(100);
         builder.Property(l => l.Quantity).IsRequired();
 
-        // Reference to the MerchItem aggregate by id, with no FK constraint: deleting
-        // a discontinued item must not cascade into historical orders, and the line
-        // already carries its own name/price snapshot.
         builder.Property(l => l.MerchItemId).IsRequired();
         builder.HasIndex(l => l.MerchItemId);
 
@@ -37,8 +33,6 @@ public class OrderLineConfiguration : IEntityTypeConfiguration<OrderLine>
                 .IsRequired();
         });
 
-        // Text, for the same reason as OrderStatus: an ordinal would silently remap every
-        // existing row if a value were ever inserted mid-enum.
         builder.Property(l => l.Status)
             .HasConversion<string>()
             .HasMaxLength(20)

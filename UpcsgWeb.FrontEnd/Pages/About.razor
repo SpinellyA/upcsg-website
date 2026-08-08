@@ -5,7 +5,6 @@
 
 <PageTitle>About - UPCSG</PageTitle>
 
-@* ---------- Compact banner: shorter than the landing hero by design ---------- *@
 <section class="upcsg-banner">
     <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
     <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 34%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
@@ -25,7 +24,6 @@
 
 <div class="upcsg-page upcsg-page--after-hero">
 
-    @* ---------- Identity: the pull quote gets its own plate ---------- *@
     <section class="upcsg-section upcsg-feature">
         <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__visual">
             <div class="upcsg-quoteplate">
@@ -56,7 +54,6 @@
         </Reveal>
     </section>
 
-    @* ---------- The roster at a glance ---------- *@
     @if (_execCount > 0)
     {
         <section class="upcsg-section upcsg-band">
@@ -65,9 +62,6 @@
                     <StatCounter Value="_execCount" Label="Officers serving" />
                     <StatCounter Value="_committees.Count" Label="Committees" />
 
-                    @* Only when there are advisers to count. A stat reading "0 Faculty
-                       advisers" draws the eye straight to a gap in the roster, which is
-                       the opposite of what a figures band is for. *@
                     @if (_facultyCount > 0)
                     {
                         <StatCounter Value="_facultyCount" Label="Faculty advisers" />
@@ -77,11 +71,6 @@
         </section>
     }
 
-    @* ---------- Faculty: only when there are any ----------
-
-       This section used to render its heading unconditionally. The roster currently holds
-       no faculty at all, so the live page showed "Your guiding light / Faculty" above
-       nothing — a heading advertising an empty space. *@
     @if (_faculty.Count > 0)
     {
         <section class="upcsg-section">
@@ -98,7 +87,6 @@
         </section>
     }
 
-    @* ---------- Executive committee, grouped by committee ---------- *@
     <section class="upcsg-section">
         <SectionHeading Kicker="Know your officers"
                         Title="Executive Committee"
@@ -131,13 +119,6 @@
                     <span class="upcsg-committee-rule__count">@committee.Count</span>
                 </Reveal>
 
-                @* Each officer gets a full-width profile row, mirrored against the one
-                   before it. The ExeCom never runs to large numbers, so the roster can
-                   afford to showcase people rather than tile them.
-
-                   The reveal slides in from the same side the portrait sits on, so the
-                   alternation is something the page does rather than just a static
-                   arrangement. *@
                 <div class="upcsg-membershowcase">
                     @foreach (var row in committee.Rows)
                     {
@@ -153,12 +134,9 @@
         }
     </section>
 
-    @* ---------- Closing CTA: same treatment as the home page's ---------- *@
     <section class="upcsg-section upcsg-closing">
         <div class="upcsg-flare upcsg-closing__flare"></div>
 
-        @* The officers above are elected out of a membership that every CS student is
-           already in, so this asks for involvement rather than for joining. *@
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
             <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Fancy a hand in it?</p>
             <h2 class="upcsg-title-xl">Run something with us</h2>
@@ -176,8 +154,6 @@
 </div>
 
 @code {
-    /// <param name="Flip">Mirrors this row against the one before it.</param>
-    /// <param name="IsLead">The most senior officer, rendered a size larger.</param>
     private sealed record ProfileRow(MemberDto Member, bool Flip, bool IsLead);
 
     private sealed record CommitteeGroup(string Name, List<ProfileRow> Rows)
@@ -216,15 +192,12 @@
         _execCount = exeCom.Count;
         _allOfficers = exeCom;
 
-        // GroupBy keeps first-seen key order, so committees follow DisplayOrder.
         var groups = exeCom
             .GroupBy(m => string.IsNullOrWhiteSpace(m.Committee) ? "Other" : m.Committee)
             .ToList();
 
         _committees = [];
 
-        // One running flag across the whole roster, so the alternation never resets at a
-        // committee boundary and leaves two portraits stacked on the same side.
         var flip = false;
         var first = true;
 
@@ -234,8 +207,6 @@
 
             foreach (var member in group)
             {
-                // Only the single most senior officer is enlarged. Promoting the head of
-                // every committee would flatten the hierarchy again, just at a bigger size.
                 rows.Add(new ProfileRow(member, flip, IsLead: first));
                 flip = !flip;
                 first = false;

@@ -11,7 +11,6 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.ToTable("Members");
         builder.HasKey(m => m.Id);
 
-        // Create assigns the id, so the store must never substitute one.
         builder.Property(m => m.Id).ValueGeneratedNever();
 
         builder.Property(m => m.Name).HasMaxLength(200).IsRequired();
@@ -23,7 +22,6 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
 
         builder.Property(m => m.Category).HasConversion<string>().HasMaxLength(30).IsRequired();
 
-        // Matches MemberRepository's default ordering.
         builder.HasIndex(m => new { m.Category, m.DisplayOrder });
     }
 }

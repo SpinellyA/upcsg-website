@@ -2,10 +2,6 @@ using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.ValueObjects;
 
-/// <summary>
-/// Money as a value object rather than a bare decimal, so amounts can't go negative,
-/// can't silently carry sub-centavo precision, and can't be added across currencies.
-/// </summary>
 public sealed record Money
 {
     public const string DefaultCurrency = "PHP";
@@ -31,7 +27,6 @@ public sealed record Money
             throw new DomainException("Money requires a currency.");
         }
 
-        // Round once, here, so totals can't drift by fractions of a centavo.
         return new Money(decimal.Round(amount, 2, MidpointRounding.ToEven), currency.ToUpperInvariant());
     }
 

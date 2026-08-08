@@ -11,15 +11,6 @@ using UpcsgWeb.Infrastructure.Persistence.Repositories;
 
 namespace UpcsgWeb.Infrastructure.Persistence;
 
-/// <summary>
-/// The DbContext doubles as the unit of work — its change tracker already is one, so
-/// wrapping it in another transaction object would add indirection without adding
-/// behaviour. It also serves the read side, so a query handler can project without
-/// going near a repository.
-///
-/// Both faces sit behind application-owned interfaces, so nothing above this layer
-/// ever sees EF Core.
-/// </summary>
 public class UpcsgDbContext(
     DbContextOptions<UpcsgDbContext> options,
     IDomainEventDispatcher? dispatcher = null)
@@ -34,11 +25,6 @@ public class UpcsgDbContext(
     public DbSet<Member> Members => Set<Member>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
     public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
-
-    // --- IUnitOfWork -------------------------------------------------------------------
-    //
-    // Built lazily and cached so every repository in a request shares this context, which
-    // is what lets their staged changes commit together.
 
     private ICartRepository? _cartRepository;
     private IOrderRepository? _orderRepository;
@@ -63,14 +49,6 @@ public class UpcsgDbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(UpcsgDbContext).Assembly);
 
-    /// <summary>
-    /// Saves, then publishes whatever the aggregates raised.
-    ///
-    /// The order is the whole point. Dispatching first would let a handler act on a
-    /// change that then failed to commit; dispatching after means every event describes
-    /// something that actually happened. Events are collected before the save because
-    /// clearing them is part of dispatch.
-    /// </summary>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         var roots = ChangeTracker

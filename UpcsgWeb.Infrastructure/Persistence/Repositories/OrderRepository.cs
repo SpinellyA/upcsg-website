@@ -6,8 +6,6 @@ namespace UpcsgWeb.Infrastructure.Persistence.Repositories;
 
 public class OrderRepository(UpcsgDbContext db) : Repository<Order>(db), IOrderRepository
 {
-    // Declared once here so every inherited and derived query loads the aggregate whole.
-    // An Order without its lines would report a total of zero.
     protected override IQueryable<Order> Query => Set.Include(o => o.Lines);
 
     protected override IQueryable<Order> ApplyDefaultOrder(IQueryable<Order> query) =>
@@ -32,7 +30,6 @@ public class OrderRepository(UpcsgDbContext db) : Repository<Order>(db), IOrderR
             .OrderBy(o => o.PlacedAt)
             .ToListAsync(ct);
 
-    // Query, not ReadQuery: the caller is going to mutate these and expect a save.
     public async Task<IReadOnlyList<Order>> GetByStatusForUpdateAsync(
         OrderStatus status, CancellationToken ct = default) =>
         await Query

@@ -39,8 +39,6 @@
             <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
         }
 
-        @* Laid out like the page it produces: poster on the left where the public
-           detail page shows it, the writing on the right. *@
         <div class="upcsg-merchform mt-4">
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Poster</MudText>
@@ -79,9 +77,6 @@
         <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
             <MudText Typo="Typo.overline" Class="upcsg-panel__title">When</MudText>
 
-            @* Bound explicitly rather than with @bind-*: these need to mark the form
-               dirty as well as store the value, and @bind already owns the Changed
-               callback. *@
             <div class="upcsg-whenrow">
                 <MudDatePicker Date="_date" Label="Date" Variant="Variant.Outlined"
                                DateChanged="OnDateChanged" />
@@ -91,8 +86,6 @@
                                TimeChanged="OnEndChanged" />
             </div>
 
-            @* The domain refuses an end before a start, but saying so here beats
-               finding out from a 409 after everything else has been typed. *@
             @if (EndsBeforeItStarts)
             {
                 <MudAlert Severity="Severity.Warning" Dense="true" Square="true" Elevation="0" Class="mt-3">
@@ -149,10 +142,6 @@
 @code {
     [Parameter] public Guid? Id { get; set; }
 
-    /// <summary>
-    /// The month the officer was browsing, carried in the query string so a new event
-    /// starts there and Cancel returns there.
-    /// </summary>
     [Parameter, SupplyParameterFromQuery] public int? Year { get; set; }
 
     [Parameter, SupplyParameterFromQuery] public int? Month { get; set; }
@@ -168,7 +157,6 @@
     private TimeSpan? _startTime;
     private TimeSpan? _endTime;
 
-    /// <summary>The month this event was in when it was opened, to notice a move.</summary>
     private DateTime? _originalMonth;
 
     private bool IsNew => Id is null;
@@ -182,7 +170,6 @@
         _originalMonth is { } was && _date is { } now &&
         (now.Year != was.Year || now.Month != was.Month);
 
-    /// <summary>The date line as the public page will render it.</summary>
     private string Reads
     {
         get
@@ -219,13 +206,8 @@
                 {
                     _item = found;
 
-                    // Set immediately before the pickers first receive these values, so
-                    // the callbacks they raise on that render are ignored. Setting it any
-                    // earlier is useless: the loading render clears it again.
                     _populating = true;
 
-                    // Stored as an instant; edited as the wall-clock time an officer
-                    // would read off a poster.
                     var localStart = found.StartDateTime.ToLocalTime();
                     _date = localStart.Date;
                     _startTime = localStart.TimeOfDay;
@@ -238,8 +220,6 @@
                 _item = new EventDto();
                 _populating = true;
 
-                // Default into the month the officer was browsing, not today, or adding
-                // an event while looking at next month would silently land in this one.
                 var year = Year is >= 1 and <= 9999 ? Year.Value : DateTime.Now.Year;
                 var month = Month is >= 1 and <= 12 ? Month.Value : DateTime.Now.Month;
 
@@ -259,14 +239,6 @@
         }
     }
 
-    /// <summary>
-    /// True while the form is being populated from the server.
-    ///
-    /// The pickers raise their Changed callbacks when their bound value is first set,
-    /// not only when an officer touches them — so without this, merely opening an event
-    /// marks it dirty, Cancel always asks "discard changes?", and the warning stops
-    /// meaning anything. Cleared once the render that populated them has finished.
-    /// </summary>
     private bool _populating;
 
     protected override void OnAfterRender(bool firstRender) => _populating = false;
@@ -313,14 +285,8 @@
             var date = _date!.Value.Date;
             var start = date.Add(_startTime ?? DefaultStart);
 
-            // Sent as an explicit instant. A bare wall-clock value is interpreted
-            // against whatever timezone the API host happens to run in, which is how
-            // a 6 PM event can come back reading 2 AM.
             _item.StartDateTime = DateTime.SpecifyKind(start, DateTimeKind.Local).ToUniversalTime();
 
-            // An end time is assumed to be the same day — the guild doesn't run
-            // overnight events. Anything not after the start is dropped rather than
-            // sent for the domain to reject.
             _item.EndDateTime = _endTime is { } end && end > start.TimeOfDay
                 ? DateTime.SpecifyKind(date.Add(end), DateTimeKind.Local).ToUniversalTime()
                 : null;
@@ -328,8 +294,6 @@
             var saved = await Admin.SaveEventAsync(_item);
             Snackbar.Add("Saved.", Severity.Success);
 
-            // A new event now has an id; land on its own URL so a reload doesn't
-            // create a second copy.
             if (IsNew)
             {
                 Navigation.NavigateTo($"admin/events/{saved.Id}", replace: true);
@@ -338,7 +302,6 @@
 
             _item = saved;
 
-            // Same reason as on load: writing these back re-fires the pickers.
             _populating = true;
 
             var localStart = saved.StartDateTime.ToLocalTime();
@@ -377,8 +340,6 @@
             await Admin.DeleteEventAsync(_item.Id);
             Snackbar.Add("Deleted.", Severity.Success);
 
-            // Nothing left to edit, and the guard would otherwise ask about unsaved
-            // edits to a record that no longer exists.
             _dirty = false;
             Navigation.NavigateTo(BackUrl);
         }
@@ -407,7 +368,6 @@
         Navigation.NavigateTo(BackUrl);
     }
 
-    /// <summary>Back to the month this event lives in, not whatever month is "now".</summary>
     private string BackUrl =>
         _date is { } d ? $"admin/events?year={d.Year}&month={d.Month}" : "admin/events";
 }

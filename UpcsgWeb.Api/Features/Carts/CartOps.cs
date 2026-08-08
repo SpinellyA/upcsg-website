@@ -4,16 +4,8 @@ using UpcsgWeb.Domain.Merch;
 
 namespace UpcsgWeb.Api.Features.Carts;
 
-/// <summary>
-/// Shared cart plumbing. A static helper rather than a base class, because every
-/// endpoint already derives from a FastEndpoints type.
-///
-/// Every cart endpoint resolves the cart from the JWT — none accepts a userId from the
-/// caller, or one guilder could read and edit another's cart.
-/// </summary>
 internal static class CartOps
 {
-    /// <summary>Loads the guilder's cart, creating an empty one on first use.</summary>
     public static async Task<Cart> GetOrCreateAsync(
         ICartRepository carts, Guid userId, CancellationToken ct)
     {
@@ -28,7 +20,6 @@ internal static class CartOps
         return created;
     }
 
-    /// <summary>Resolves every merch item the cart references in a single query.</summary>
     public static async Task<IReadOnlyDictionary<Guid, MerchItem>> ResolveItemsAsync(
         Cart cart, IMerchRepository merch, CancellationToken ct)
     {

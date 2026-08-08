@@ -35,8 +35,6 @@ public class AddToCartEndpoint(ICartRepository carts, IMerchRepository merch, IU
 
         try
         {
-            // The aggregate re-checks stock, variant and the per-line cap against the
-            // real item — the request only supplies an id and a quantity.
             cart.AddItem(item, req.Variant, req.Quantity);
         }
         catch (DomainException ex)

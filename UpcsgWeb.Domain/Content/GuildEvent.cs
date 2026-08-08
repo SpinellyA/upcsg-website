@@ -2,13 +2,9 @@ using UpcsgWeb.Domain.Common;
 
 namespace UpcsgWeb.Domain.Content;
 
-/// <summary>
-/// A guild event. Named GuildEvent rather than Event to stay clear of the `event`
-/// keyword and of domain-event terminology.
-/// </summary>
 public class GuildEvent : AggregateRoot
 {
-    private GuildEvent() { } // EF
+    private GuildEvent() { }
 
     public string Title { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
@@ -54,7 +50,6 @@ public class GuildEvent : AggregateRoot
         Title = title.Trim();
         Description = description?.Trim() ?? string.Empty;
 
-        // Npgsql rejects non-UTC values on timestamptz, so normalise at the boundary.
         StartDateTime = startsAt.ToUniversalTime();
         EndDateTime = endsAt?.ToUniversalTime();
 

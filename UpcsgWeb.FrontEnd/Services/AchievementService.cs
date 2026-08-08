@@ -6,7 +6,6 @@ namespace UpcsgWeb.FrontEnd.Services;
 public class AchievementService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
     : IAchievementService
 {
-    // Live when reachable, then the committed snapshot, then the built-in seed.
     public Task<List<AchievementDto>> GetAchievementsAsync() =>
         LiveOrSnapshot.ReadAsync(
             options,
@@ -24,7 +23,6 @@ public class AchievementService(HttpClient http, ApiOptions options, ISnapshotSe
 
         try
         {
-            // A bad id in the URL is an ordinary answer, not an exception for the page.
             var response = await http.GetAsync($"api/achievements/{id}");
 
             if (!response.IsSuccessStatusCode)
@@ -36,20 +34,10 @@ public class AchievementService(HttpClient http, ApiOptions options, ISnapshotSe
         }
         catch (HttpRequestException)
         {
-            // Unreachable rather than not found — the list path knows how to fall back.
             return (await GetAchievementsAsync()).FirstOrDefault(a => a.Id == id);
         }
     }
 
-    /// <summary>
-    /// Deliberately short. The ExeCom only publishes achievements it can verify, so this
-    /// starts at the current term and grows backwards as older wins are confirmed — it is
-    /// NOT scoped to a single term. The Hall of Fame is built to handle both a two-entry
-    /// list and a multi-year archive, so nothing needs changing as it fills in.
-    ///
-    /// Descriptions are written as full articles: the detail page renders every paragraph,
-    /// and the cards show the first one as the standfirst.
-    /// </summary>
     private static List<AchievementDto> SeedData() =>
     [
         new AchievementDto

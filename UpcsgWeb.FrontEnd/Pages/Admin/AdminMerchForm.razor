@@ -40,8 +40,6 @@
             <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
         }
 
-        @* The form is laid out like the page it produces: photos on the left where the
-           gallery sits, the writing on the right where the buy panel sits. *@
         <div class="upcsg-merchform mt-4">
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Photos</MudText>
@@ -82,7 +80,6 @@
             </MudPaper>
         </div>
 
-        @* ---------- Selling mode ---------- *@
         <div class="upcsg-merchform mt-4">
             <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                 <MudText Typo="Typo.overline" Class="upcsg-panel__title">Sale</MudText>
@@ -147,7 +144,6 @@
             </MudPaper>
         </div>
 
-        @* ---------- Variants ---------- *@
         <section class="upcsg-section mt-4">
             <div class="upcsg-section-head">
                 <div>
@@ -222,8 +218,6 @@
         </section>
 
         <div class="upcsg-formbar">
-            @* Deleting happens here, with the whole item on screen, rather than from a
-               one-line table row where all an officer can see is the name. *@
             @if (!IsNew)
             {
                 <MudButton Variant="Variant.Text" Color="Color.Error" Class="mr-auto"
@@ -264,7 +258,6 @@
     private decimal CheapestVariant =>
         _item.Variants.Count == 0 ? _item.Price : _item.Variants.Min(v => v.Price);
 
-    /// <summary>What the cheapest way in costs once the sale is applied.</summary>
     private decimal SalePreview =>
         decimal.Round(CheapestVariant * (1m - _item.SalePercentage / 100m), 2, MidpointRounding.ToEven);
 
@@ -274,8 +267,6 @@
     {
         _item.IsPreorder = isPreorder;
 
-        // A closing date only means something on a preorder; the aggregate rejects one
-        // otherwise, so clear it here rather than letting the save fail.
         if (!isPreorder)
         {
             _preorderCloses = null;
@@ -328,8 +319,6 @@
 
     private async Task AddVariantAsync()
     {
-        // A new variant starts at the item's price: most variants cost the same, and
-        // typing the number again for every size is busywork.
         var draft = new MerchVariantDto { Price = _item.Price };
 
         if (await ShowVariantAsync(draft, "New variant"))
@@ -346,7 +335,6 @@
             return;
         }
 
-        // Edit a copy so cancelling really cancels.
         var draft = new MerchVariantDto
         {
             Id = variant.Id,
@@ -393,14 +381,11 @@
 
         try
         {
-            // The picker hands back a local date; the domain stores UTC.
             _item.PreorderClosesAt = _item.IsPreorder ? _preorderCloses?.ToUniversalTime() : null;
 
             var saved = await Admin.SaveMerchAsync(_item);
             Snackbar.Add("Saved.", Severity.Success);
 
-            // A new item now has an id; land on its own URL so a reload doesn't create a
-            // second copy.
             if (IsNew)
             {
                 Navigation.NavigateTo($"admin/merch/{saved.Id}", replace: true);
@@ -458,8 +443,6 @@
             await Admin.DeleteMerchAsync(_item.Id);
             Snackbar.Add("Deleted.", Severity.Success);
 
-            // Nothing left to edit, and the guard would otherwise ask about unsaved edits
-            // to a record that no longer exists.
             _dirty = false;
             Navigation.NavigateTo("admin/merch");
         }

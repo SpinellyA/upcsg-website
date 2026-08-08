@@ -51,9 +51,6 @@
                         <MudAlert Severity="Severity.Error" Class="mb-4">@_error</MudAlert>
                     }
 
-                    @* Driven by whether a client id is configured, not by a constant somebody
-                       has to remember to flip before deploying. Set Google:ClientId in
-                       wwwroot/appsettings.json and the real button takes over. *@
                     @if (!Google.IsConfigured)
                     {
                         <MudAlert Severity="Severity.Info" Dense="true" Class="mb-4">
@@ -82,9 +79,6 @@
                     }
                     else
                     {
-                        @* Google Identity Services renders its own button into this element.
-                           It cannot be restyled — the branding is part of what the user is
-                           being asked to trust. *@
                         <div id="upcsg-google-button" class="upcsg-auth__google"></div>
 
                         @if (_busy)
@@ -123,8 +117,6 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The target div only exists once rendered, and only when a client id is
-        // configured — asking Google to render into a missing element throws.
         if (!firstRender || !Google.IsConfigured)
         {
             return;
@@ -140,18 +132,11 @@
         }
         catch (Exception ex)
         {
-            // A blocked or failed script must say so. Without this the page shows an
-            // empty panel and looks broken rather than blocked.
             _error = $"Google sign-in could not be loaded. {ex.Message}";
             StateHasChanged();
         }
     }
 
-    /// <summary>
-    /// Receives the ID token from Google. Called from JS, so it must be public and
-    /// attributed — and it does nothing with the credential except hand it to the API,
-    /// which is the only thing that verifies it.
-    /// </summary>
     [JSInvokable]
     public async Task OnGoogleCredential(string credential)
     {
@@ -188,7 +173,6 @@
             }
             catch (JSDisconnectedException)
             {
-                // Navigated away mid-teardown; nothing to clean up.
             }
         }
     }
@@ -214,10 +198,6 @@
         }
     }
 
-    /// <summary>
-    /// Only ever return to a path inside this app. An unchecked returnUrl is an open
-    /// redirect — an attacker could send a login link that bounces to their own site.
-    /// </summary>
     private string SafeReturnUrl()
     {
         if (string.IsNullOrWhiteSpace(ReturnUrl))

@@ -4,11 +4,6 @@ using static UpcsgWeb.Domain.Tests.TestData;
 
 namespace UpcsgWeb.Domain.Tests;
 
-/// <summary>
-/// Regression cover for the transient-entity equality bug: an unsaved entity used to
-/// compare unequal to itself, so List.Remove couldn't find it and removals silently
-/// did nothing.
-/// </summary>
 public class EntityEqualityTests
 {
     [Fact]
@@ -19,7 +14,6 @@ public class EntityEqualityTests
 
         var line = cart.Lines[0];
 
-        // A line has identity from the moment Create makes it, well before any save.
         Assert.NotEqual(Guid.Empty, line.Id);
         Assert.True(line.Equals(line));
     }

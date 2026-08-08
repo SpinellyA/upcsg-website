@@ -1,12 +1,6 @@
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 
-@* One event, at one of three densities. Shared by the home strip, the events list and
-   the foot of the detail page, so the three cannot drift apart.
-
-   Times are read as Cebu wall-clock. Stored instants are UTC, and rendering them raw put
-   a 6 PM event at 10 AM — and on the wrong calendar day either side of midnight. *@
-
 <a class="upcsg-eventcard upcsg-eventcard--@Variant.ToString().ToLowerInvariant() @(Quiet ? "upcsg-eventcard--quiet" : null)"
    href="@($"events/{Event.Id}")">
 
@@ -55,13 +49,10 @@
 @code {
     public enum Density
     {
-        /// <summary>The default tile: poster above, date chip, title and meta.</summary>
         Card,
 
-        /// <summary>The lead entry. Poster beside the text, with a blurb and countdown.</summary>
         Feature,
 
-        /// <summary>No poster. For dense lists where the row itself is the point.</summary>
         Row,
     }
 
@@ -69,13 +60,8 @@
 
     [Parameter] public Density Variant { get; set; } = Density.Card;
 
-    /// <summary>
-    /// Flat ink instead of the gradient surface. For the quiet index at the foot of the
-    /// detail page, where more glowing cards competed with the article above them.
-    /// </summary>
     [Parameter] public bool Quiet { get; set; }
 
-    /// <summary>Corner badge saying whether it is upcoming, on now, or done.</summary>
     [Parameter] public bool ShowStatus { get; set; }
 
     private DateTime Starts => EventTiming.Starts(Event);

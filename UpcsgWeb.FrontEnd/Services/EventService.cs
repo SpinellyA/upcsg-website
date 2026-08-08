@@ -3,10 +3,6 @@ using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
-/// <summary>
-/// Reads live data when an API is configured, otherwise serves the built-in sample so
-/// the public site still renders standalone. Same pattern across the content services.
-/// </summary>
 public class EventService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
     : IEventService
 {
@@ -21,8 +17,6 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
 
         var now = DateTime.Now;
 
-        // The snapshot carries the pinned month too, so an offline site keeps showing the
-        // month the officers published rather than silently jumping to today's.
         var settings = await LiveOrSnapshot.ReadAsync<SiteSettingsDto?>(
             options,
             snapshots,
@@ -49,10 +43,6 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
             async () => await http.GetFromJsonAsync<List<EventDto>>(
                 $"api/events?year={year}&month={month}", UpcsgJson.Options) ?? [],
 
-            // The snapshot holds every event, so the month filter that the API applies
-            // server-side has to be applied here instead. Local time, matching how the
-            // pages render them — filtering on the raw UTC instant would drop an evening
-            // event at the start or end of a month.
             snapshot =>
             [
                 .. snapshot.Events
@@ -72,8 +62,6 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
 
         try
         {
-            // 404 is an ordinary answer here — a bad id in the URL — so it must not
-            // surface as an exception the page has to catch.
             var response = await http.GetAsync($"api/events/{id}");
 
             if (!response.IsSuccessStatusCode)
@@ -90,10 +78,6 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
         }
     }
 
-    /// <summary>
-    /// Looks across every event rather than the displayed month, so a shared link to an
-    /// event outside the current month still resolves while offline.
-    /// </summary>
     private async Task<EventDto?> FromSnapshotOrSeedAsync(Guid id)
     {
         var snapshot = await snapshots.GetAsync();
@@ -108,8 +92,6 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
         var now = DateTime.Now;
         return
         [
-            // Descriptions are multi-paragraph on purpose: the detail page splits on blank
-            // lines, and a one-liner leaves it looking like a stub.
             new EventDto
             {
                 Id = new Guid("00000000-0000-0000-0000-000000000001"),

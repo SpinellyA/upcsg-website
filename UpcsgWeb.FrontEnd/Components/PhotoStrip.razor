@@ -1,9 +1,6 @@
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 
-@* Horizontally scrollable photo strip with an "Add" slot at the end.
-   Shared by the item form and the variant form so both behave identically. *@
-
 <div class="upcsg-photostrip">
     @if (Photos.Count == 0)
     {
@@ -24,7 +21,6 @@
 
                 @if (index == 0)
                 {
-                    @* Order is not decoration: listings use the first photo. *@
                     <span class="upcsg-photoslot__cover">Cover</span>
                 }
 
@@ -53,8 +49,6 @@
         <p class="upcsg-photostrip__status">@_status</p>
     }
 
-    @* Kept as an escape hatch: a poster already hosted elsewhere shouldn't have to be
-       downloaded and re-uploaded just to be referenced. *@
     <MudLink Component="button" Class="upcsg-photostrip__link" @onclick="AddByUrlAsync">
         or paste a link
     </MudLink>
@@ -64,7 +58,6 @@
     [Parameter, EditorRequired] public List<string> Photos { get; set; } = [];
     [Parameter] public EventCallback<List<string>> PhotosChanged { get; set; }
 
-    /// <summary>Which storage folder these belong to: merch, events, members, achievements.</summary>
     [Parameter, EditorRequired] public string Folder { get; set; } = "merch";
 
     [Inject] private IDialogService Dialogs { get; set; } = default!;
@@ -84,7 +77,7 @@
 
             if (result is null)
             {
-                return; // Picker cancelled.
+                return;
             }
 
             if (result.Error is not null)
@@ -96,8 +89,6 @@
             Photos.Add(result.Url!);
             await PhotosChanged.InvokeAsync(Photos);
 
-            // Worth showing: it's the difference between a 4 MB phone photo and what
-            // actually got stored, and it tells the officer the downscale is working.
             _status = result.OriginalBytes > result.SizeBytes
                 ? $"Uploaded — {Kb(result.OriginalBytes)} shrunk to {Kb(result.SizeBytes)}."
                 : $"Uploaded — {Kb(result.SizeBytes)}.";

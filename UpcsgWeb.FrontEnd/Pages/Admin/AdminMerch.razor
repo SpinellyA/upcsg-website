@@ -66,7 +66,6 @@
                 <MudTd DataLabel="Price" Class="upcsg-num">&#8369;@context.PriceFrom.ToString("N2")@(context.HasPriceRange ? "+" : "")</MudTd>
                 <MudTd DataLabel="Variants">@(context.Variants.Count == 0 ? "-" : string.Join(", ", context.Variants.Select(v => v.Name)))</MudTd>
 
-                @* The count matters more than the flag once stock is tracked per variant. *@
                 <MudTd DataLabel="Stock" Class="upcsg-num">
                     @(context.IsPreorder ? "Preorder" : TotalStock(context).ToString())
                 </MudTd>
@@ -99,7 +98,6 @@
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
-    // An item with variants holds no stock of its own; the variants carry it.
     private static int TotalStock(MerchItemDto item) =>
         item.Variants.Count == 0 ? item.Stock : item.Variants.Sum(v => v.Stock);
 
@@ -135,9 +133,6 @@
         }
     }
 
-    // Editing lives at /admin/merch/{id}: an item now carries photos and a variant list,
-    // which is more than a dialog can hold without becoming a scroll trap. Deleting lives
-    // there too, so it happens with the whole item in view.
     private void OpenItem(MerchItemDto? item)
     {
         if (item is not null)

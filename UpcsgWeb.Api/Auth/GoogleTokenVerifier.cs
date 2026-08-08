@@ -2,12 +2,6 @@ using Google.Apis.Auth;
 
 namespace UpcsgWeb.Api.Auth;
 
-/// <summary>
-/// Validates the ID token against Google's published keys.
-///
-/// Verification is the whole security boundary here: without checking the signature and
-/// audience, anyone could POST a hand-written JSON blob and be whoever they liked.
-/// </summary>
 public class GoogleTokenVerifier(IConfiguration configuration, ILogger<GoogleTokenVerifier> logger)
     : IGoogleTokenVerifier
 {
@@ -23,15 +17,11 @@ public class GoogleTokenVerifier(IConfiguration configuration, ILogger<GoogleTok
         {
             var settings = new GoogleJsonWebSignature.ValidationSettings
             {
-                // Rejects tokens minted for a different app — without this, a token from
-                // any other Google client would be accepted here.
                 Audience = [clientId],
             };
 
             var payload = await GoogleJsonWebSignature.ValidateAsync(credential, settings);
 
-            // Google sets this false for unverified addresses; treating those as identity
-            // would let someone claim an address they don't control.
             if (!payload.EmailVerified)
             {
                 logger.LogWarning("Rejected Google sign-in: unverified email {Email}", payload.Email);

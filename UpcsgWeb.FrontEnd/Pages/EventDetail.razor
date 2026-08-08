@@ -29,9 +29,6 @@ else if (_event is null)
 }
 else
 {
-    @* The poster becomes the hero rather than sitting in a column beside the copy. Only
-       one event in five has one, so the plate stands in — which means every event gets a
-       hero instead of the majority opening on plain text. *@
     <section class="upcsg-eventhero">
         <CosmicImage Src="@_event.PosterUrl"
                      Alt="@($"Poster for {_event.Title}")"
@@ -63,9 +60,6 @@ else
     <div class="upcsg-page upcsg-page--after-hero">
         <MudLink Href="events" Class="mb-4 d-inline-block">&larr; All events this month</MudLink>
 
-        @* The facts run across the top rather than down a rail beside the copy. A tall
-           column of prose next to a short column of labels never balances, and the
-           mismatch only gets worse the more an officer writes. *@
         <Reveal Variant="Reveal.RevealMotion.Up">
             <MudPaper Elevation="0" Class="upcsg-surface upcsg-glance mb-6">
                 <MudGrid Spacing="3">
@@ -94,14 +88,10 @@ else
 
                 <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap"
                           AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
-                    @* Takes its colour from the status rather than always being gold, so a
-                       finished event stops shouting the same way an upcoming one does. *@
                     <span class="upcsg-glance__countdown upcsg-glance__countdown--@EventTiming.StatusSlug(_event)">
                         @EventTiming.Countdown(_event)
                     </span>
 
-                    @* Share is the only action left, so it carries the filled treatment while
-                       the event is still ahead and steps back once it's over. *@
                     <MudButton Variant="@(EventTiming.HasEnded(_event) ? Variant.Outlined : Variant.Filled)"
                                Class="@(EventTiming.HasEnded(_event) ? "upcsg-ghost-button px-6" : "upcsg-cta-button px-6")"
                                StartIcon="@Icons.Material.Outlined.Share"
@@ -120,8 +110,6 @@ else
             </MudPaper>
         </Reveal>
 
-        @* Full measure now that the poster leads the page, so the copy is no longer
-           squeezed into a column beside an image it already appeared above. *@
         <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
             <article class="upcsg-eventbody upcsg-eventbody--wide">
                 <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> About this event</p>
@@ -144,8 +132,6 @@ else
                     </Action>
                 </SectionHeading>
 
-                @* Quiet keeps the flat ink treatment: this is an index at the foot of the
-                   page, and glowing cards after the article competed with it. *@
                 <div class="upcsg-eventlist">
                     @foreach (var (other, i) in _others.Select((o, i) => (o, i)))
                     {
@@ -168,7 +154,6 @@ else
 
     private DateTime Starts => _event is null ? default : EventTiming.Starts(_event);
 
-    /// <summary>Blank-line-separated paragraphs, so long copy doesn't render as one wall.</summary>
     private IEnumerable<string> Paragraphs =>
         (_event?.Description ?? string.Empty)
             .Replace("\r\n", "\n")
@@ -206,8 +191,6 @@ else
 
     private async Task ShareAsync()
     {
-        // The phone's own share sheet is how this actually reaches a groupchat;
-        // copying the link is the desktop fallback.
         var result = await JS.InvokeAsync<string>("upcsgShare", _event?.Title ?? "UPCSG event", Navigation.Uri);
 
         switch (result)

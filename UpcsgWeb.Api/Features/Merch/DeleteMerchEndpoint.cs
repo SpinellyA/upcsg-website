@@ -21,8 +21,6 @@ public class DeleteMerchEndpoint(IMerchRepository merch, IUnitOfWork uow) : Endp
             return;
         }
 
-        // Safe because order lines carry snapshots and hold no FK to this row, so
-        // history survives the item being discontinued.
         merch.Remove(item);
         await uow.SaveChangesAsync(ct);
         await Send.NoContentAsync(ct);

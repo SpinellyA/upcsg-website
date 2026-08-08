@@ -54,13 +54,9 @@
 
         <div class="upcsg-orderdetail mt-4">
             <div>
-                @* ---------- What was ordered ---------- *@
                 <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                     <MudText Typo="Typo.overline" Class="upcsg-panel__title">Items</MudText>
 
-                    @* No sorting or paging here on purpose — an order is a fixed record, and
-                       reordering its lines would only make it harder to check against the
-                       receipt. CustomFooter is what lets the three money rows coexist. *@
                     <MudTable Items="_order.Lines"
                               T="OrderLineDto"
                               Dense="true"
@@ -82,8 +78,6 @@
                             <MudTd DataLabel="Item">
                                 @context.ItemName
 
-                                @* The line stays visible whatever its state: an order is a
-                                   record of what was bought, not a picking list. *@
                                 @if (context.Status == OrderLineStatusDto.RefundDue)
                                 {
                                     <span class="upcsg-datatable__flag">Refund due</span>
@@ -105,8 +99,6 @@
                                 <MudTd Class="upcsg-num">&#8369;@((_order.AmountPaid ?? _order.Total).ToString("N2"))</MudTd>
                             </MudTFootRow>
 
-                            @* Once anything is owed back, the three figures are shown apart.
-                               A single "total" would hide the fact that money has to move. *@
                             @if (_order.HasRefundDue || _order.RefundHasBeenSettled)
                             {
                                 <MudTFootRow>
@@ -123,7 +115,6 @@
                         </FooterContent>
                     </MudTable>
 
-                    @* Prices are the ones captured at checkout, not today's. *@
                     <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
                         Prices shown are what the guilder was charged at checkout, even if the
                         item has been repriced since.
@@ -138,7 +129,6 @@
                     }
                 </MudPaper>
 
-                @* ---------- GCash receipt ---------- *@
                 <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
                     <MudText Typo="Typo.overline" Class="upcsg-panel__title">GCash receipt</MudText>
 
@@ -155,8 +145,6 @@
                             <div>
                                 <MudText Typo="Typo.overline" Class="upcsg-fact__key">Reference</MudText>
                                 <MudText Typo="Typo.body2" Class="upcsg-fact__mono">
-                                    @* Optional now: the screenshot is the proof, so say
-                                       plainly that none was typed rather than showing a gap. *@
                                     @(string.IsNullOrWhiteSpace(_order.Receipt.ReferenceNumber)
                                         ? "Not given — see screenshot"
                                         : _order.Receipt.ReferenceNumber)
@@ -176,8 +164,6 @@
 
                         @if (!string.IsNullOrWhiteSpace(_order.Receipt.ScreenshotUrl))
                         {
-                            @* Guilder-supplied URL, so it may well be dead. onerror flips the
-                               panel to a visible failure rather than a blank gap. *@
                             <a class="upcsg-receipt" href="@_order.Receipt.ScreenshotUrl" target="_blank" rel="noopener">
                                 <img src="@_order.Receipt.ScreenshotUrl"
                                      alt="GCash receipt for order @_order.Id"
@@ -203,15 +189,11 @@
             </div>
 
             <aside>
-                @* ---------- Status chain ---------- *@
                 <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
                     <MudText Typo="Typo.overline" Class="upcsg-panel__title">Status</MudText>
                     <OrderStatusChain Order="_order" />
                 </MudPaper>
 
-                @* ---------- Refund obligation ----------
-                   Its own panel, above the lifecycle actions, because money owed back is
-                   the thing an officer must not scroll past. *@
                 @if (_order.HasRefundDue || _order.RefundHasBeenSettled)
                 {
                     <MudPaper Square="true" Elevation="0" Class="upcsg-panel upcsg-panel--owed mt-4">
@@ -265,15 +247,12 @@
                     </MudPaper>
                 }
 
-                @* ---------- Actions ---------- *@
                 <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
                     <MudText Typo="Typo.overline" Class="upcsg-panel__title">Actions</MudText>
 
                     @if (HasActions)
                     {
                         <MudStack Spacing="2">
-                            @* Only transitions the domain will accept are offered, so the UI
-                               can never invite a 409. *@
                             @if (_order.Status == OrderStatusDto.Pending)
                             {
                                 <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true"
@@ -371,15 +350,11 @@
         }
         catch (Exception ex) when (next == OrderStatusDto.Acknowledged && LooksLikeShortfall(ex.Message))
         {
-            // The domain refused because stock ran short. Rather than leaving the officer
-            // with an error, offer the decision the situation actually calls for — and make
-            // them choose it, since it commits the guild to sending money back.
             _busy = false;
             await OfferShortfallAsync(ex.Message);
         }
         catch (Exception ex)
         {
-            // A 409 means the domain refused the move — show its reason verbatim.
             Snackbar.Add(ex.Message, Severity.Error);
             await LoadAsync();
         }
@@ -389,11 +364,6 @@
         }
     }
 
-    /// <summary>
-    /// Matches the shortfall message the aggregate produces. Deliberately narrow: any other
-    /// refusal — wrong state, missing receipt — must keep surfacing as a plain error rather
-    /// than prompting for a refund nobody asked about.
-    /// </summary>
     private static bool LooksLikeShortfall(string message) =>
         message.Contains("ordered,", StringComparison.OrdinalIgnoreCase)
         && message.Contains("left", StringComparison.OrdinalIgnoreCase);

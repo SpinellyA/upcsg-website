@@ -6,7 +6,6 @@ namespace UpcsgWeb.FrontEnd.Services;
 public class MerchService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
     : IMerchService
 {
-    // Live when reachable, then the committed snapshot, then the built-in seed.
     public Task<List<MerchItemDto>> GetMerchAsync() =>
         LiveOrSnapshot.ReadAsync(
             options,
@@ -24,7 +23,6 @@ public class MerchService(HttpClient http, ApiOptions options, ISnapshotService 
 
         try
         {
-            // A bad id in the URL is an ordinary answer, not an exception to catch.
             var response = await http.GetAsync($"api/merch/{id}");
 
             if (!response.IsSuccessStatusCode)
@@ -36,15 +34,10 @@ public class MerchService(HttpClient http, ApiOptions options, ISnapshotService 
         }
         catch (HttpRequestException)
         {
-            // Unreachable rather than not found — the list path knows how to fall back.
             return (await GetMerchAsync()).FirstOrDefault(m => m.Id == id);
         }
     }
 
-    /// <summary>
-    /// Offline sample. Variants price independently here too, so the "from" pricing and the
-    /// variant switcher can be exercised without a database behind them.
-    /// </summary>
     private static List<MerchItemDto> SeedData()
     {
         var items = new List<MerchItemDto>
@@ -116,8 +109,6 @@ public class MerchService(HttpClient http, ApiOptions options, ISnapshotService 
             },
         };
 
-        // The API computes these; offline we have to fill them in or listings would show
-        // a base price the variants don't agree with.
         foreach (var item in items)
         {
             item.ListPriceFrom = item.Variants.Count == 0 ? item.Price : item.Variants.Min(v => v.Price);

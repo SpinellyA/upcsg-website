@@ -3,14 +3,6 @@ using Microsoft.JSInterop;
 
 namespace UpcsgWeb.FrontEnd.Services;
 
-/// <summary>
-/// Shared handle to the motion module.
-///
-/// Registered as a singleton so the module is imported once per app rather than once per
-/// component: a page with twenty revealed elements would otherwise issue twenty dynamic
-/// imports of the same file. The <see cref="Lazy{T}"/> also means a page that animates
-/// nothing never fetches the script at all.
-/// </summary>
 public class MotionInterop(IJSRuntime js) : IAsyncDisposable
 {
     private readonly Lazy<Task<IJSObjectReference>> _module = new(() =>
@@ -37,8 +29,6 @@ public class MotionInterop(IJSRuntime js) : IAsyncDisposable
         }
         catch (JSDisconnectedException)
         {
-            // The circuit or tab went away mid-navigation. Decoration failing is never
-            // worth surfacing to the user, and never worth taking the page down for.
         }
         catch (ObjectDisposedException)
         {

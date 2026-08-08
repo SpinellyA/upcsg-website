@@ -18,7 +18,6 @@ public class UpdateMemberEndpoint(IMemberRepository members, IUnitOfWork uow)
 
     public override async Task HandleAsync(MemberDto req, CancellationToken ct)
     {
-        // Route id wins over the body, so a mismatched payload can't retarget the write.
         var member = await members.GetByIdAsync(Route<Guid>("id"), ct);
         if (member is null)
         {

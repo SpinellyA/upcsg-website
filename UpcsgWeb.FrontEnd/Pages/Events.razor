@@ -38,8 +38,6 @@
     }
     else if (_events.Count == 0)
     {
-        @* The whole page is the empty state when nothing is published — a calendar of
-           thirty blank squares above an empty list says less than one clear sentence. *@
         <section class="upcsg-section">
             <Reveal Variant="Reveal.RevealMotion.Fade">
                 <div class="upcsg-empty upcsg-empty--tall">
@@ -58,7 +56,6 @@
     }
     else
     {
-        @* ---------- Next up ---------- *@
         @if (_next is not null)
         {
             <section class="upcsg-section">
@@ -70,12 +67,8 @@
             </section>
         }
 
-        @* ---------- Calendar rail + listing ---------- *@
         <section class="upcsg-section upcsg-eventslayout">
 
-            @* Sticky so the month stays in reach while the list scrolls past it. This is
-               why the page wrappers clip rather than hide their overflow — hidden would
-               make them scroll containers and kill the stickiness. *@
             <aside class="upcsg-eventslayout__rail">
                 <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-calcard">
                     <div class="upcsg-calcard__head">
@@ -183,13 +176,6 @@
         "Orientations", "Merch drops", "Socials", "UP Cebu",
     ];
 
-    /// <summary>
-    /// The month being published, which officers can pin ahead of the real calendar.
-    ///
-    /// Not DateTime.Today: the events came from the configured month all along, but the
-    /// heading and the calendar grid were built from today's date, so pinning July left
-    /// an August page with July's events listed under it.
-    /// </summary>
     private DateTime _month = DateTime.Today;
 
     private bool _loading = true;
@@ -200,10 +186,8 @@
     private DateTime FirstOfMonth => new(_month.Year, _month.Month, 1);
     private int DaysInMonth => DateTime.DaysInMonth(_month.Year, _month.Month);
 
-    // Sunday-first grid, matching the local convention.
     private int LeadingBlanks => (int)FirstOfMonth.DayOfWeek;
 
-    /// <summary>Everything, or just the picked day.</summary>
     private List<EventDto> Listed => _selectedDate is null
         ? _events
         : EventsOn(_selectedDate.Value);
@@ -214,9 +198,6 @@
 
     private string ListTitle => _selectedDate is not null ? "That day" : "Everything on";
 
-    // Three states, not two. A pinned month whose events have all finished falls back to
-    // the last one, and calling that "Next up / The one to catch" put an invitation over
-    // a card the same page had already badged Finished.
     private string FeatureKicker =>
         _next is null ? string.Empty
         : EventTiming.IsUnderway(_next) ? "On right now"
@@ -238,8 +219,6 @@
             .OrderBy(e => e.StartDateTime)
             .ToList();
 
-        // The soonest thing that hasn't finished. Falls back to the last event of the
-        // month so a fully past month still leads with something rather than a hole.
         _next = _events.FirstOrDefault(e => !EventTiming.HasEnded(e)) ?? _events.LastOrDefault();
 
         _loading = false;
@@ -250,7 +229,6 @@
 
     private void ClearSelection() => _selectedDate = null;
 
-    /// <summary>Picking a day filters the list to it and scrolls the first one into view.</summary>
     private async Task SelectDayAsync(DateTime date)
     {
         var ids = EventsOn(date).Select(e => e.Id).ToList();
@@ -261,7 +239,6 @@
 
         _selectedDate = date;
 
-        // The filtered list has to be rendered before there is anything to scroll to.
         StateHasChanged();
         await Task.Yield();
 

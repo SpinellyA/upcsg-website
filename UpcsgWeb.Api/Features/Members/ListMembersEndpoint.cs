@@ -15,7 +15,6 @@ public class ListMembersEndpoint(IMemberRepository members) : EndpointWithoutReq
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        // The repository already applies roster order.
         var roster = await members.GetAllAsync(ct);
         await Send.OkAsync([.. roster.Select(m => m.ToDto())], ct);
     }

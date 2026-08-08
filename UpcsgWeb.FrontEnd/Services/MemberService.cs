@@ -15,8 +15,6 @@ public class MemberService(HttpClient http, ApiOptions options, ISnapshotService
 
         try
         {
-            // 404 is an ordinary answer here — a bad id in the URL — so it must not
-            // surface as an exception the page has to catch.
             var response = await http.GetAsync($"api/members/{id}");
 
             return response.IsSuccessStatusCode
@@ -25,8 +23,6 @@ public class MemberService(HttpClient http, ApiOptions options, ISnapshotService
         }
         catch (HttpRequestException)
         {
-            // The API is down rather than the id being wrong; the list path knows how to
-            // fall back, so reuse it instead of returning a spurious "not found".
             return (await GetMembersAsync()).FirstOrDefault(m => m.Id == id);
         }
     }

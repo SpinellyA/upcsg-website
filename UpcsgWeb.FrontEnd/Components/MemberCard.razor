@@ -1,13 +1,6 @@
 @using UpcsgWeb.Shared.Contracts
 @inject IDialogService Dialogs
 
-@* One officer, at one of three densities.
-
-   A single grid of identical cards gave eleven officers the same visual weight, which
-   is not what the roster says: DisplayOrder 1 is the Executive Director, and a committee
-   of one was rendering as a lone card stranded in a full-width row. The variants let the
-   page lay people out by rank without duplicating the card's behaviour three times. *@
-
 <button type="button"
         class="upcsg-membercard upcsg-membercard--@Variant.ToString().ToLowerInvariant() @(Flip ? "upcsg-membercard--flip" : null)"
         aria-label="@($"Read {Member.Name}'s profile, {Member.Role}")"
@@ -23,15 +16,11 @@
         <span class="upcsg-membercard__role">@Member.Role</span>
         <span class="upcsg-membercard__name">@Member.Name</span>
 
-        @* The wide variants have room for the quote in full; the strip has room for none. *@
         @if (Variant != Density.Row && !string.IsNullOrWhiteSpace(Member.Quote))
         {
             <span class="upcsg-membercard__quote">&ldquo;@Member.Quote&rdquo;</span>
         }
 
-        @* Bios run about 140 characters today and sit comfortably inline. The clamp is
-           for the CMS-authored one that eventually runs to several hundred: it keeps the
-           row's proportions, and the dialog holds the rest. *@
         @if (ShowsBio && !string.IsNullOrWhiteSpace(Member.Bio))
         {
             <span class="upcsg-membercard__bio">@Member.Bio</span>
@@ -44,19 +33,12 @@
 @code {
     public enum Density
     {
-        /// <summary>The lead officer. Widest, portrait beside the text, quote and bio.</summary>
         Spotlight,
 
-        /// <summary>
-        /// A full-width profile row, portrait beside the text. Alternate <see cref="Flip"/>
-        /// down the roster and the page reads as a showcase rather than a list.
-        /// </summary>
         Showcase,
 
-        /// <summary>A grid tile: portrait above, role, name, clamped quote.</summary>
         Card,
 
-        /// <summary>A compact horizontal strip, for committees too small to fill a row.</summary>
         Row,
     }
 
@@ -64,15 +46,10 @@
 
     [Parameter] public Density Variant { get; set; } = Density.Card;
 
-    /// <summary>Mirrors the row so consecutive profiles put the portrait on opposite sides.</summary>
     [Parameter] public bool Flip { get; set; }
 
     private bool ShowsBio => Variant is Density.Spotlight or Density.Showcase;
 
-    /// <summary>
-    /// The people the dialog can page through. Supplying the whole ExeCom means a reader
-    /// can walk the roster without closing and reopening eleven times.
-    /// </summary>
     [Parameter] public IReadOnlyList<MemberDto>? Roster { get; set; }
 
     private Task OpenAsync()
@@ -94,8 +71,6 @@
                 MaxWidth = MaxWidth.Small,
                 FullWidth = true,
 
-                // The dialog draws its own close control over the portrait; MudBlazor's
-                // would sit in a title bar this design does not have.
                 CloseButton = false,
                 BackdropClick = true,
             });

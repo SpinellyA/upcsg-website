@@ -15,8 +15,6 @@ public class ListMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        // Sold-out items stay in the list; the store shows them greyed rather than
-        // hiding what exists.
         var items = await merch.GetAllAsync(ct);
         await Send.OkAsync([.. items.Select(m => m.ToDto())], ct);
     }

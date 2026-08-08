@@ -40,7 +40,6 @@
     }
     else
     {
-        @* Same record sheet the officers use, minus the columns only they care about. *@
         <MudTable Items="_orders"
                   T="OrderDto"
                   Hover="true"
@@ -67,7 +66,6 @@
                         @OrderStatusDisplay.Label(context.Status)
                     </span>
 
-                    @* The one status where the guilder, not an officer, is holding things up. *@
                     @if (context.Status == OrderStatusDto.AwaitingPayment)
                     {
                         <span class="upcsg-datatable__flag">receipt needed</span>

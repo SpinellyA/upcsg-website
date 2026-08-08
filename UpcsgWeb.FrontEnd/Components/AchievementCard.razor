@@ -1,13 +1,5 @@
 @using UpcsgWeb.Shared.Contracts
 
-@* One Hall of Fame entry, as a lead story or a grid tile. Shared by the record and the
-   foot of the article, so the two cannot drift.
-
-   The plate is seeded on the title. No entry on the record has a photograph, and the old
-   shared crest plate meant five identical images down the page — the record read as five
-   copies of one thing rather than five separate wins. Seeding gives each its own colour
-   while keeping the crest. *@
-
 <a class="upcsg-achcard upcsg-achcard--@Variant.ToString().ToLowerInvariant()"
    href="@($"hall-of-fame/{Entry.Id}")">
 
@@ -49,10 +41,8 @@
 @code {
     public enum Density
     {
-        /// <summary>The newest entry: full width, media beside the copy.</summary>
         Lead,
 
-        /// <summary>A tile in the record grid.</summary>
         Card,
     }
 

@@ -36,13 +36,28 @@ given, so moving to R2, MinIO or AWS later is an environment-variable change.
 
 Decide two URLs now, because several settings reference them:
 
-| Thing | Example | Yours |
+| Thing | Currently | Yours |
 | --- | --- | --- |
-| API origin | `https://upcsg-api.onrender.com` | |
-| Site origin | `https://upcsg.github.io/upcsg-web` or `https://upcsg.vercel.app` | |
+| Site origin | `https://upcsg.spinelly.net` | |
+| API origin | `https://api-upcsg.spinelly.net` | |
 
-If you want a custom domain, set it up first. Changing the origin later means re-editing
-the Google credential, the CORS list, and `appsettings.json`.
+If you want a custom domain, set it up first. Changing an origin later is not one edit but
+six, spread across three dashboards — the DNS record, the Pages or Render domain setting,
+the `CUSTOM_DOMAIN` and `API_BASE_URL` repository variables, `Cors__AllowedOrigins__*` and
+`Api__SelfUrl` on Render, and the Google credential's authorised origins. Miss any one and
+the failure is silent in a different way each time.
+
+### Custom domains
+
+Both platforms want a CNAME and then issue their own certificate.
+
+| Host | CNAME target | Where to register it |
+| --- | --- | --- |
+| `upcsg.spinelly.net` | `spinellya.github.io` | GitHub → Settings → Pages → Custom domain |
+| `api-upcsg.spinelly.net` | `upcsg-api.onrender.com` | Render → the service → Settings → Custom Domains |
+
+The `onrender.com` and `github.io` hostnames keep serving after a custom domain is added,
+which is why both stay in the CORS list — a stale bookmark should not break.
 
 ---
 

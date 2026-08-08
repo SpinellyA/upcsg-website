@@ -54,8 +54,15 @@ services:
         value: https://spinellya.github.io
 
       # Used to build media URLs for new uploads.
+      # The API's own public origin. Must be the custom domain once one is attached, not
+      # the onrender.com hostname: this is what gets written into URLs the browser is
+      # later asked to fetch, and mixing the two origins is what turns a working upload
+      # into a CORS failure on the page that displays it.
+      #
+      # The onrender.com hostname keeps working regardless - Render serves both - so
+      # changing this is about which origin the site advertises, not which one answers.
       - key: Api__SelfUrl
-        value: https://upcsg-api.onrender.com
+        value: https://api-upcsg.spinelly.net
 
       # Google OAuth client id; the API checks the token was issued for it.
       - key: Google__ClientId

@@ -54,23 +54,6 @@
         </Reveal>
     </section>
 
-    @if (_execCount > 0)
-    {
-        <section class="upcsg-section upcsg-band">
-            <Reveal Variant="Reveal.RevealMotion.Up">
-                <div class="upcsg-statrow upcsg-statrow--spread">
-                    <StatCounter Value="_execCount" Label="Officers serving" />
-                    <StatCounter Value="_committees.Count" Label="Committees" />
-
-                    @if (_facultyCount > 0)
-                    {
-                        <StatCounter Value="_facultyCount" Label="Faculty advisers" />
-                    }
-                </div>
-            </Reveal>
-        </section>
-    }
-
     @if (_faculty.Count > 0)
     {
         <section class="upcsg-section">
@@ -164,8 +147,6 @@
     private List<MemberDto> _faculty = [];
     private List<MemberDto> _allOfficers = [];
     private List<CommitteeGroup> _committees = [];
-    private int _execCount;
-    private int _facultyCount;
     private bool _loading = true;
 
     private static readonly string[] Ticker =
@@ -182,14 +163,11 @@
             .Where(m => m.Category == MemberCategory.Faculty)
             .OrderBy(m => m.DisplayOrder)];
 
-        _facultyCount = _faculty.Count;
-
         var exeCom = members
             .Where(m => m.Category == MemberCategory.ExeCom)
             .OrderBy(m => m.DisplayOrder)
             .ToList();
 
-        _execCount = exeCom.Count;
         _allOfficers = exeCom;
 
         var groups = exeCom
@@ -199,17 +177,17 @@
         _committees = [];
 
         var flip = false;
-        var first = true;
 
         foreach (var group in groups)
         {
             var rows = new List<ProfileRow>();
+            var leadTaken = false;
 
             foreach (var member in group)
             {
-                rows.Add(new ProfileRow(member, flip, IsLead: first));
+                rows.Add(new ProfileRow(member, flip, IsLead: !leadTaken));
+                leadTaken = true;
                 flip = !flip;
-                first = false;
             }
 
             _committees.Add(new CommitteeGroup(group.Key, rows));

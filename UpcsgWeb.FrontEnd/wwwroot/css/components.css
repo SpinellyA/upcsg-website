@@ -568,46 +568,16 @@
     flex-wrap: wrap;
     gap: 0.5rem; /* replaces whatever negative-margin overlap you had */
 
-    /* Vertical padding leaves room for the selected face to lift without being clipped
-       by the scroll container. */
+    /* Vertical padding leaves room for the selected face to lift without being clipped. */
     padding: 0.75rem 0.6rem;
-    /* The strip is a picker now, so it scrolls rather than truncating at eight faces
-       with a "+3" on the end. Dragging is layered on in js/dragscroll.js for mice only;
-       wheel, trackpad, touch and keyboard all work off this rule alone, which is what
-       keeps the strip usable if that module never loads. */
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-behavior: smooth;
-    /* Stops a throw at either end from becoming a browser back-swipe or scrolling the
-       page behind it. */
-    overscroll-behavior-x: contain;
-    cursor: grab;
-    /* The bar would sit under the faces and flicker on every drag. Overflowing content
-       and the grab cursor are the affordance instead. */
-    scrollbar-width: none;
-}
-
-.upcsg-facepile::-webkit-scrollbar {
-    display: none;
 }
 
 /* MudTooltip wraps each face in an element of its own, so the flex items here are the
    wrappers and not the buttons — flex rules on .upcsg-facepile__face never reach the
-   thing being sized. Without this the wrappers shrink to fit instead of overflowing, and
-   the strip silently stops scrolling on a narrow column while the faces just get smaller. */
+   thing being sized, and the wrappers would shrink the faces rather than wrap them. */
 .upcsg-facepile > .mud-tooltip-root {
     flex: 0 0 auto;
     display: inline-flex;
-}
-
-.upcsg-facepile.is-dragging {
-    cursor: grabbing;
-
-    /* Smooth scrolling fights a drag: the strip eases toward each position while the
-       pointer has already moved past it, so it visibly lags the cursor. */
-    scroll-behavior: auto;
-
-    user-select: none;
 }
 
 .upcsg-facepile__face {
@@ -633,7 +603,9 @@
 
     /* Later faces sit on top of earlier ones, so the row overlaps in reading order
        instead of the last one being buried. */
-    z-index: calc(20 - var(--face-index, 0));
+    /* Only needs to sit below the hover and selected states; the faces no longer overlap,
+       so there is nothing to order them against. */
+    z-index: 1;
     position: relative;
     transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 0.3s ease,
@@ -1339,7 +1311,63 @@
     color: var(--upcsg-periwinkle);
 }
 
+/* --- Maker's mark -------------------------------------------------------- */
+
+/* Takes a whole row of its own rather than becoming a third item in the footer's
+   space-between layout, which would have shoved the email address into the middle. */
+.upcsg-madeby {
+    flex: 0 0 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
+
+    /* Quiet by default and legible on hover: a watermark should be findable without
+       competing with the guild's own footer. */
+    color: var(--upcsg-periwinkle) !important;
+    opacity: 0.38;
+    transition: opacity 0.25s ease, color 0.25s ease;
+}
+
+.upcsg-madeby:hover,
+.upcsg-madeby:focus-visible {
+    /* Overrides the generic .upcsg-footer a:hover, which turns links gold — gold would
+       fight the mark's own lilac dot. */
+    color: var(--upcsg-honeydew-white) !important;
+    opacity: 1;
+}
+
+.upcsg-madeby:focus-visible {
+    outline: 2px solid var(--upcsg-liquid-chrome-gold);
+    outline-offset: 6px;
+    border-radius: 4px;
+}
+
+/* Height-driven; the viewBox is roughly 4:1 so the width follows. */
+.upcsg-madeby__mark {
+    display: block;
+    height: 15px;
+    width: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-madeby { transition: none; }
+}
+
 /* --- Member dialog ------------------------------------------------------- */
+
+/* The dialog paper itself. MudBlazor's default is a flat plum rectangle, which is the
+   one surface on the site that looked like a component library rather than the guild. */
+.upcsg-mdlg__paper {
+    border-radius: 26px !important;
+    border: var(--upcsg-hairline);
+    overflow: hidden;
+
+    background:
+        radial-gradient(ellipse 120% 80% at 50% 0%, rgba(83, 37, 126, 0.55) 0%, transparent 60%),
+        linear-gradient(180deg, #1B1445 0%, #120E30 100%) !important;
+
+    box-shadow: var(--upcsg-bloom), var(--upcsg-shadow-lg) !important;
+}
 
 /* MudBlazor pads dialog content by default, which framed the portrait in a 24px
    border and made it read as a picture pasted into a box. */
@@ -1348,12 +1376,56 @@
     overflow: hidden;
 }
 
-.upcsg-mdlg__actions { padding: 0.75rem 1.25rem 1rem !important; }
+.upcsg-mdlg__actions {
+    padding: 0.5rem 1.1rem 1rem !important;
+    border-top: var(--upcsg-hairline);
+}
+
+.upcsg-mdlg {
+    position: relative;
+    outline: none;
+}
+
+/* Keyed on the officer index, so moving between profiles plays as a move rather than a
+   silent content swap. */
+.upcsg-mdlg__stage {
+    animation: upcsg-mdlg-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes upcsg-mdlg-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.995); }
+    to   { opacity: 1; transform: none; }
+}
 
 .upcsg-mdlg__head {
     position: relative;
     isolation: isolate;
 }
+
+/* An orchid bloom bleeding up from the portrait's lower edge, so the photograph melts
+   into the body instead of ending at a hard seam. */
+.upcsg-mdlg__bloom {
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 45%;
+    background: linear-gradient(to top, rgba(162, 83, 184, 0.30), transparent);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.upcsg-mdlg__spark {
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.upcsg-mdlg__spark--a { top: 14%; right: 12%; }
+.upcsg-mdlg__spark--a .upcsg-star { width: 0.9rem; height: 0.9rem; }
+
+.upcsg-mdlg__spark--b { top: 32%; right: 26%; }
+.upcsg-mdlg__spark--b .upcsg-star { width: 0.55rem; height: 0.55rem; }
 
 .upcsg-mdlg__portrait {
     width: 100%;
@@ -1426,32 +1498,42 @@
     color: var(--upcsg-cosmic-lavender);
 }
 
-.upcsg-mdlg__body { padding: 1.4rem 1.4rem 0.4rem; }
+.upcsg-mdlg__body {
+    position: relative;
+    padding: 1.6rem 1.5rem 0.6rem;
+}
 
+/* The quote is the officer's voice and the bio is description; they were set at almost
+   the same weight, so the panel read as one undifferentiated block of text. The quote is
+   now a genuine pull-quote, closed by a hairline that separates the two registers. */
 .upcsg-mdlg__quote {
     position: relative;
-    margin: 0 0 1.1rem;
-    padding-left: 2.4rem;
+    margin: 0 0 1.25rem;
+    padding: 0 0 1.25rem 2.6rem;
+    border-bottom: var(--upcsg-hairline);
     font-family: var(--upcsg-font-display);
-    font-size: 1.2rem;
-    line-height: 1.45;
+    font-size: clamp(1.15rem, 3.2vw, 1.35rem);
+    line-height: 1.5;
     color: var(--upcsg-honeydew-white);
 }
 
+/* Large and held back rather than small and solid: it should read as a typographic mark
+   behind the words, not as punctuation competing with them. */
 .upcsg-mdlg__mark {
     position: absolute;
-    left: 0;
-    top: -0.55rem;
+    left: -0.25rem;
+    top: -1.4rem;
     font-family: var(--upcsg-font-display);
-    font-size: 3.2rem;
+    font-size: 5rem;
     line-height: 1;
     color: var(--upcsg-galactic-orchid);
-    opacity: 0.75;
+    opacity: 0.35;
+    pointer-events: none;
 }
 
 .upcsg-mdlg__bio {
     margin: 0;
-    line-height: 1.7;
+    line-height: 1.75;
     color: var(--upcsg-periwinkle);
 }
 
@@ -1465,11 +1547,46 @@
     gap: 0.5rem;
 }
 
+/* Circular ghost arrows rather than text buttons carrying the neighbour's first name.
+   The names made the footer read like breadcrumbs and pushed the counter off-centre;
+   the name each arrow leads to is still announced, on aria-label. */
+.upcsg-mdlg__arrow {
+    border: var(--upcsg-hairline) !important;
+    background: rgba(246, 255, 233, 0.04) !important;
+    color: var(--upcsg-cosmic-lavender) !important;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+
+.upcsg-mdlg__arrow:hover {
+    background: rgba(162, 83, 184, 0.22) !important;
+    color: var(--upcsg-honeydew-white) !important;
+    transform: scale(1.08);
+}
+
+/* Set as a fraction in the display face: "03 / 11" reads as a position in a series,
+   where "3 / 11" read as a page number. */
 .upcsg-mdlg__pos {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    font-family: var(--upcsg-font-display);
+    letter-spacing: 0.06em;
+}
+
+.upcsg-mdlg__pos-now {
+    font-size: 1.25rem;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-mdlg__pos-of {
+    font-size: 0.85rem;
     color: var(--upcsg-periwinkle);
+    opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-mdlg__stage { animation: none; }
+    .upcsg-mdlg__arrow { transition: none; }
 }
 
 /* --- Quote plate (About identity section) -------------------------------- */

@@ -1,16 +1,4 @@
-@* The spinelly. wordmark, inlined rather than referenced with <img src>.
 
-   Both source files paint with currentColor, and an <img> renders an SVG as an isolated
-   document: currentColor would resolve against that document's own default, which is
-   black, and the mark would disappear into the footer. Inlining lets it inherit colour
-   from the page, so one CSS rule tints it and the hover state works.
-
-   The trailing dot keeps its own accent (--brand-accent, falling back to spinelly's
-   lilac) rather than being tinted with the rest — it is the distinguishing part of the
-   mark and belongs to that brand, not this one.
-
-   aria-hidden because the anchor around it carries the label; without that a screen
-   reader announces the destination twice. *@
 
 <svg class="upcsg-madeby__mark"
      xmlns="http://www.w3.org/2000/svg"

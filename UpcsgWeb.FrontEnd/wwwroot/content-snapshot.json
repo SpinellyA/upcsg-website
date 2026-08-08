@@ -1,18 +1,7 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-05T17:56:53.5748575Z",
+  "generatedAt": "2026-08-08T16:56:31.9044674Z",
   "members": [
-    {
-      "id": "019fd246-62c0-7674-9143-f59c528cc94b",
-      "name": "Andrei Brent T. Wahing",
-      "role": "Senior Citizen",
-      "category": "ExeCom",
-      "committee": "Wahing Satisfaction Committee",
-      "photoUrl": "offline-media/21edc8dfc65a15bc.webp",
-      "quote": "I am Mr. Komsai himself",
-      "bio": "everything.",
-      "displayOrder": 1
-    },
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
       "name": "Chriscia Xanelle Llamas",
@@ -114,11 +103,11 @@
     },
     {
       "id": "019fcda6-e092-7f62-afc0-cee471ee048d",
-      "name": "Erik Caliskis",
+      "name": "Erik James M. Caliskis",
       "role": "Communications & Logistics Director",
       "category": "ExeCom",
       "committee": "Directorates",
-      "photoUrl": "offline-media/290c3e89a0d61e6d.webp",
+      "photoUrl": "offline-media/a45ce7fd682bbbc1.webp",
       "quote": "The venue, the schedule, and the group chat.",
       "bio": "Erik keeps events standing up: booking, equipment, timelines, and the internal communication that gets everyone to the right place.",
       "displayOrder": 10
@@ -149,7 +138,7 @@
       "id": "019fd218-6b41-74ab-8ebd-a379667bf19d",
       "title": "UPCSG General Assembly",
       "description": "The UP Cebu Student Government (UPCSG or UPC USC) general assembly serves as the supreme deliberative gathering of the student body, uniting students to review council accomplishments, debate pressing academic and national policies, and vote on progressive student-led resolutions and welfare initiatives.",
-      "startDateTime": "2026-08-17T05:00:00Z",
+      "startDateTime": "2026-08-18T05:00:00Z",
       "endDateTime": null,
       "location": "Peformance Arts Hall",
       "posterUrl": "offline-media/c4ee45ee7d5b3be5.webp"
@@ -162,6 +151,14 @@
       "description": "Second-year Computer Science students from UP Cebu earned top finishes at the NEXT LEVEL: Esports Game Dev Challenge.\n\nSecond-year Computer Science students from UP Cebu earned top finishes at the NEXT LEVEL: Esports Game Dev Challenge, with Team <blank> claiming first runner-up and Team Casa de Kirby finishing in the top ten during the 2026 Regional Science, Technology, and Innovation Week celebration organized by DOST Central Visayas held on July 13-15, 2026, at Waterfront Cebu City Hotel.\nTeam <blank> developed the game SARAP!, a Filipino cooking game where players prepare nearly forgotten regional dishes. The team is composed of Tyrone Gareth Cular, Krysta Belle Amojedo, Alynnah Rhein Cahutay, and Clandestine Maglasang, mentored by Ms. J Isle Rocamora.\nAnother finalist, Team Casa de Kirby, created Rescue Rush, a speedrun game where players save civilians scattered around a flooded village as fast as they can. The team is composed of Resha Alpuerto, Angelo Luize Ramirez, Sam Joash Recodo, Joy Montilde, and John Kirby Monleon, under the mentorship of Mr. Eli Edrian Tan.",
       "year": 2026,
       "imageUrl": "offline-media/9228f43aefe61e3c.webp",
+      "category": "Competition"
+    },
+    {
+      "id": "019fe20f-2c08-74c4-97e1-8cabdfd31040",
+      "title": "UP Cebu's Team Culay Wins AI Hackathon Championship at AI Fest 2026",
+      "description": "Team Culay from the University of the Philippines Cebu (UP Cebu) won the AI Hackathon Championship at AI Fest 2026 held at the Iloilo Convention Center.\n\nHuge congratulations to the 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆 𝗼𝗳 𝘁𝗵𝗲 𝗣𝗵𝗶𝗹𝗶𝗽𝗽𝗶𝗻𝗲𝘀 𝗖𝗲𝗯𝘂 (𝗨𝗣 𝗖𝗲𝗯𝘂) for taking home the 𝗔𝗜 𝗛𝗮𝗰𝗸𝗮𝘁𝗵𝗼𝗻 𝗖𝗵𝗮𝗺𝗽𝗶𝗼𝗻𝘀𝗵𝗶𝗽 at 𝗔𝗜 𝗙𝗲𝘀𝘁 𝟮𝟬𝟮𝟲, held at the Iloilo Convention Center!\nTeam 𝗖𝘂𝗹𝗮𝘆 impressed the judges with 𝘒𝘢𝘩𝘢𝘺𝘢𝘨, an AI-powered engineering and sales assistant designed to streamline pre-sales for residential solar installations under the \"Clean and Renewable Energy\" theme.\n\nApplause to the team behind the winning solution:\n• Jezreel Chad Lumbab\n• Joanalyn Cadampog\n• Christian Brillos\n• Jimmy Eleazer Mijares\n• Berk Stephen Cutamora\n\nCongratulations, UP Cebu! Your achievement continues to inspire the next generation of Filipino innovators. 💡",
+      "year": 2026,
+      "imageUrl": "offline-media/225e627d7b108fc5.webp",
       "category": "Competition"
     }
   ],

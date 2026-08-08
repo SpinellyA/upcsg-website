@@ -1313,18 +1313,23 @@
 
 /* --- Maker's mark -------------------------------------------------------- */
 
-/* Takes a whole row of its own rather than becoming a third item in the footer's
-   space-between layout, which would have shoved the email address into the middle. */
-.upcsg-madeby {
-    flex: 0 0 100%;
+/* Stacked under the email rather than given a row of its own, so it reads as a small
+   signature on the contact block instead of a band across the footer. Kept in the same
+   flex item as the email so it inherits that item's right-hand alignment. */
+.upcsg-footer__contact {
     display: flex;
-    justify-content: center;
-    margin-top: 1.75rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
 
-    /* Quiet by default and legible on hover: a watermark should be findable without
-       competing with the guild's own footer. */
+.upcsg-madeby {
+    display: inline-flex;
+
+    /* Deliberately fainter than the footer text around it. A maker's mark should be
+       findable rather than noticed; the hover state is what makes it legible. */
     color: var(--upcsg-periwinkle) !important;
-    opacity: 0.38;
+    opacity: 0.25;
     transition: opacity 0.25s ease, color 0.25s ease;
 }
 
@@ -1333,19 +1338,20 @@
     /* Overrides the generic .upcsg-footer a:hover, which turns links gold — gold would
        fight the mark's own lilac dot. */
     color: var(--upcsg-honeydew-white) !important;
-    opacity: 1;
+    opacity: 0.9;
 }
 
 .upcsg-madeby:focus-visible {
     outline: 2px solid var(--upcsg-liquid-chrome-gold);
-    outline-offset: 6px;
+    outline-offset: 4px;
     border-radius: 4px;
 }
 
-/* Height-driven; the viewBox is roughly 4:1 so the width follows. */
+/* Height-driven; the viewBox is roughly 4:1 so the width follows. Sized below the
+   footer's 0.85rem text so it sits under the email without rivalling it. */
 .upcsg-madeby__mark {
     display: block;
-    height: 15px;
+    height: 11px;
     width: auto;
 }
 

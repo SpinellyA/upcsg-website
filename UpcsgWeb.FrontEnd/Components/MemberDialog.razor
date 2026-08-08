@@ -1,56 +1,70 @@
 @using UpcsgWeb.Shared.Contracts
 
-<MudDialog ContentClass="upcsg-mdlg__content" ActionsClass="upcsg-mdlg__actions">
+<MudDialog Class="upcsg-mdlg__paper"
+           ContentClass="upcsg-mdlg__content"
+           ActionsClass="upcsg-mdlg__actions">
     <DialogContent>
-        <div class="upcsg-mdlg">
+        <div class="upcsg-mdlg"
+             tabindex="-1"
+             @ref="_root"
+             @onkeydown="OnKeyDownAsync">
 
-            <div class="upcsg-mdlg__head">
-                <CosmicImage @key="Current.Id"
-                             Src="@Current.PhotoUrl"
-                             Alt="@Current.Name"
-                             Seed="@Current.Name"
-                             ShowInitials="true"
-                             Eager="true"
-                             Class="upcsg-mdlg__portrait" />
+            <MudIconButton Icon="@Icons.Material.Rounded.Close"
+                           Size="Size.Small"
+                           Class="upcsg-mdlg__close"
+                           aria-label="Close"
+                           OnClick="Close" />
 
-                <div class="upcsg-mdlg__scrim"></div>
+            <div class="upcsg-mdlg__stage" @key="_index">
+                <div class="upcsg-mdlg__head">
+                    <CosmicImage Src="@Current.PhotoUrl"
+                                 Alt="@Current.Name"
+                                 Seed="@Current.Name"
+                                 ShowInitials="true"
+                                 Eager="true"
+                                 Class="upcsg-mdlg__portrait" />
 
-                <MudIconButton Icon="@Icons.Material.Rounded.Close"
-                               Size="Size.Small"
-                               Class="upcsg-mdlg__close"
-                               aria-label="Close"
-                               OnClick="Close" />
+                    <div class="upcsg-mdlg__scrim"></div>
+                    <div class="upcsg-mdlg__bloom" aria-hidden="true"></div>
 
-                <div class="upcsg-mdlg__title">
-                    <p class="upcsg-mdlg__role">@Current.Role</p>
-                    <h2 class="upcsg-mdlg__name">@Current.Name</h2>
+                    <span class="upcsg-sparkle upcsg-sparkle--gold upcsg-mdlg__spark upcsg-mdlg__spark--a" aria-hidden="true">
+                        <span class="upcsg-star"></span>
+                    </span>
+                    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2 upcsg-mdlg__spark upcsg-mdlg__spark--b" aria-hidden="true">
+                        <span class="upcsg-star"></span>
+                    </span>
 
-                    @if (!string.IsNullOrWhiteSpace(Current.Committee))
+                    <div class="upcsg-mdlg__title" aria-live="polite">
+                        <p class="upcsg-mdlg__role">@Current.Role</p>
+                        <h2 class="upcsg-mdlg__name">@Current.Name</h2>
+
+                        @if (!string.IsNullOrWhiteSpace(Current.Committee))
+                        {
+                            <span class="upcsg-mdlg__chip">@Current.Committee</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="upcsg-mdlg__body">
+                    @if (!string.IsNullOrWhiteSpace(Current.Quote))
                     {
-                        <span class="upcsg-mdlg__chip">@Current.Committee</span>
+                        <blockquote class="upcsg-mdlg__quote">
+                            <span class="upcsg-mdlg__mark" aria-hidden="true">&ldquo;</span>
+                            @Current.Quote
+                        </blockquote>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Current.Bio))
+                    {
+                        <p class="upcsg-mdlg__bio">@Current.Bio</p>
+                    }
+                    else
+                    {
+                        <p class="upcsg-mdlg__bio upcsg-mdlg__bio--none">
+                            No profile has been written for this officer yet.
+                        </p>
                     }
                 </div>
-            </div>
-
-            <div class="upcsg-mdlg__body">
-                @if (!string.IsNullOrWhiteSpace(Current.Quote))
-                {
-                    <blockquote class="upcsg-mdlg__quote">
-                        <span class="upcsg-mdlg__mark" aria-hidden="true">&ldquo;</span>
-                        @Current.Quote
-                    </blockquote>
-                }
-
-                @if (!string.IsNullOrWhiteSpace(Current.Bio))
-                {
-                    <p class="upcsg-mdlg__bio">@Current.Bio</p>
-                }
-                else
-                {
-                    <p class="upcsg-mdlg__bio upcsg-mdlg__bio--none">
-                        No profile has been written for this officer yet.
-                    </p>
-                }
             </div>
         </div>
     </DialogContent>
@@ -59,19 +73,20 @@
         @if (Members.Count > 1)
         {
             <div class="upcsg-mdlg__nav">
-                <MudButton StartIcon="@Icons.Material.Rounded.ChevronLeft"
-                           Variant="Variant.Text"
-                           OnClick="Previous">
-                    @Neighbour(-1)
-                </MudButton>
+                <MudIconButton Icon="@Icons.Material.Rounded.ChevronLeft"
+                               Class="upcsg-mdlg__arrow"
+                               aria-label="@($"Previous officer, {Neighbour(-1)}")"
+                               OnClick="Previous" />
 
-                <span class="upcsg-mdlg__pos">@(_index + 1) / @Members.Count</span>
+                <span class="upcsg-mdlg__pos">
+                    <span class="upcsg-mdlg__pos-now">@((_index + 1).ToString("00"))</span>
+                    <span class="upcsg-mdlg__pos-of">/ @Members.Count.ToString("00")</span>
+                </span>
 
-                <MudButton EndIcon="@Icons.Material.Rounded.ChevronRight"
-                           Variant="Variant.Text"
-                           OnClick="Next">
-                    @Neighbour(1)
-                </MudButton>
+                <MudIconButton Icon="@Icons.Material.Rounded.ChevronRight"
+                               Class="upcsg-mdlg__arrow"
+                               aria-label="@($"Next officer, {Neighbour(1)}")"
+                               OnClick="Next" />
             </div>
         }
         else
@@ -89,11 +104,51 @@
     [Parameter] public int Index { get; set; }
 
     private int _index;
+    private ElementReference _root;
+    private bool _focused;
 
     private MemberDto Current => Members[_index];
 
     protected override void OnParametersSet() =>
         _index = Math.Clamp(Index, 0, Math.Max(0, Members.Count - 1));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _focused)
+        {
+            return;
+        }
+
+        _focused = true;
+
+        try
+        {
+            await Task.Delay(50);
+            await _root.FocusAsync();
+        }
+        catch (JSException)
+        {
+        }
+    }
+
+    private void OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (Members.Count < 2)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case "ArrowLeft":
+                Previous();
+                break;
+
+            case "ArrowRight":
+                Next();
+                break;
+        }
+    }
 
     private void Previous() => _index = (_index - 1 + Members.Count) % Members.Count;
 

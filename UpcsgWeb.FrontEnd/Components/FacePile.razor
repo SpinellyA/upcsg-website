@@ -1,9 +1,7 @@
 @using UpcsgWeb.Shared.Contracts
-@implements IAsyncDisposable
-@inject IJSRuntime JS
 
 <div class="upcsg-facepile" role="group" aria-label="Officers">
-    @foreach (var (member, index) in Members.Select((m, i) => (m, i)))
+    @foreach (var member in Members)
     {
         var isSelected = IsSelected(member);
 
@@ -30,28 +28,9 @@
 
     [Parameter] public EventCallback<MemberDto> SelectedChanged { get; set; }
 
-    private ElementReference _belt;
-
     private bool IsSelected(MemberDto member) =>
         Selected is not null
         && string.Equals(Selected.Name, member.Name, StringComparison.Ordinal);
 
-    private async Task SelectAsync(MemberDto member) {
-        await SelectedChanged.InvokeAsync(member);
-
-        Console.WriteLine($"Selected {member.Name} ({member.Role})");
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
-            return;
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-
-    }
+    private Task SelectAsync(MemberDto member) => SelectedChanged.InvokeAsync(member);
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-07T17:11:56.3957986Z",
+  "generatedAt": "2026-08-08T16:56:31.9044674Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -151,6 +151,14 @@
       "description": "Second-year Computer Science students from UP Cebu earned top finishes at the NEXT LEVEL: Esports Game Dev Challenge.\n\nSecond-year Computer Science students from UP Cebu earned top finishes at the NEXT LEVEL: Esports Game Dev Challenge, with Team <blank> claiming first runner-up and Team Casa de Kirby finishing in the top ten during the 2026 Regional Science, Technology, and Innovation Week celebration organized by DOST Central Visayas held on July 13-15, 2026, at Waterfront Cebu City Hotel.\nTeam <blank> developed the game SARAP!, a Filipino cooking game where players prepare nearly forgotten regional dishes. The team is composed of Tyrone Gareth Cular, Krysta Belle Amojedo, Alynnah Rhein Cahutay, and Clandestine Maglasang, mentored by Ms. J Isle Rocamora.\nAnother finalist, Team Casa de Kirby, created Rescue Rush, a speedrun game where players save civilians scattered around a flooded village as fast as they can. The team is composed of Resha Alpuerto, Angelo Luize Ramirez, Sam Joash Recodo, Joy Montilde, and John Kirby Monleon, under the mentorship of Mr. Eli Edrian Tan.",
       "year": 2026,
       "imageUrl": "offline-media/9228f43aefe61e3c.webp",
+      "category": "Competition"
+    },
+    {
+      "id": "019fe20f-2c08-74c4-97e1-8cabdfd31040",
+      "title": "UP Cebu's Team Culay Wins AI Hackathon Championship at AI Fest 2026",
+      "description": "Team Culay from the University of the Philippines Cebu (UP Cebu) won the AI Hackathon Championship at AI Fest 2026 held at the Iloilo Convention Center.\n\nHuge congratulations to the 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆 𝗼𝗳 𝘁𝗵𝗲 𝗣𝗵𝗶𝗹𝗶𝗽𝗽𝗶𝗻𝗲𝘀 𝗖𝗲𝗯𝘂 (𝗨𝗣 𝗖𝗲𝗯𝘂) for taking home the 𝗔𝗜 𝗛𝗮𝗰𝗸𝗮𝘁𝗵𝗼𝗻 𝗖𝗵𝗮𝗺𝗽𝗶𝗼𝗻𝘀𝗵𝗶𝗽 at 𝗔𝗜 𝗙𝗲𝘀𝘁 𝟮𝟬𝟮𝟲, held at the Iloilo Convention Center!\nTeam 𝗖𝘂𝗹𝗮𝘆 impressed the judges with 𝘒𝘢𝘩𝘢𝘺𝘢𝘨, an AI-powered engineering and sales assistant designed to streamline pre-sales for residential solar installations under the \"Clean and Renewable Energy\" theme.\n\nApplause to the team behind the winning solution:\n• Jezreel Chad Lumbab\n• Joanalyn Cadampog\n• Christian Brillos\n• Jimmy Eleazer Mijares\n• Berk Stephen Cutamora\n\nCongratulations, UP Cebu! Your achievement continues to inspire the next generation of Filipino innovators. 💡",
+      "year": 2026,
+      "imageUrl": "offline-media/225e627d7b108fc5.webp",
       "category": "Competition"
     }
   ],

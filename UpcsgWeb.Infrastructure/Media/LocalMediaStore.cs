@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Domain.Media;
 
 namespace UpcsgWeb.Infrastructure.Media;
 

@@ -52,6 +52,11 @@ builder.Services.AddSingleton(new SignInOptions
     RequiredHostedDomain = builder.Configuration["Google:RequiredHostedDomain"],
 });
 
+builder.Services.AddSingleton(new MediaLimits
+{
+    MaxUploadBytes = builder.Configuration.GetValue("Media:MaxUploadBytes", 8L * 1024 * 1024),
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

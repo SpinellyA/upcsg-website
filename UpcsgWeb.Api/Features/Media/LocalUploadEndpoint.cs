@@ -1,6 +1,7 @@
-using FastEndpoints;
+﻿using FastEndpoints;
 using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Abstractions;
+using UpcsgWeb.Domain.Media;
 using UpcsgWeb.Infrastructure.Media;
 using UpcsgWeb.Shared.Contracts;
 

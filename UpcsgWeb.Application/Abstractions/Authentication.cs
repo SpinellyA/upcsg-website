@@ -22,3 +22,8 @@ public sealed class SignInOptions
 {
     public string? RequiredHostedDomain { get; set; }
 }
+
+public sealed class MediaLimits
+{
+    public long MaxUploadBytes { get; set; } = 8 * 1024 * 1024;
+}

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FluentValidation;
 using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Common;
 
@@ -19,8 +20,8 @@ public static class ExceptionMapping
             {
                 await next();
             }
-            catch (Exception ex) when (ex is DomainException
-                or NotFoundException or ForbiddenException or UnauthorizedException)
+            catch (Exception ex) when (ex is DomainException or NotFoundException
+                or ForbiddenException or UnauthorizedException or ValidationException)
             {
                 if (context.Response.HasStarted)
                 {
@@ -32,9 +33,16 @@ public static class ExceptionMapping
                     NotFoundException => StatusCodes.Status404NotFound,
                     ForbiddenException => StatusCodes.Status403Forbidden,
                     UnauthorizedException => StatusCodes.Status401Unauthorized,
+                    ValidationException => StatusCodes.Status400BadRequest,
 
                     _ => StatusCodes.Status409Conflict,
                 };
+
+                var errors = ex is ValidationException validation
+                    ? validation.Errors
+                        .GroupBy(e => e.PropertyName)
+                        .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray())
+                    : new Dictionary<string, string[]> { ["generalErrors"] = [ex.Message] };
 
                 context.Response.Clear();
                 context.Response.StatusCode = status;
@@ -45,10 +53,7 @@ public static class ExceptionMapping
                     {
                         statusCode = status,
                         message = "One or more errors occurred!",
-                        errors = new Dictionary<string, string[]>
-                        {
-                            ["generalErrors"] = [ex.Message],
-                        },
+                        errors,
                     },
                     Json);
             }

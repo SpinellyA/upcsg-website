@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace UpcsgWeb.Infrastructure.Media;
+namespace UpcsgWeb.Domain.Media;
 
 public static partial class MediaKeys
 {

@@ -19,7 +19,8 @@ public static class ExceptionMapping
             {
                 await next();
             }
-            catch (Exception ex) when (ex is DomainException or NotFoundException or ForbiddenException)
+            catch (Exception ex) when (ex is DomainException
+                or NotFoundException or ForbiddenException or UnauthorizedException)
             {
                 if (context.Response.HasStarted)
                 {
@@ -30,6 +31,7 @@ public static class ExceptionMapping
                 {
                     NotFoundException => StatusCodes.Status404NotFound,
                     ForbiddenException => StatusCodes.Status403Forbidden,
+                    UnauthorizedException => StatusCodes.Status401Unauthorized,
 
                     _ => StatusCodes.Status409Conflict,
                 };

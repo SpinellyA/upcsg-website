@@ -1,4 +1,5 @@
 using Google.Apis.Auth;
+using UpcsgWeb.Application.Abstractions;
 
 namespace UpcsgWeb.Api.Auth;
 
@@ -38,6 +39,11 @@ public class GoogleTokenVerifier(IConfiguration configuration, ILogger<GoogleTok
         catch (InvalidJwtException ex)
         {
             logger.LogWarning(ex, "Rejected Google sign-in: invalid token.");
+            return null;
+        }
+        catch (Newtonsoft.Json.JsonException ex)
+        {
+            logger.LogWarning(ex, "Rejected Google sign-in: unparseable token.");
             return null;
         }
     }

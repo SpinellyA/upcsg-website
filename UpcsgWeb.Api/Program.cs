@@ -9,6 +9,7 @@ using UpcsgWeb.Api.Features.Dev;
 using UpcsgWeb.Api;
 using UpcsgWeb.Api.Features.Media;
 using UpcsgWeb.Application;
+using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Infrastructure;
 using UpcsgWeb.Infrastructure.Persistence;
 using UpcsgWeb.Shared.Contracts;
@@ -43,8 +44,13 @@ var media = builder.Services.AddMediaStorage(
     builder.Environment.ContentRootPath,
     builder.Configuration["Api:SelfUrl"] ?? "http://localhost:5027");
 
-builder.Services.AddScoped<JwtIssuer>();
+builder.Services.AddScoped<ITokenIssuer, JwtIssuer>();
 builder.Services.AddScoped<IGoogleTokenVerifier, GoogleTokenVerifier>();
+
+builder.Services.AddSingleton(new SignInOptions
+{
+    RequiredHostedDomain = builder.Configuration["Google:RequiredHostedDomain"],
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

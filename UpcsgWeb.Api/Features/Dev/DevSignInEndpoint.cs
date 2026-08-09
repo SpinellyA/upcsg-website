@@ -1,16 +1,12 @@
 using FastEndpoints;
-using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Users;
+using MediatR;
+using UpcsgWeb.Application.Features.Auth.DevSignIn;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Dev;
 
 public class DevSignInEndpoint(
-    IUserRepository users,
-    IUnitOfWork uow,
-    JwtIssuer jwt,
+    ISender sender,
     IWebHostEnvironment environment,
     ILogger<DevSignInEndpoint> logger)
     : Endpoint<DevSignInRequest, AuthResultDto>, IDevelopmentOnlyEndpoint
@@ -31,44 +27,6 @@ public class DevSignInEndpoint(
             return;
         }
 
-        var wantsAdmin = string.Equals(req.Role, GuildRoles.Admin, StringComparison.OrdinalIgnoreCase);
-        var email = string.IsNullOrWhiteSpace(req.Email)
-            ? (wantsAdmin ? "officer@up.edu.ph" : "guilder@up.edu.ph")
-            : req.Email.Trim();
-
-        var subject = $"dev|{email}";
-
-        var user = await users.GetByGoogleSubjectAsync(subject, ct);
-        if (user is null)
-        {
-            user = AppUser.Create(subject, email, wantsAdmin ? "Dev Officer" : "Dev Guilder", null);
-            users.Add(user);
-        }
-        else
-        {
-            user.RefreshProfile(email, user.Name, user.PictureUrl);
-        }
-
-        if (wantsAdmin)
-        {
-            user.GrantAdmin();
-        }
-        else
-        {
-            user.RevokeAdmin();
-        }
-
-        await uow.SaveChangesAsync(ct);
-
-        var (token, expiresAt) = jwt.Issue(user.Id, user.Email, user.Name, user.Role, user.PictureUrl);
-
-        logger.LogWarning("Issued a DEVELOPMENT token for {Email} as {Role}.", user.Email, user.Role);
-
-        await Send.OkAsync(new AuthResultDto
-        {
-            Token = token,
-            ExpiresAt = expiresAt,
-            User = user.ToDto(),
-        }, ct);
+        await Send.OkAsync(await sender.Send(new DevSignInCommand(req.Role, req.Email), ct), ct);
     }
 }

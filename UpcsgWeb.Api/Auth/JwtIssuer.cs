@@ -2,10 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using UpcsgWeb.Application.Abstractions;
 
 namespace UpcsgWeb.Api.Auth;
 
-public class JwtIssuer(IConfiguration configuration)
+public class JwtIssuer(IConfiguration configuration) : ITokenIssuer
 {
     public const string Issuer = "upcsg-api";
     public const string Audience = "upcsg-web";

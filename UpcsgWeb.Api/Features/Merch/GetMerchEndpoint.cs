@@ -1,11 +1,11 @@
-using FastEndpoints;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+﻿using FastEndpoints;
+using MediatR;
+using UpcsgWeb.Application.Features.Merch;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
-public class GetMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<MerchItemDto>
+public class GetMerchEndpoint(ISender sender) : EndpointWithoutRequest<MerchItemDto>
 {
     public override void Configure()
     {
@@ -15,7 +15,7 @@ public class GetMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<M
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var found = await merch.GetByIdAsync(Route<Guid>("id"), ct);
+        var found = await sender.Send(new GetMerchItemQuery(Route<Guid>("id")), ct);
 
         if (found is null)
         {
@@ -23,6 +23,6 @@ public class GetMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<M
             return;
         }
 
-        await Send.OkAsync(found.ToDto(), ct);
+        await Send.OkAsync(found, ct);
     }
 }

@@ -1,10 +1,11 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Merch;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
-public class DeleteMerchEndpoint(IMerchRepository merch, IUnitOfWork uow) : EndpointWithoutRequest
+public class DeleteMerchEndpoint(ISender sender) : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -14,15 +15,7 @@ public class DeleteMerchEndpoint(IMerchRepository merch, IUnitOfWork uow) : Endp
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var item = await merch.GetByIdAsync(Route<Guid>("id"), ct);
-        if (item is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        merch.Remove(item);
-        await uow.SaveChangesAsync(ct);
+        await sender.Send(new DeleteMerchCommand(Route<Guid>("id")), ct);
         await Send.NoContentAsync(ct);
     }
 }

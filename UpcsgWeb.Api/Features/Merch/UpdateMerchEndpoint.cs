@@ -1,15 +1,12 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Common;
-using UpcsgWeb.Domain.ValueObjects;
+using UpcsgWeb.Application.Features.Merch;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
-public class UpdateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
-    : Endpoint<MerchItemDto, MerchItemDto>
+public class UpdateMerchEndpoint(ISender sender) : Endpoint<MerchItemDto, MerchItemDto>
 {
     public override void Configure()
     {
@@ -17,27 +14,6 @@ public class UpdateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
         Policies(AuthPolicies.ExeCom);
     }
 
-    public override async Task HandleAsync(MerchItemDto req, CancellationToken ct)
-    {
-        var item = await merch.GetByIdAsync(Route<Guid>("id"), ct);
-        if (item is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        try
-        {
-            MerchWrites.Apply(item, req);
-        }
-        catch (DomainException ex)
-        {
-            AddError(ex.Message);
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        await uow.SaveChangesAsync(ct);
-        await Send.OkAsync(item.ToDto(), ct);
-    }
+    public override async Task HandleAsync(MerchItemDto req, CancellationToken ct) =>
+        await Send.OkAsync(await sender.Send(new UpdateMerchCommand(Route<Guid>("id"), req), ct), ct);
 }

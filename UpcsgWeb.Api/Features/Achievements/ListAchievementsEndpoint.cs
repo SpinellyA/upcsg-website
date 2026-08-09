@@ -1,12 +1,11 @@
-using FastEndpoints;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+﻿using FastEndpoints;
+using MediatR;
+using UpcsgWeb.Application.Features.Achievements;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Achievements;
 
-public class ListAchievementsEndpoint(IAchievementRepository achievements)
-    : EndpointWithoutRequest<List<AchievementDto>>
+public class ListAchievementsEndpoint(ISender sender) : EndpointWithoutRequest<List<AchievementDto>>
 {
     public override void Configure()
     {
@@ -14,9 +13,6 @@ public class ListAchievementsEndpoint(IAchievementRepository achievements)
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
-    {
-        var all = await achievements.GetAllAsync(ct);
-        await Send.OkAsync([.. all.Select(a => a.ToDto())], ct);
-    }
+    public override async Task HandleAsync(CancellationToken ct) =>
+        await Send.OkAsync(await sender.Send(new ListAchievementsQuery(), ct), ct);
 }

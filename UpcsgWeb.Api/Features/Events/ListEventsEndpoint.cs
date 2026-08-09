@@ -1,11 +1,11 @@
-using FastEndpoints;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+﻿using FastEndpoints;
+using MediatR;
+using UpcsgWeb.Application.Features.Events;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Events;
 
-public class ListEventsEndpoint(IEventRepository events) : EndpointWithoutRequest<List<EventDto>>
+public class ListEventsEndpoint(ISender sender) : EndpointWithoutRequest<List<EventDto>>
 {
     public override void Configure()
     {
@@ -20,14 +20,6 @@ public class ListEventsEndpoint(IEventRepository events) : EndpointWithoutReques
         var year = Query<int?>("year", isRequired: false) ?? now.Year;
         var month = Query<int?>("month", isRequired: false) ?? now.Month;
 
-        if (month is < 1 or > 12)
-        {
-            AddError("Month must be between 1 and 12.");
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        var result = await events.GetForMonthAsync(year, month, ct);
-        await Send.OkAsync([.. result.Select(e => e.ToDto())], ct);
+        await Send.OkAsync(await sender.Send(new ListEventsForMonthQuery(year, month), ct), ct);
     }
 }

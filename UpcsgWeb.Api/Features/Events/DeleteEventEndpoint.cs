@@ -1,10 +1,11 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Events;
 
 namespace UpcsgWeb.Api.Features.Events;
 
-public class DeleteEventEndpoint(IEventRepository events, IUnitOfWork uow) : EndpointWithoutRequest
+public class DeleteEventEndpoint(ISender sender) : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -14,15 +15,7 @@ public class DeleteEventEndpoint(IEventRepository events, IUnitOfWork uow) : End
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var existing = await events.GetByIdAsync(Route<Guid>("id"), ct);
-        if (existing is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        events.Remove(existing);
-        await uow.SaveChangesAsync(ct);
+        await sender.Send(new DeleteEventCommand(Route<Guid>("id")), ct);
         await Send.NoContentAsync(ct);
     }
 }

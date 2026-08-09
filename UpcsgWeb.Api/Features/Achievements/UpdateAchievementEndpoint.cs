@@ -1,14 +1,12 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Common;
+using UpcsgWeb.Application.Features.Achievements;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Achievements;
 
-public class UpdateAchievementEndpoint(IAchievementRepository achievements, IUnitOfWork uow)
-    : Endpoint<AchievementDto, AchievementDto>
+public class UpdateAchievementEndpoint(ISender sender) : Endpoint<AchievementDto, AchievementDto>
 {
     public override void Configure()
     {
@@ -16,27 +14,7 @@ public class UpdateAchievementEndpoint(IAchievementRepository achievements, IUni
         Policies(AuthPolicies.ExeCom);
     }
 
-    public override async Task HandleAsync(AchievementDto req, CancellationToken ct)
-    {
-        var achievement = await achievements.GetByIdAsync(Route<Guid>("id"), ct);
-        if (achievement is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        try
-        {
-            achievement.Update(req.Title, req.Description, req.Year, req.Category, req.ImageUrl);
-        }
-        catch (DomainException ex)
-        {
-            AddError(ex.Message);
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        await uow.SaveChangesAsync(ct);
-        await Send.OkAsync(achievement.ToDto(), ct);
-    }
+    public override async Task HandleAsync(AchievementDto req, CancellationToken ct) =>
+        await Send.OkAsync(
+            await sender.Send(new UpdateAchievementCommand(Route<Guid>("id"), req), ct), ct);
 }

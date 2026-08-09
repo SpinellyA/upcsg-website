@@ -1,11 +1,11 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Achievements;
 
 namespace UpcsgWeb.Api.Features.Achievements;
 
-public class DeleteAchievementEndpoint(IAchievementRepository achievements, IUnitOfWork uow)
-    : EndpointWithoutRequest
+public class DeleteAchievementEndpoint(ISender sender) : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -15,15 +15,7 @@ public class DeleteAchievementEndpoint(IAchievementRepository achievements, IUni
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var achievement = await achievements.GetByIdAsync(Route<Guid>("id"), ct);
-        if (achievement is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        achievements.Remove(achievement);
-        await uow.SaveChangesAsync(ct);
+        await sender.Send(new DeleteAchievementCommand(Route<Guid>("id")), ct);
         await Send.NoContentAsync(ct);
     }
 }

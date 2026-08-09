@@ -1,12 +1,12 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Events;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Events;
 
-public class AdminListEventsEndpoint(IEventRepository events) : EndpointWithoutRequest<List<EventDto>>
+public class AdminListEventsEndpoint(ISender sender) : EndpointWithoutRequest<List<EventDto>>
 {
     public override void Configure()
     {
@@ -19,7 +19,6 @@ public class AdminListEventsEndpoint(IEventRepository events) : EndpointWithoutR
         var year = Query<int?>("year", isRequired: false) ?? DateTime.UtcNow.Year;
         var month = Query<int?>("month", isRequired: false) ?? DateTime.UtcNow.Month;
 
-        var result = await events.GetForMonthAsync(year, month, ct);
-        await Send.OkAsync([.. result.Select(e => e.ToDto())], ct);
+        await Send.OkAsync(await sender.Send(new ListEventsForMonthQuery(year, month), ct), ct);
     }
 }

@@ -1,11 +1,11 @@
-using FastEndpoints;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+﻿using FastEndpoints;
+using MediatR;
+using UpcsgWeb.Application.Features.Members;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Members;
 
-public class ListMembersEndpoint(IMemberRepository members) : EndpointWithoutRequest<List<MemberDto>>
+public class ListMembersEndpoint(ISender sender) : EndpointWithoutRequest<List<MemberDto>>
 {
     public override void Configure()
     {
@@ -13,9 +13,6 @@ public class ListMembersEndpoint(IMemberRepository members) : EndpointWithoutReq
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
-    {
-        var roster = await members.GetAllAsync(ct);
-        await Send.OkAsync([.. roster.Select(m => m.ToDto())], ct);
-    }
+    public override async Task HandleAsync(CancellationToken ct) =>
+        await Send.OkAsync(await sender.Send(new ListMembersQuery(), ct), ct);
 }

@@ -1,10 +1,11 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Members;
 
 namespace UpcsgWeb.Api.Features.Members;
 
-public class DeleteMemberEndpoint(IMemberRepository members, IUnitOfWork uow) : EndpointWithoutRequest
+public class DeleteMemberEndpoint(ISender sender) : EndpointWithoutRequest
 {
     public override void Configure()
     {
@@ -14,15 +15,7 @@ public class DeleteMemberEndpoint(IMemberRepository members, IUnitOfWork uow) : 
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var member = await members.GetByIdAsync(Route<Guid>("id"), ct);
-        if (member is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        members.Remove(member);
-        await uow.SaveChangesAsync(ct);
+        await sender.Send(new DeleteMemberCommand(Route<Guid>("id")), ct);
         await Send.NoContentAsync(ct);
     }
 }

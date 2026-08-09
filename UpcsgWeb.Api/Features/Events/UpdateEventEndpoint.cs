@@ -1,14 +1,12 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Common;
+using UpcsgWeb.Application.Features.Events;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Events;
 
-public class UpdateEventEndpoint(IEventRepository events, IUnitOfWork uow)
-    : Endpoint<EventDto, EventDto>
+public class UpdateEventEndpoint(ISender sender) : Endpoint<EventDto, EventDto>
 {
     public override void Configure()
     {
@@ -16,28 +14,6 @@ public class UpdateEventEndpoint(IEventRepository events, IUnitOfWork uow)
         Policies(AuthPolicies.ExeCom);
     }
 
-    public override async Task HandleAsync(EventDto req, CancellationToken ct)
-    {
-        var existing = await events.GetByIdAsync(Route<Guid>("id"), ct);
-        if (existing is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        try
-        {
-            existing.Update(
-                req.Title, req.Description, req.StartDateTime, req.EndDateTime, req.Location, req.PosterUrl);
-        }
-        catch (DomainException ex)
-        {
-            AddError(ex.Message);
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        await uow.SaveChangesAsync(ct);
-        await Send.OkAsync(existing.ToDto(), ct);
-    }
+    public override async Task HandleAsync(EventDto req, CancellationToken ct) =>
+        await Send.OkAsync(await sender.Send(new UpdateEventCommand(Route<Guid>("id"), req), ct), ct);
 }

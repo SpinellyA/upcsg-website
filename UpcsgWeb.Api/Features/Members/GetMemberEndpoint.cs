@@ -1,12 +1,11 @@
-using FastEndpoints;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+﻿using FastEndpoints;
+using MediatR;
+using UpcsgWeb.Application.Features.Members;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Members;
 
-public class GetMemberEndpoint(IMemberRepository members)
-    : EndpointWithoutRequest<MemberDto>
+public class GetMemberEndpoint(ISender sender) : EndpointWithoutRequest<MemberDto>
 {
     public override void Configure()
     {
@@ -16,7 +15,7 @@ public class GetMemberEndpoint(IMemberRepository members)
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var found = await members.GetByIdAsync(Route<Guid>("id"), ct);
+        var found = await sender.Send(new GetMemberQuery(Route<Guid>("id")), ct);
 
         if (found is null)
         {
@@ -24,6 +23,6 @@ public class GetMemberEndpoint(IMemberRepository members)
             return;
         }
 
-        await Send.OkAsync(found.ToDto(), ct);
+        await Send.OkAsync(found, ct);
     }
 }

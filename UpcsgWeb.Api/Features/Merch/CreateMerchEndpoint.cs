@@ -1,16 +1,12 @@
-using FastEndpoints;
+﻿using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Common;
-using UpcsgWeb.Domain.ValueObjects;
+using UpcsgWeb.Application.Features.Merch;
 using UpcsgWeb.Shared.Contracts;
-using DomainMerchItem = UpcsgWeb.Domain.Merch.MerchItem;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
-public class CreateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
-    : Endpoint<MerchItemDto, MerchItemDto>
+public class CreateMerchEndpoint(ISender sender) : Endpoint<MerchItemDto, MerchItemDto>
 {
     public override void Configure()
     {
@@ -18,23 +14,6 @@ public class CreateMerchEndpoint(IMerchRepository merch, IUnitOfWork uow)
         Policies(AuthPolicies.ExeCom);
     }
 
-    public override async Task HandleAsync(MerchItemDto req, CancellationToken ct)
-    {
-        DomainMerchItem item;
-        try
-        {
-            item = DomainMerchItem.Create(req.Name, req.Description, Money.Of(req.Price));
-            MerchWrites.Apply(item, req);
-        }
-        catch (DomainException ex)
-        {
-            AddError(ex.Message);
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        merch.Add(item);
-        await uow.SaveChangesAsync(ct);
-        await Send.OkAsync(item.ToDto(), ct);
-    }
+    public override async Task HandleAsync(MerchItemDto req, CancellationToken ct) =>
+        await Send.OkAsync(await sender.Send(new CreateMerchCommand(req), ct), ct);
 }

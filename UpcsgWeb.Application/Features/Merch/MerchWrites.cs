@@ -2,11 +2,11 @@ using UpcsgWeb.Domain.ValueObjects;
 using UpcsgWeb.Shared.Contracts;
 using DomainMerchItem = UpcsgWeb.Domain.Merch.MerchItem;
 
-namespace UpcsgWeb.Api.Features.Merch;
+namespace UpcsgWeb.Application.Features.Merch;
 
-public static class MerchWrites
+internal static class MerchWrites
 {
-    public static void Apply(DomainMerchItem item, MerchItemDto req)
+    internal static void Apply(DomainMerchItem item, MerchItemDto req)
     {
         item.UpdateDetails(req.Name, req.Description, Money.Of(req.Price));
         item.ReplacePhotos(req.PhotoUrls);

@@ -1,11 +1,11 @@
-using FastEndpoints;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+﻿using FastEndpoints;
+using MediatR;
+using UpcsgWeb.Application.Features.Merch;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Merch;
 
-public class ListMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<List<MerchItemDto>>
+public class ListMerchEndpoint(ISender sender) : EndpointWithoutRequest<List<MerchItemDto>>
 {
     public override void Configure()
     {
@@ -13,9 +13,6 @@ public class ListMerchEndpoint(IMerchRepository merch) : EndpointWithoutRequest<
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
-    {
-        var items = await merch.GetAllAsync(ct);
-        await Send.OkAsync([.. items.Select(m => m.ToDto())], ct);
-    }
+    public override async Task HandleAsync(CancellationToken ct) =>
+        await Send.OkAsync(await sender.Send(new ListMerchQuery(), ct), ct);
 }

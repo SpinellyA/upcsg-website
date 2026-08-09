@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-08T16:56:31.9044674Z",
+  "generatedAt": "2026-08-09T16:59:05.9582257Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -300,10 +300,10 @@
     }
   ],
   "settings": {
-    "eventsYear": 2026,
-    "eventsMonth": 8,
+    "eventsYear": null,
+    "eventsMonth": null,
     "resolvedYear": 2026,
     "resolvedMonth": 8,
-    "followsCurrentMonth": false
+    "followsCurrentMonth": true
   }
 }

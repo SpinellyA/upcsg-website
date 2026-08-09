@@ -1,13 +1,12 @@
 using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Carts.GetCart;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Carts;
 
-public class GetCartEndpoint(ICartRepository carts, IMerchRepository merch)
-    : EndpointWithoutRequest<CartDto>
+public class GetCartEndpoint(ISender sender) : EndpointWithoutRequest<CartDto>
 {
     public override void Configure()
     {
@@ -24,9 +23,6 @@ public class GetCartEndpoint(ICartRepository carts, IMerchRepository merch)
             return;
         }
 
-        var cart = await CartOps.GetOrCreateAsync(carts, userId.Value, ct);
-        var items = await CartOps.ResolveItemsAsync(cart, merch, ct);
-
-        await Send.OkAsync(cart.ToDto(items), ct);
+        await Send.OkAsync(await sender.Send(new GetCartQuery(userId.Value), ct), ct);
     }
 }

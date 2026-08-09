@@ -1,14 +1,12 @@
 using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Mapping;
-using UpcsgWeb.Application.Abstractions;
-using UpcsgWeb.Domain.Common;
+using UpcsgWeb.Application.Features.Carts.UpdateCartLine;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.Api.Features.Carts;
 
-public class UpdateCartLineEndpoint(ICartRepository carts, IMerchRepository merch, IUnitOfWork uow)
-    : Endpoint<UpdateCartLineRequest, CartDto>
+public class UpdateCartLineEndpoint(ISender sender) : Endpoint<UpdateCartLineRequest, CartDto>
 {
     public override void Configure()
     {
@@ -25,28 +23,9 @@ public class UpdateCartLineEndpoint(ICartRepository carts, IMerchRepository merc
             return;
         }
 
-        var cart = await carts.GetForUserAsync(userId.Value, ct);
-        if (cart is null)
-        {
-            AddError("Your cart is empty.");
-            await Send.ErrorsAsync(404, ct);
-            return;
-        }
+        var cart = await sender.Send(
+            new UpdateCartLineCommand(userId.Value, req.MerchItemId, req.Variant, req.Quantity), ct);
 
-        try
-        {
-            cart.SetQuantity(req.MerchItemId, req.Variant, req.Quantity);
-        }
-        catch (DomainException ex)
-        {
-            AddError(ex.Message);
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        await uow.SaveChangesAsync(ct);
-
-        var items = await CartOps.ResolveItemsAsync(cart, merch, ct);
-        await Send.OkAsync(cart.ToDto(items), ct);
+        await Send.OkAsync(cart, ct);
     }
 }

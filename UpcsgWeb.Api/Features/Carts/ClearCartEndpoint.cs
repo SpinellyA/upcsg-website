@@ -1,10 +1,11 @@
 using FastEndpoints;
+using MediatR;
 using UpcsgWeb.Api.Auth;
-using UpcsgWeb.Application.Abstractions;
+using UpcsgWeb.Application.Features.Carts.ClearCart;
 
 namespace UpcsgWeb.Api.Features.Carts;
 
-public class ClearCartEndpoint(ICartRepository carts, IUnitOfWork uow) : EndpointWithoutRequest
+public class ClearCartEndpoint(ISender sender) : EndpointWithoutRequest
 {
     public override void Configure() => Delete("/cart");
 
@@ -17,13 +18,7 @@ public class ClearCartEndpoint(ICartRepository carts, IUnitOfWork uow) : Endpoin
             return;
         }
 
-        var cart = await carts.GetForUserAsync(userId.Value, ct);
-        if (cart is not null)
-        {
-            cart.Clear();
-            await uow.SaveChangesAsync(ct);
-        }
-
+        await sender.Send(new ClearCartCommand(userId.Value), ct);
         await Send.NoContentAsync(ct);
     }
 }

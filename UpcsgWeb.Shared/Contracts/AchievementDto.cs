@@ -8,4 +8,6 @@ public class AchievementDto
     public int Year { get; set; }
     public string? ImageUrl { get; set; }
     public string? Category { get; set; }
+
+    public DateTimeOffset CreatedAt { get; set; }
 }

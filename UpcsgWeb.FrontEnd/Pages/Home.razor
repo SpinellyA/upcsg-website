@@ -252,7 +252,10 @@
         _merch = await MerchService.GetMerchAsync();
 
         _achievements = await AchievementService.GetAchievementsAsync();
-        _latestAchievement = _achievements.OrderByDescending(a => a.Year).FirstOrDefault();
+        _latestAchievement = _achievements
+            .OrderByDescending(a => a.Year)
+            .ThenByDescending(a => a.CreatedAt)
+            .FirstOrDefault();
 
         _members = await MemberService.GetMembersAsync();
         _execCount = _members.Count(m => m.Category == MemberCategory.ExeCom);

@@ -77,6 +77,7 @@ public static class DtoMapping
         Year = a.Year,
         ImageUrl = a.ImageUrl,
         Category = a.Category,
+        CreatedAt = a.CreatedAt,
     };
 
     public static SiteSettingsDto ToDto(this UpcsgWeb.Domain.Settings.SiteSettings s)

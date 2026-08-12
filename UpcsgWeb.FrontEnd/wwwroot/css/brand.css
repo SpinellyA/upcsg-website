@@ -2917,6 +2917,12 @@ h4, h5, h6, .upcsg-heading {
     color: var(--upcsg-text-muted);
 }
 
+.upcsg-chip--gold {
+    border-color: rgba(226, 190, 122, 0.45);
+    background: rgba(226, 190, 122, 0.12);
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
 /* --- Ordering steps --- */
 
 .upcsg-steps {

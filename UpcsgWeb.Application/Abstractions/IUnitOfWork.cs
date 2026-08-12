@@ -1,4 +1,4 @@
-namespace UpcsgWeb.Application.Abstractions;
+﻿namespace UpcsgWeb.Application.Abstractions;
 
 public interface IUnitOfWork
 {
@@ -10,6 +10,7 @@ public interface IUnitOfWork
     IEventRepository Events { get; }
     IMemberRepository Members { get; }
     IAchievementRepository Achievements { get; }
+    IOpportunityRepository Opportunities { get; }
     ISiteSettingsRepository SiteSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);

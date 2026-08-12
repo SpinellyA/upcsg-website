@@ -14,5 +14,7 @@ public class ContentSnapshot
 
     public List<MerchItemDto> Merch { get; set; } = [];
 
+    public List<OpportunityDto> Opportunities { get; set; } = [];
+
     public SiteSettingsDto Settings { get; set; } = new();
 }

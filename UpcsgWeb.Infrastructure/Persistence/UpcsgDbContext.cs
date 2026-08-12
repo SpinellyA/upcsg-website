@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using UpcsgWeb.Application.Abstractions;
 using UpcsgWeb.Domain.Carts;
 using UpcsgWeb.Domain.Common;
@@ -24,6 +24,7 @@ public class UpcsgDbContext(
     public DbSet<GuildEvent> Events => Set<GuildEvent>();
     public DbSet<Member> Members => Set<Member>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
+    public DbSet<Opportunity> Opportunities => Set<Opportunity>();
     public DbSet<SiteSettings> SiteSettings => Set<SiteSettings>();
 
     private ICartRepository? _cartRepository;
@@ -34,6 +35,7 @@ public class UpcsgDbContext(
     private IEventRepository? _eventRepository;
     private IMemberRepository? _memberRepository;
     private IAchievementRepository? _achievementRepository;
+    private IOpportunityRepository? _opportunityRepository;
     private ISiteSettingsRepository? _siteSettingsRepository;
 
     ICartRepository IUnitOfWork.Carts => _cartRepository ??= new CartRepository(this);
@@ -44,6 +46,9 @@ public class UpcsgDbContext(
     IEventRepository IUnitOfWork.Events => _eventRepository ??= new EventRepository(this);
     IMemberRepository IUnitOfWork.Members => _memberRepository ??= new MemberRepository(this);
     IAchievementRepository IUnitOfWork.Achievements => _achievementRepository ??= new AchievementRepository(this);
+
+    IOpportunityRepository IUnitOfWork.Opportunities =>
+        _opportunityRepository ??= new OpportunityRepository(this);
     ISiteSettingsRepository IUnitOfWork.SiteSettings => _siteSettingsRepository ??= new SiteSettingsRepository(this);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) =>

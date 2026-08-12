@@ -1,0 +1,100 @@
+@page "/opportunities"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IOpportunityService OpportunityFeed
+
+<PageTitle>Opportunities - UPCSG</PageTitle>
+
+<section class="upcsg-banner">
+    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 28%; right: 30%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
+    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 28%; right: 46%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
+
+    <div class="upcsg-banner__inner">
+        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Get involved</p>
+        <h1 class="upcsg-banner__title">Opportunities</h1>
+        <p class="upcsg-lede" style="margin-bottom: 0;">
+            Hackathons, competitions, quizbowls and calls worth your time &mdash; posted by the
+            ExeCom, soonest deadline first.
+        </p>
+    </div>
+</section>
+
+<Marquee Items="@Ticker" DurationSeconds="52" Class="upcsg-marquee--hero" />
+
+<div class="upcsg-page upcsg-page--after-hero">
+    <section class="upcsg-section">
+        @if (_loading)
+        {
+            <div class="upcsg-cardgrid">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="240px" Class="upcsg-skeleton" />
+                }
+            </div>
+        }
+        else if (_open.Count == 0)
+        {
+            <Reveal Variant="Reveal.RevealMotion.Fade">
+                <div class="upcsg-empty">
+                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    <p>
+                        Nothing open right now. The ExeCom posts hackathons, competitions and calls
+                        here as they come in &mdash; check back, or ask on the guild chat.
+                    </p>
+                </div>
+            </Reveal>
+        }
+        else
+        {
+            <div class="upcsg-cardgrid">
+                @foreach (var (item, i) in _open.Select((o, i) => (o, i)))
+                {
+                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
+                        <OpportunityCard Opportunity="item" />
+                    </Reveal>
+                }
+            </div>
+        }
+    </section>
+
+    <section class="upcsg-section upcsg-closing">
+        <div class="upcsg-flare upcsg-closing__flare"></div>
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Know of one?</p>
+            <h2 class="upcsg-title-xl">Tell us about it</h2>
+            <p class="upcsg-lede">
+                If you have come across a competition, scholarship or call that other guilders
+                should see, send it our way and we will put it up here.
+            </p>
+            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
+                Get in Touch
+            </MudButton>
+        </Reveal>
+    </section>
+</div>
+
+@code {
+    private List<OpportunityDto> _open = [];
+    private bool _loading = true;
+
+    private static readonly string[] Ticker =
+    [
+        "Hackathons", "Competitions", "Quizbowls", "Scholarships",
+        "Internships", "Calls for papers", "Conferences", "Deadlines",
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _open = await OpportunityFeed.GetOpenAsync();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

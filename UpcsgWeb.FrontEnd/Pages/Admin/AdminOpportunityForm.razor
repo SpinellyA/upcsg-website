@@ -1,0 +1,291 @@
+@page "/admin/opportunities/new"
+@page "/admin/opportunities/{Id:guid}"
+@attribute [Authorize(Policy = "ExeCom")]
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@using UpcsgWeb.FrontEnd.Components
+@inject IAdminContentService Admin
+@inject ISnackbar Snackbar
+@inject IDialogService Dialogs
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsNew ? "New opportunity" : _item.Title) - UPCSG Admin</PageTitle>
+
+<div class="upcsg-page">
+    <MudLink Href="admin/opportunities" Class="mb-3 d-inline-block">&larr; All opportunities</MudLink>
+
+    @if (_loading)
+    {
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    }
+    else if (_notFound)
+    {
+        <MudAlert Severity="Severity.Warning">That opportunity no longer exists.</MudAlert>
+    }
+    else
+    {
+        <div class="upcsg-section-head">
+            <div>
+                <p class="upcsg-kicker">Guild CMS</p>
+                <h1 class="upcsg-title-xl">@(IsNew ? "New opportunity" : _item.Title)</h1>
+            </div>
+        </div>
+
+        <AdminNav />
+
+        @if (_error is not null)
+        {
+            <MudAlert Severity="Severity.Error" Square="true" Elevation="0" Class="mt-4">@_error</MudAlert>
+        }
+
+        <div class="upcsg-merchform mt-4">
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Poster</MudText>
+
+                <SinglePhotoField Url="@_item.PosterUrl"
+                                  UrlChanged="OnPosterChanged"
+                                  Folder="events"
+                                  Alt="Opportunity poster"
+                                  EmptyLabel="Upload poster" />
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    Optional. Without one the card falls back to a generated plate, which is
+                    fine &mdash; most calls do not come with artwork.
+                </MudText>
+            </MudPaper>
+
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Opportunity</MudText>
+
+                <MudTextField @bind-Value="_item.Title" Immediate="true"
+                              Label="Title" Variant="Variant.Outlined" Required="true"
+                              TextChanged="_ => Touch()" Class="mb-4" />
+
+                <MudSelect T="OpportunityKindDto" @bind-Value="_item.Kind"
+                           Label="Kind" Variant="Variant.Outlined" Class="mb-4">
+                    @foreach (var kind in Enum.GetValues<OpportunityKindDto>())
+                    {
+                        <MudSelectItem T="OpportunityKindDto" Value="@kind">@KindLabel(kind)</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudTextField @bind-Value="_item.Description" Immediate="true"
+                              Label="Description" Variant="Variant.Outlined" Lines="8"
+                              HelperText="The first paragraph is the summary shown on cards."
+                              TextChanged="_ => Touch()" Class="mb-4" />
+
+                <MudGrid Spacing="2" Class="mb-4">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_item.Organiser" Immediate="true"
+                                      Label="Organiser" Variant="Variant.Outlined"
+                                      HelperText="Who is running it"
+                                      TextChanged="_ => Touch()" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_item.Location" Immediate="true"
+                                      Label="Location" Variant="Variant.Outlined"
+                                      HelperText="Venue, or Online"
+                                      TextChanged="_ => Touch()" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudTextField @bind-Value="_item.Url" Immediate="true"
+                              Label="Link" Variant="Variant.Outlined"
+                              Placeholder="https://"
+                              HelperText="Where guilders go to register or read more."
+                              TextChanged="_ => Touch()" Class="mb-4" />
+            </MudPaper>
+
+            <MudPaper Square="true" Elevation="0" Class="upcsg-panel">
+                <MudText Typo="Typo.overline" Class="upcsg-panel__title">Dates</MudText>
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="Opens" Variant="Variant.Outlined"
+                                       Date="_opensAt" DateChanged="d => { _opensAt = d; Touch(); }"
+                                       Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="Closes" Variant="Variant.Outlined"
+                                       Date="_closesAt" DateChanged="d => { _closesAt = d; Touch(); }"
+                                       Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="Happens" Variant="Variant.Outlined"
+                                       Date="_happensAt" DateChanged="d => { _happensAt = d; Touch(); }"
+                                       Clearable="true" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    The closing date drives the ordering and the "closes in N days" label, and is
+                    what removes an entry from the public page once it passes. Leave it empty for
+                    a standing opportunity with no deadline.
+                </MudText>
+
+                <MudSwitch T="bool" @bind-Value="_item.IsFeatured" Color="Color.Success"
+                           Label="Feature this at the top of the list" Class="mt-4" />
+            </MudPaper>
+
+            <div class="upcsg-formbar">
+                @if (!IsNew)
+                {
+                    <MudButton Variant="Variant.Text" Color="Color.Error" Class="mr-auto"
+                               StartIcon="@Icons.Material.Filled.DeleteOutline"
+                               Disabled="_saving" OnClick="DeleteAsync">
+                        Delete opportunity
+                    </MudButton>
+                }
+
+                <MudButton Variant="Variant.Text" Disabled="_saving"
+                           OnClick="@(() => Navigation.NavigateTo("admin/opportunities"))">
+                    Cancel
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled" Class="upcsg-cta-button px-6"
+                           Disabled="@(_saving || string.IsNullOrWhiteSpace(_item.Title))"
+                           OnClick="SaveAsync">
+                    @(_saving ? "Saving…" : IsNew ? "Create" : "Save changes")
+                </MudButton>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private OpportunityDto _item = new();
+    private DateTime? _opensAt;
+    private DateTime? _closesAt;
+    private DateTime? _happensAt;
+
+    private bool _loading = true;
+    private bool _saving;
+    private bool _notFound;
+    private string? _error;
+
+    private bool IsNew => Id is null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _notFound = false;
+
+        try
+        {
+            if (IsNew)
+            {
+                _item = new OpportunityDto();
+                _opensAt = _closesAt = _happensAt = null;
+                return;
+            }
+
+            var all = await Admin.GetOpportunitiesAsync();
+            var found = all.FirstOrDefault(o => o.Id == Id!.Value);
+
+            if (found is null)
+            {
+                _notFound = true;
+                return;
+            }
+
+            _item = found;
+            _opensAt = found.OpensAt?.LocalDateTime.Date;
+            _closesAt = found.ClosesAt?.LocalDateTime.Date;
+            _happensAt = found.HappensAt?.LocalDateTime.Date;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Touch() => _error = null;
+
+    private void OnPosterChanged(string? url)
+    {
+        _item.PosterUrl = url;
+        Touch();
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _error = null;
+
+        _item.OpensAt = ToOffset(_opensAt);
+        _item.ClosesAt = ToOffset(_closesAt, endOfDay: true);
+        _item.HappensAt = ToOffset(_happensAt);
+
+        try
+        {
+            var saved = await Admin.SaveOpportunityAsync(_item);
+            Snackbar.Add(IsNew ? "Opportunity posted." : "Changes saved.", Severity.Success);
+            Navigation.NavigateTo($"admin/opportunities/{saved.Id}");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            "Delete opportunity",
+            $"\"{_item.Title}\" will be removed from the site. Continue?",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        _saving = true;
+
+        try
+        {
+            await Admin.DeleteOpportunityAsync(_item.Id);
+            Snackbar.Add("Opportunity deleted.", Severity.Success);
+            Navigation.NavigateTo("admin/opportunities");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    // A deadline should hold until the end of the day it names, so a closing date is stored at
+    // one minute to midnight rather than at the start of the day.
+    private static DateTimeOffset? ToOffset(DateTime? date, bool endOfDay = false)
+    {
+        if (date is null)
+        {
+            return null;
+        }
+
+        var moment = endOfDay ? date.Value.Date.AddDays(1).AddSeconds(-1) : date.Value.Date;
+
+        return new DateTimeOffset(moment, TimeZoneInfo.Local.GetUtcOffset(moment));
+    }
+
+    private static string KindLabel(OpportunityKindDto kind) => kind switch
+    {
+        OpportunityKindDto.CallForPapers => "Call for papers",
+        _ => kind.ToString(),
+    };
+}

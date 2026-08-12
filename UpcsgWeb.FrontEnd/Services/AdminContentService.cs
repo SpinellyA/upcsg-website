@@ -1,4 +1,4 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using UpcsgWeb.Shared.Contracts;
 
 namespace UpcsgWeb.FrontEnd.Services;
@@ -12,6 +12,10 @@ public interface IAdminContentService
     Task<List<EventDto>> GetEventsAsync(int year, int month);
     Task<EventDto> SaveEventAsync(EventDto item);
     Task DeleteEventAsync(Guid id);
+
+    Task<List<OpportunityDto>> GetOpportunitiesAsync();
+    Task<OpportunityDto> SaveOpportunityAsync(OpportunityDto item);
+    Task DeleteOpportunityAsync(Guid id);
 
     Task<List<MemberDto>> GetMembersAsync();
     Task<MemberDto> SaveMemberAsync(MemberDto item);
@@ -55,6 +59,14 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
         SaveAsync(item, "api/events", item.Id);
 
     public Task DeleteEventAsync(Guid id) => DeleteAsync($"api/events/{id}");
+
+    public async Task<List<OpportunityDto>> GetOpportunitiesAsync() =>
+        await http.GetFromJsonAsync<List<OpportunityDto>>("api/admin/opportunities", UpcsgJson.Options) ?? [];
+
+    public Task<OpportunityDto> SaveOpportunityAsync(OpportunityDto item) =>
+        SaveAsync(item, "api/opportunities", item.Id);
+
+    public Task DeleteOpportunityAsync(Guid id) => DeleteAsync($"api/opportunities/{id}");
 
     public async Task<List<MemberDto>> GetMembersAsync()
     {

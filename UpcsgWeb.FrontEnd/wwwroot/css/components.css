@@ -329,6 +329,93 @@
 
 .upcsg-eventcard:hover .upcsg-eventcard__arrow { transform: translateX(5px); }
 
+/* --- OpportunityCard ----------------------------------------------------- */
+
+.upcsg-oppcard {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    background: linear-gradient(180deg, rgba(82, 38, 87, 0.5), rgba(22, 17, 58, 0.75));
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
+        border-color 0.35s ease;
+}
+
+.upcsg-oppcard:hover {
+    transform: translateY(-6px);
+    border-color: rgba(204, 174, 222, 0.45);
+    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+}
+
+.upcsg-oppcard--featured {
+    border-color: rgba(226, 190, 122, 0.4);
+}
+
+.upcsg-oppcard__poster {
+    aspect-ratio: 16 / 10;
+    border-radius: 0;
+}
+
+.upcsg-oppcard__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 1.1rem 1.25rem 1.25rem;
+}
+
+.upcsg-oppcard__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.upcsg-oppcard__title {
+    margin: 0;
+    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-oppcard__org {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-oppcard__blurb {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+    font-size: 0.94rem;
+    line-height: 1.6;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-oppcard__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 0.85rem;
+}
+
+.upcsg-oppcard__deadline {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
 /* --- MerchCard ----------------------------------------------------------- */
 
 .upcsg-merchcard {

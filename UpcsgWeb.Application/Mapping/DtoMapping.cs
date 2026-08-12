@@ -80,6 +80,23 @@ public static class DtoMapping
         CreatedAt = a.CreatedAt,
     };
 
+    public static OpportunityDto ToDto(this UpcsgWeb.Domain.Content.Opportunity o) => new()
+    {
+        Id = o.Id,
+        Title = o.Title,
+        Description = o.Description,
+        Kind = (OpportunityKindDto)o.Kind,
+        Organiser = o.Organiser,
+        Location = o.Location,
+        OpensAt = o.OpensAt,
+        ClosesAt = o.ClosesAt,
+        HappensAt = o.HappensAt,
+        Url = o.Url,
+        PosterUrl = o.PosterUrl,
+        IsFeatured = o.IsFeatured,
+        CreatedAt = o.CreatedAt,
+    };
+
     public static SiteSettingsDto ToDto(this UpcsgWeb.Domain.Settings.SiteSettings s)
     {
         var (year, month) = s.ResolveEventsMonth();

@@ -31,6 +31,8 @@ public class GetSnapshotQueryHandler(IApplicationDbContext context, IUnitOfWork 
 
         var merch = await uow.Merch.GetAllAsync(cancellationToken);
 
+        var opportunities = await uow.Opportunities.GetOpenAsync(cancellationToken);
+
         var settings = await uow.SiteSettings.GetAsync(cancellationToken);
 
         return new ContentSnapshot
@@ -40,6 +42,7 @@ public class GetSnapshotQueryHandler(IApplicationDbContext context, IUnitOfWork 
             Events = [.. events.Select(e => e.ToDto())],
             Achievements = [.. achievements.Select(a => a.ToDto())],
             Merch = [.. merch.Select(m => m.ToDto())],
+            Opportunities = [.. opportunities.Select(o => o.ToDto())],
             Settings = settings.ToDto(),
         };
     }

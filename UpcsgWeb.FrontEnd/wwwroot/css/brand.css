@@ -2591,6 +2591,12 @@ h4, h5, h6, .upcsg-heading {
     flex: none;
 }
 
+/* Opportunities mark two different things on one grid: the day something is due
+   and the day it actually runs. Colour is what tells them apart. */
+.upcsg-cal__dot--deadline { background: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-cal__dot--happens { background: var(--upcsg-cosmic-lavender); }
+
 .upcsg-cal__legend {
     display: flex;
     flex-wrap: wrap;
@@ -2620,6 +2626,21 @@ h4, h5, h6, .upcsg-heading {
     border-color: var(--upcsg-cta);
     box-shadow: inset 0 0 0 1px var(--upcsg-cta);
 }
+
+/* The deadline and happens swatches echo the dot shape, not the day tile, so the
+   legend reads against the marks it explains. */
+.upcsg-cal__legend i.is-deadline,
+.upcsg-cal__legend i.is-happens {
+    width: 0.6rem;
+    height: 0.6rem;
+    border: none;
+    border-radius: 0;
+    clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+}
+
+.upcsg-cal__legend i.is-deadline { background: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-cal__legend i.is-happens { background: var(--upcsg-cosmic-lavender); }
 
 /* ------------------------------------------------------------------ *
    Agenda — expandable event rows beneath the calendar

@@ -3,6 +3,7 @@
 @using UpcsgWeb.FrontEnd.Services
 @using UpcsgWeb.FrontEnd.Components
 @inject IOpportunityService OpportunityFeed
+@inject IJSRuntime JS
 
 <PageTitle>Opportunities - UPCSG</PageTitle>
 
@@ -24,40 +25,165 @@
 <Marquee Items="@Ticker" DurationSeconds="52" Class="upcsg-marquee--hero" />
 
 <div class="upcsg-page upcsg-page--after-hero">
-    <section class="upcsg-section">
-        @if (_loading)
-        {
-            <div class="upcsg-cardgrid">
-                @for (var i = 0; i < 4; i++)
+    @if (_loading)
+    {
+        <section class="upcsg-section">
+            <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                @for (var i = 0; i < 6; i++)
                 {
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="240px" Class="upcsg-skeleton" />
                 }
             </div>
-        }
-        else if (_open.Count == 0)
-        {
+        </section>
+    }
+    else if (_open.Count == 0)
+    {
+        <section class="upcsg-section">
             <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty">
+                <div class="upcsg-empty upcsg-empty--tall">
                     <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    <h2 class="upcsg-title-xl">Nothing open right now</h2>
                     <p>
-                        Nothing open right now. The ExeCom posts hackathons, competitions and calls
-                        here as they come in &mdash; check back, or ask on the guild chat.
+                        The ExeCom posts hackathons, competitions and calls here as they come in
+                        &mdash; check back, or ask on the guild chat.
                     </p>
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="contact">
+                        Get in touch
+                    </MudButton>
                 </div>
             </Reveal>
-        }
-        else
-        {
-            <div class="upcsg-cardgrid">
-                @foreach (var (item, i) in _open.Select((o, i) => (o, i)))
+        </section>
+    }
+    else
+    {
+        <section class="upcsg-section upcsg-raillayout">
+
+            <aside class="upcsg-raillayout__rail">
+                <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-calcard">
+                    <div class="upcsg-calcard__head upcsg-calcard__head--nav">
+                        <div>
+                            <p class="upcsg-kicker">
+                                <span class="upcsg-star upcsg-star--tiny"></span> Deadlines
+                            </p>
+                            <h2 class="upcsg-calcard__title">@_month.ToString("MMMM yyyy")</h2>
+                        </div>
+
+                        <div class="upcsg-calnav">
+                            <button type="button" class="upcsg-calnav__btn"
+                                    disabled="@(!CanGoBack)"
+                                    aria-label="Previous month"
+                                    @onclick="() => ShiftMonth(-1)">&lsaquo;</button>
+                            <button type="button" class="upcsg-calnav__btn"
+                                    disabled="@(!CanGoForward)"
+                                    aria-label="Next month"
+                                    @onclick="() => ShiftMonth(1)">&rsaquo;</button>
+                        </div>
+                    </div>
+
+                    <div class="upcsg-cal__grid" role="grid" aria-label="@($"{_month:MMMM yyyy} deadlines")">
+                        @foreach (var dow in DayNames)
+                        {
+                            <div class="upcsg-cal__dow" role="columnheader">@dow</div>
+                        }
+
+                        @for (var blank = 0; blank < LeadingBlanks; blank++)
+                        {
+                            <div class="upcsg-cal__cell--empty"></div>
+                        }
+
+                        @for (var day = 1; day <= DaysInMonth; day++)
+                        {
+                            var date = new DateTime(_month.Year, _month.Month, day);
+                            var closing = ClosingOn(date);
+                            var happening = HappeningOn(date);
+                            var isToday = date == DateTime.Today;
+
+                            if (closing.Count == 0 && happening.Count == 0)
+                            {
+                                <div class="upcsg-cal__day upcsg-cal__day--plain @(isToday ? "upcsg-cal__day--today" : null)">
+                                    <span class="upcsg-cal__day-num">@day</span>
+                                    <span class="upcsg-cal__dots"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                var picked = date;
+
+                                <button type="button"
+                                        class="upcsg-cal__day upcsg-cal__day--has-events @(isToday ? "upcsg-cal__day--today" : null) @(_selectedDate == date ? "upcsg-cal__day--selected" : null)"
+                                        aria-label="@DayLabel(date, closing.Count, happening.Count)"
+                                        @onclick="() => SelectDayAsync(picked)">
+                                    <span class="upcsg-cal__day-num">@day</span>
+                                    <span class="upcsg-cal__dots">
+                                        @foreach (var _ in closing.Take(3))
+                                        {
+                                            <i class="upcsg-cal__dot upcsg-cal__dot--deadline"></i>
+                                        }
+                                        @foreach (var _ in happening.Take(3 - Math.Min(closing.Count, 3)))
+                                        {
+                                            <i class="upcsg-cal__dot upcsg-cal__dot--happens"></i>
+                                        }
+                                    </span>
+                                </button>
+                            }
+                        }
+                    </div>
+
+                    <div class="upcsg-cal__legend">
+                        <span><i class="is-deadline"></i> Deadline</span>
+                        <span><i class="is-happens"></i> Happens</span>
+                        <span><i class="is-today"></i> Today</span>
+                    </div>
+
+                    @if (_selectedDate is not null)
+                    {
+                        <MudButton Variant="Variant.Outlined"
+                                   FullWidth="true"
+                                   Class="upcsg-ghost-button mt-3"
+                                   OnClick="ClearSelection">
+                            Show all @_open.Count
+                        </MudButton>
+                    }
+                    else if (MonthDeadlineCount > 0)
+                    {
+                        <p class="upcsg-calcard__note">
+                            @MonthDeadlineCount @(MonthDeadlineCount == 1 ? "deadline" : "deadlines")
+                            in @_month.ToString("MMMM").
+                        </p>
+                    }
+                    else
+                    {
+                        <p class="upcsg-calcard__note">Nothing due in @_month.ToString("MMMM").</p>
+                    }
+                </Reveal>
+            </aside>
+
+            <div class="upcsg-raillayout__list">
+                <SectionHeading Kicker="@ListKicker" Title="@ListTitle" />
+
+                @if (Listed.Count == 0)
                 {
-                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
-                        <OpportunityCard Opportunity="item" />
-                    </Reveal>
+                    <div class="upcsg-empty">
+                        <p>Nothing on @_selectedDate?.ToString("MMMM d").</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                        @foreach (var (item, i) in Listed.Select((o, i) => (o, i)))
+                        {
+                            <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
+                                <div id="@($"opportunity-{item.Id}")"
+                                     class="@(IsHit(item) ? "upcsg-cardhit" : null)">
+                                    <OpportunityCard Opportunity="item" />
+                                </div>
+                            </Reveal>
+                        }
+                    </div>
                 }
             </div>
-        }
-    </section>
+        </section>
+    }
 
     <section class="upcsg-section upcsg-closing">
         <div class="upcsg-flare upcsg-closing__flare"></div>
@@ -77,14 +203,51 @@
 </div>
 
 @code {
-    private List<OpportunityDto> _open = [];
-    private bool _loading = true;
+    private static readonly string[] DayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     private static readonly string[] Ticker =
     [
         "Hackathons", "Competitions", "Quizbowls", "Scholarships",
         "Internships", "Calls for papers", "Conferences", "Deadlines",
     ];
+
+    private List<OpportunityDto> _open = [];
+    private bool _loading = true;
+
+    private DateTime _month = FirstOf(DateTime.Today);
+    private DateTime? _selectedDate;
+
+    private DateTime FirstOfMonth => new(_month.Year, _month.Month, 1);
+    private int DaysInMonth => DateTime.DaysInMonth(_month.Year, _month.Month);
+    private int LeadingBlanks => (int)FirstOfMonth.DayOfWeek;
+
+    // The reachable range is this month through the furthest date anything is pencilled in for.
+    // Past months hold nothing - closed entries never reach this page - and months beyond the
+    // last deadline are empty grids nobody needs to page through.
+    private DateTime EarliestMonth => FirstOf(DateTime.Today);
+
+    private DateTime LatestMonth => _open
+        .SelectMany(o => new[] { o.ClosesAt, o.HappensAt })
+        .Where(d => d is not null)
+        .Select(d => FirstOf(d!.Value.ToLocalTime().Date))
+        .DefaultIfEmpty(EarliestMonth)
+        .Max();
+
+    private bool CanGoBack => _month > EarliestMonth;
+    private bool CanGoForward => _month < LatestMonth;
+
+    private int MonthDeadlineCount => _open.Count(o =>
+        o.ClosesAt is not null && FirstOf(o.ClosesAt.Value.ToLocalTime().Date) == _month);
+
+    private List<OpportunityDto> Listed => _selectedDate is null
+        ? _open
+        : [.. _open.Where(o => IsHit(o))];
+
+    private string ListKicker => _selectedDate is not null
+        ? _selectedDate.Value.ToString("dddd, MMMM d")
+        : $"{_open.Count} open right now";
+
+    private string ListTitle => _selectedDate is not null ? "That day" : "Everything open";
 
     protected override async Task OnInitializedAsync()
     {
@@ -96,5 +259,60 @@
         {
             _loading = false;
         }
+    }
+
+    private static DateTime FirstOf(DateTime date) => new(date.Year, date.Month, 1);
+
+    private static DateTime? LocalDate(DateTimeOffset? moment) => moment?.ToLocalTime().Date;
+
+    private List<OpportunityDto> ClosingOn(DateTime date) =>
+        [.. _open.Where(o => LocalDate(o.ClosesAt) == date)];
+
+    private List<OpportunityDto> HappeningOn(DateTime date) =>
+        [.. _open.Where(o => LocalDate(o.HappensAt) == date)];
+
+    private bool IsHit(OpportunityDto item) =>
+        _selectedDate is not null
+        && (LocalDate(item.ClosesAt) == _selectedDate || LocalDate(item.HappensAt) == _selectedDate);
+
+    private static string DayLabel(DateTime date, int closing, int happening)
+    {
+        var parts = new List<string>();
+
+        if (closing > 0)
+        {
+            parts.Add($"{closing} closing");
+        }
+
+        if (happening > 0)
+        {
+            parts.Add($"{happening} happening");
+        }
+
+        return $"{date:MMMM d}, {string.Join(", ", parts)}";
+    }
+
+    private void ShiftMonth(int delta)
+    {
+        _month = _month.AddMonths(delta);
+        _selectedDate = null;
+    }
+
+    private void ClearSelection() => _selectedDate = null;
+
+    private async Task SelectDayAsync(DateTime date)
+    {
+        _selectedDate = date;
+
+        var first = Listed.FirstOrDefault();
+        if (first is null)
+        {
+            return;
+        }
+
+        StateHasChanged();
+        await Task.Yield();
+
+        await JS.InvokeVoidAsync("upcsgScrollToId", $"opportunity-{first.Id}");
     }
 }

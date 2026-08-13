@@ -1013,16 +1013,20 @@
 
 .upcsg-filterrow { margin-bottom: 1.75rem; }
 
-/* --- Events page: calendar rail beside the listing ----------------------- */
+/* --- Calendar rail beside a listing (events, opportunities) -------------- */
 
-.upcsg-eventslayout {
+.upcsg-eventslayout,
+.upcsg-raillayout {
     display: grid;
     grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
     gap: clamp(1.5rem, 4vw, 3rem);
     align-items: start;
 }
 
-.upcsg-eventslayout__rail { position: sticky; top: 1.5rem; }
+.upcsg-eventslayout__rail,
+.upcsg-raillayout__rail { position: sticky; top: 1.5rem; }
+
+.upcsg-raillayout__list { min-width: 0; }
 
 .upcsg-calcard {
     padding: 1.25rem;
@@ -1033,6 +1037,14 @@
 
 .upcsg-calcard__head { margin-bottom: 1rem; }
 
+/* The month-stepping variant: heading on the left, arrows pinned right. */
+.upcsg-calcard__head--nav {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
 .upcsg-calcard__title {
     margin: 0.2rem 0 0;
     font-family: var(--upcsg-font-display);
@@ -1041,21 +1053,76 @@
     color: var(--upcsg-honeydew-white);
 }
 
+.upcsg-calcard__note {
+    margin: 1rem 0 0;
+    font-size: 0.78rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-calnav {
+    display: flex;
+    gap: 0.35rem;
+    flex: none;
+}
+
+.upcsg-calnav__btn {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font: inherit;
+    font-size: 1.15rem;
+    line-height: 1;
+    color: var(--upcsg-text);
+    background: rgba(246, 255, 233, 0.04);
+    border: 1px solid rgba(204, 174, 222, 0.24);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+
+.upcsg-calnav__btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: var(--upcsg-cosmic-lavender);
+    background: rgba(204, 174, 222, 0.12);
+}
+
+.upcsg-calnav__btn:focus-visible {
+    outline: 2px solid var(--upcsg-cta);
+    outline-offset: 2px;
+}
+
+/* Disabled means the range ends here, so it stays visible rather than vanishing -
+   the reader can see there is nothing further to page to. */
+.upcsg-calnav__btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
 .upcsg-eventlist { display: grid; gap: 1.25rem; }
 
 /* Marks the day the reader just picked, so the scroll lands somewhere obvious
    instead of dumping them at an unremarkable card. */
-.upcsg-eventlist__hit {
+.upcsg-eventlist__hit,
+.upcsg-cardhit {
     position: relative;
     border-radius: var(--upcsg-radius);
     outline: 2px solid rgba(246, 200, 117, 0.55);
     outline-offset: 4px;
 }
 
+/* The card inside sets the height; without this the outline hugs a taller box than
+   the card in a grid row whose other cards are longer. */
+.upcsg-cardhit { height: 100%; }
+
 /* The rail stops being a rail once it would be narrower than the calendar it holds. */
 @media (max-width: 60rem) {
-    .upcsg-eventslayout { grid-template-columns: minmax(0, 1fr); }
-    .upcsg-eventslayout__rail { position: static; }
+    .upcsg-eventslayout,
+    .upcsg-raillayout { grid-template-columns: minmax(0, 1fr); }
+
+    .upcsg-eventslayout__rail,
+    .upcsg-raillayout__rail { position: static; }
 }
 
 /* --- Event detail hero --------------------------------------------------- */

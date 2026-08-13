@@ -5,6 +5,7 @@
 @inject IMerchService MerchService
 @inject IMemberService MemberService
 @inject IAchievementService AchievementService
+@inject IOpportunityService OpportunityFeed
 @inject MotionInterop Motion
 
 <PageTitle>UPCSG</PageTitle>
@@ -89,6 +90,28 @@
             </div>
         }
     </section>
+
+    @if (_opportunities.Count > 0)
+    {
+        <section class="upcsg-section">
+            <SectionHeading Kicker="@DeadlineKicker" Title="Worth your time">
+                <Action>
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="opportunities">
+                        All opportunities
+                    </MudButton>
+                </Action>
+            </SectionHeading>
+
+            <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                @foreach (var (item, i) in _opportunities.Take(3).Select((o, i) => (o, i)))
+                {
+                    <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 80)">
+                        <OpportunityCard Opportunity="item" />
+                    </Reveal>
+                }
+            </div>
+        </section>
+    }
 
     <section class="upcsg-section upcsg-feature">
         <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__body">
@@ -218,6 +241,7 @@
     private List<EventDto> _events = [];
     private List<MerchItemDto> _merch = [];
     private List<AchievementDto> _achievements = [];
+    private List<OpportunityDto> _opportunities = [];
     private List<MemberDto> _members = [];
     private AchievementDto? _latestAchievement;
     private MemberDto? _lead;
@@ -233,6 +257,28 @@
     }
 
     private DateTime _month = DateTime.Now;
+
+    // The kicker earns its place by saying how urgent the list is, not by repeating the heading.
+    private string DeadlineKicker
+    {
+        get
+        {
+            var soonest = _opportunities
+                .Where(o => o.DaysLeft is not null)
+                .Select(o => o.DaysLeft!.Value)
+                .DefaultIfEmpty(int.MaxValue)
+                .Min();
+
+            return soonest switch
+            {
+                int.MaxValue => "Get involved",
+                <= 0 => "Closing today",
+                1 => "Closing tomorrow",
+                <= 7 => $"Next deadline in {soonest} days",
+                _ => $"{_opportunities.Count} open right now",
+            };
+        }
+    }
 
     private static readonly string[] Ticker =
     [
@@ -250,6 +296,8 @@
             .ToList();
 
         _merch = await MerchService.GetMerchAsync();
+
+        _opportunities = await OpportunityFeed.GetOpenAsync();
 
         _achievements = await AchievementService.GetAchievementsAsync();
         _latestAchievement = _achievements

@@ -339,11 +339,14 @@
     border-radius: var(--upcsg-radius);
     border: var(--upcsg-hairline);
     background: linear-gradient(180deg, rgba(82, 38, 87, 0.5), rgba(22, 17, 58, 0.75));
+    text-decoration: none;
+    color: inherit;
     transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
         border-color 0.35s ease;
 }
 
-.upcsg-oppcard:hover {
+.upcsg-oppcard:hover,
+.upcsg-oppcard:focus-visible {
     transform: translateY(-6px);
     border-color: rgba(204, 174, 222, 0.45);
     box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
@@ -373,6 +376,7 @@
 }
 
 .upcsg-oppcard__title {
+    display: block;
     margin: 0;
     font-family: var(--upcsg-font-heading);
     font-weight: 600;
@@ -382,6 +386,7 @@
 }
 
 .upcsg-oppcard__org {
+    display: block;
     margin: 0;
     font-size: 0.85rem;
     color: var(--upcsg-periwinkle);
@@ -414,6 +419,201 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-oppcard__arrow {
+    flex-shrink: 0;
+    font-size: 1.2rem;
+    color: var(--upcsg-liquid-chrome-gold);
+    transition: transform 0.3s ease;
+}
+
+.upcsg-oppcard:hover .upcsg-oppcard__arrow { transform: translateX(5px); }
+
+/* --- Opportunity detail -------------------------------------------------- */
+
+.upcsg-opphead {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+/* Most calls arrive without artwork, so the plain header is the common case, not
+   the degraded one: the text simply takes the width. */
+.upcsg-opphead--plain { grid-template-columns: minmax(0, 1fr); }
+
+.upcsg-opphead__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+}
+
+.upcsg-opphead__title {
+    margin: 0;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(2rem, 5.2vw, 3.4rem);
+    line-height: 1.05;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-opphead__org {
+    margin: 0.85rem 0 0;
+    font-size: 1.05rem;
+    color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-opphead__where {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.92rem;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-opphead__plate {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--upcsg-radius);
+}
+
+.upcsg-oppdeadline {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: center;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: var(--upcsg-hairline);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(83, 37, 126, 0.22) 0%, rgba(22, 17, 58, 0.38) 100%);
+    box-shadow: inset 0 1px 0 rgba(246, 255, 233, 0.07);
+}
+
+.upcsg-oppdeadline__count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 8rem;
+    padding-right: clamp(1.25rem, 3vw, 2.5rem);
+    border-right: var(--upcsg-hairline);
+    text-align: center;
+}
+
+.upcsg-oppdeadline__num {
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(2.75rem, 7vw, 4.5rem);
+    line-height: 1;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-oppdeadline__unit {
+    margin-top: 0.4rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+/* Urgency is the one thing this panel exists to say, so it drives the colour. */
+.upcsg-oppdeadline--urgent .upcsg-oppdeadline__num { color: var(--upcsg-cta); }
+.upcsg-oppdeadline--urgent { border-color: rgba(246, 200, 117, 0.4); }
+
+.upcsg-oppdeadline--soon .upcsg-oppdeadline__num { color: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-oppdeadline--closed .upcsg-oppdeadline__num {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-oppdeadline--open .upcsg-oppdeadline__num { color: var(--upcsg-cosmic-lavender); }
+
+.upcsg-oppstages {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.upcsg-oppstages__step {
+    position: relative;
+    padding-top: 1.1rem;
+    border-top: 2px solid rgba(204, 174, 222, 0.16);
+}
+
+.upcsg-oppstages__step::before {
+    content: "";
+    position: absolute;
+    top: -0.42rem;
+    left: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--upcsg-space-cadet);
+    border: 2px solid rgba(204, 174, 222, 0.35);
+}
+
+.upcsg-oppstages__step--done { border-top-color: rgba(204, 174, 222, 0.45); }
+
+.upcsg-oppstages__step--done::before {
+    background: var(--upcsg-cosmic-lavender);
+    border-color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-oppstages__step--ahead::before { border-color: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-oppstages__step--blank { opacity: 0.5; }
+
+.upcsg-oppstages__label {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-oppstages__value {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.95rem;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-oppdeadline__actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+}
+
+@media (max-width: 46rem) {
+    .upcsg-opphead { grid-template-columns: minmax(0, 1fr); }
+
+    .upcsg-opphead__plate {
+        order: -1;
+        aspect-ratio: 16 / 10;
+    }
+
+    .upcsg-oppdeadline { grid-template-columns: minmax(0, 1fr); }
+
+    .upcsg-oppdeadline__count {
+        min-width: 0;
+        padding-right: 0;
+        padding-bottom: 1.25rem;
+        border-right: none;
+        border-bottom: var(--upcsg-hairline);
+    }
+
+    .upcsg-oppstages { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* --- MerchCard ----------------------------------------------------------- */
@@ -1013,20 +1213,16 @@
 
 .upcsg-filterrow { margin-bottom: 1.75rem; }
 
-/* --- Calendar rail beside a listing (events, opportunities) -------------- */
+/* --- Events page: calendar rail beside the listing ----------------------- */
 
-.upcsg-eventslayout,
-.upcsg-raillayout {
+.upcsg-eventslayout {
     display: grid;
     grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
     gap: clamp(1.5rem, 4vw, 3rem);
     align-items: start;
 }
 
-.upcsg-eventslayout__rail,
-.upcsg-raillayout__rail { position: sticky; top: 1.5rem; }
-
-.upcsg-raillayout__list { min-width: 0; }
+.upcsg-eventslayout__rail { position: sticky; top: 1.5rem; }
 
 .upcsg-calcard {
     padding: 1.25rem;
@@ -1118,11 +1314,244 @@
 
 /* The rail stops being a rail once it would be narrower than the calendar it holds. */
 @media (max-width: 60rem) {
-    .upcsg-eventslayout,
-    .upcsg-raillayout { grid-template-columns: minmax(0, 1fr); }
+    .upcsg-eventslayout { grid-template-columns: minmax(0, 1fr); }
+    .upcsg-eventslayout__rail { position: static; }
+}
 
-    .upcsg-eventslayout__rail,
-    .upcsg-raillayout__rail { position: static; }
+/* --- Opportunities planner: a full-width wall calendar ------------------- *
+   Deliberately not the events rail. Events fit one month in a glanceable
+   corner because there are a handful of them on known dates; deadlines are
+   the whole point here, so they get the width and are legible by name in the
+   cell rather than reduced to a dot you have to decode.
+ * ------------------------------------------------------------------------ */
+
+.upcsg-planner {
+    --upcsg-planner-cell: clamp(4.5rem, 8.5vw, 7.5rem);
+
+    border: var(--upcsg-hairline);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(83, 37, 126, 0.2) 0%, rgba(22, 17, 58, 0.42) 100%);
+    box-shadow: inset 0 1px 0 rgba(246, 255, 233, 0.07);
+    padding: clamp(1.1rem, 2.6vw, 2rem);
+    overflow: hidden;
+}
+
+.upcsg-planner__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: clamp(1rem, 2.4vw, 1.75rem);
+}
+
+.upcsg-planner__month {
+    margin: 0.25rem 0 0;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    line-height: 1;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-planner__month small {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.4em;
+    letter-spacing: 0.14em;
+    color: var(--upcsg-text-muted);
+    margin-left: 0.6rem;
+    vertical-align: middle;
+}
+
+.upcsg-planner__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upcsg-planner__grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.4rem;
+}
+
+.upcsg-planner__dow {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+    text-align: left;
+    padding: 0 0 0.5rem 0.35rem;
+}
+
+.upcsg-planner__blank {
+    min-height: var(--upcsg-planner-cell);
+    border-radius: 14px;
+    background: rgba(246, 255, 233, 0.015);
+}
+
+.upcsg-planner__day {
+    display: flex;
+    flex-direction: column;
+
+    /* The marked cells are buttons, and the UA stylesheet centres a button's flex
+       children. Left-aligned is what a planner cell wants, and without this the
+       entries shrink to their content instead of filling the cell. */
+    align-items: stretch;
+    gap: 0.25rem;
+    min-height: var(--upcsg-planner-cell);
+    padding: 0.45rem 0.45rem 0.5rem;
+    border: 1px solid rgba(204, 174, 222, 0.12);
+    border-radius: 14px;
+    background: rgba(246, 255, 233, 0.03);
+    text-align: left;
+    font: inherit;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-planner__day--marked {
+    cursor: pointer;
+    color: var(--upcsg-text);
+    border-color: rgba(204, 174, 222, 0.3);
+    background: linear-gradient(160deg, rgba(162, 83, 184, 0.2), rgba(83, 37, 126, 0.16));
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.upcsg-planner__day--marked:hover {
+    transform: translateY(-2px);
+    border-color: var(--upcsg-cosmic-lavender);
+    box-shadow: var(--upcsg-shadow-md);
+}
+
+.upcsg-planner__day--marked:focus-visible {
+    outline: 2px solid var(--upcsg-cta);
+    outline-offset: 2px;
+}
+
+.upcsg-planner__day--today .upcsg-planner__num {
+    color: var(--upcsg-space-cadet);
+    background: var(--upcsg-cta);
+}
+
+.upcsg-planner__day--selected {
+    border-color: var(--upcsg-cta);
+    box-shadow: inset 0 0 0 1px var(--upcsg-cta);
+}
+
+.upcsg-planner__num {
+    display: grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    flex: none;
+    border-radius: 8px;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.upcsg-planner__entries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+/* Two-line clamp keeps a long title from pushing the cell taller than its row. */
+.upcsg-planner__entry {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    padding: 0.14rem 0.3rem;
+    border-left: 2px solid var(--upcsg-liquid-chrome-gold);
+    border-radius: 3px;
+    background: rgba(226, 190, 122, 0.12);
+    font-size: 0.68rem;
+    line-height: 1.25;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-planner__entry--happens {
+    border-left-color: var(--upcsg-cosmic-lavender);
+    background: rgba(204, 174, 222, 0.12);
+}
+
+.upcsg-planner__more {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    color: var(--upcsg-text-muted);
+    padding-left: 0.3rem;
+}
+
+.upcsg-planner__legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.15rem;
+    margin-top: 1.25rem;
+    font-size: 0.76rem;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-planner__legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.upcsg-planner__legend i {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex: none;
+    border-radius: 3px;
+    border-left: 2px solid var(--upcsg-liquid-chrome-gold);
+    background: rgba(226, 190, 122, 0.12);
+}
+
+.upcsg-planner__legend i.is-happens {
+    border-left-color: var(--upcsg-cosmic-lavender);
+    background: rgba(204, 174, 222, 0.12);
+}
+
+.upcsg-planner__legend i.is-today {
+    border: none;
+    border-radius: 5px;
+    background: var(--upcsg-cta);
+}
+
+.upcsg-planner__summary { margin-left: auto; }
+
+/* Below this the cells cannot hold a readable title, so the entries collapse to
+   bars. The grid stays a month - a seven-column shape people can read at a
+   glance is worth more than titles that would each wrap to four lines. */
+@media (max-width: 52rem) {
+    .upcsg-planner { --upcsg-planner-cell: 3.4rem; }
+
+    .upcsg-planner__day { padding: 0.3rem; gap: 0.2rem; }
+
+    .upcsg-planner__num {
+        width: 1.35rem;
+        height: 1.35rem;
+        font-size: 0.72rem;
+    }
+
+    .upcsg-planner__entry {
+        height: 0.28rem;
+        padding: 0;
+        border-left: none;
+        border-radius: 999px;
+        font-size: 0;
+        line-height: 0;
+        background: var(--upcsg-liquid-chrome-gold);
+    }
+
+    .upcsg-planner__entry--happens { background: var(--upcsg-cosmic-lavender); }
+
+    .upcsg-planner__more { display: none; }
 }
 
 /* --- Event detail hero --------------------------------------------------- */

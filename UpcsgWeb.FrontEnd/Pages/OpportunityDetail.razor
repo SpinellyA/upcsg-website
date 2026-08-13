@@ -1,0 +1,229 @@
+@page "/opportunities/{Id:guid}"
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+@inject IOpportunityService OpportunityFeed
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<PageTitle>@(_item?.Title ?? "Opportunity") - UPCSG</PageTitle>
+
+<div class="upcsg-page">
+    @if (_loading)
+    {
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="260px" Class="upcsg-skeleton my-6" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Width="90%" />
+    }
+    else if (_item is null)
+    {
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that opportunity. It may have closed, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="opportunities">
+            Back to Opportunities
+        </MudButton>
+    }
+    else
+    {
+        <MudLink Href="opportunities" Class="mb-4 d-inline-block">&larr; All opportunities</MudLink>
+
+        <Reveal Variant="Reveal.RevealMotion.Up">
+            <header class="upcsg-opphead @(HasPoster ? null : "upcsg-opphead--plain")">
+                <div class="upcsg-opphead__text">
+                    <div class="upcsg-opphead__chips">
+                        <span class="upcsg-chip">@OpportunityText.KindLabel(_item.Kind)</span>
+
+                        @if (_item.IsFeatured)
+                        {
+                            <span class="upcsg-chip upcsg-chip--gold">Featured</span>
+                        }
+                    </div>
+
+                    <h1 class="upcsg-opphead__title">@_item.Title</h1>
+
+                    @if (!string.IsNullOrWhiteSpace(_item.Organiser))
+                    {
+                        <p class="upcsg-opphead__org">by @_item.Organiser</p>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_item.Location))
+                    {
+                        <p class="upcsg-opphead__where">
+                            <MudIcon Icon="@Icons.Material.Outlined.Place" Size="Size.Small" />
+                            @_item.Location
+                        </p>
+                    }
+                </div>
+
+                @if (HasPoster)
+                {
+                    <CosmicImage Src="@_item.PosterUrl"
+                                 Alt="@($"Poster for {_item.Title}")"
+                                 Seed="@_item.Title"
+                                 Eager="true"
+                                 Class="upcsg-opphead__plate" />
+                }
+            </header>
+        </Reveal>
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
+            <section class="upcsg-oppdeadline upcsg-oppdeadline--@OpportunityText.Urgency(_item)">
+                <div class="upcsg-oppdeadline__count">
+                    <span class="upcsg-oppdeadline__num">@OpportunityText.Countdown(_item)</span>
+                    <span class="upcsg-oppdeadline__unit">@OpportunityText.CountdownUnit(_item)</span>
+                </div>
+
+                <ol class="upcsg-oppstages">
+                    <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.OpensAt)">
+                        <span class="upcsg-oppstages__label">Opens</span>
+                        <span class="upcsg-oppstages__value">@Stamp(_item.OpensAt, "Already open")</span>
+                    </li>
+                    <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.ClosesAt)">
+                        <span class="upcsg-oppstages__label">Closes</span>
+                        <span class="upcsg-oppstages__value">@Stamp(_item.ClosesAt, "No deadline")</span>
+                    </li>
+                    <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.HappensAt)">
+                        <span class="upcsg-oppstages__label">Happens</span>
+                        <span class="upcsg-oppstages__value">@Stamp(_item.HappensAt, "Not announced")</span>
+                    </li>
+                </ol>
+
+                <div class="upcsg-oppdeadline__actions">
+                    @if (!string.IsNullOrWhiteSpace(_item.Url))
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Size="Size.Large"
+                                   Class="upcsg-cta-button px-8"
+                                   EndIcon="@Icons.Material.Outlined.OpenInNew"
+                                   Href="@_item.Url"
+                                   Target="_blank">
+                            @(_item.IsClosed ? "Visit the page" : "Register")
+                        </MudButton>
+                    }
+
+                    <MudButton Variant="Variant.Outlined"
+                               Class="upcsg-ghost-button px-6"
+                               StartIcon="@Icons.Material.Outlined.Share"
+                               OnClick="ShareAsync">
+                        Share
+                    </MudButton>
+                </div>
+            </section>
+        </Reveal>
+
+        @if (!string.IsNullOrWhiteSpace(_item.Description))
+        {
+            <Reveal Variant="Reveal.RevealMotion.Up" Delay="140">
+                <article class="upcsg-eventbody upcsg-eventbody--wide">
+                    <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> What it is</p>
+
+                    @foreach (var paragraph in OpportunityText.Paragraphs(_item.Description))
+                    {
+                        <p class="upcsg-eventbody__para">@paragraph</p>
+                    }
+                </article>
+            </Reveal>
+        }
+
+        @if (string.IsNullOrWhiteSpace(_item.Url))
+        {
+            <Reveal Variant="Reveal.RevealMotion.Fade" Delay="160">
+                <MudAlert Severity="Severity.Info" Square="true" Elevation="0" Class="mt-6">
+                    No link was posted with this one. Ask in the guild chat and an officer can
+                    point you at the details.
+                </MudAlert>
+            </Reveal>
+        }
+
+        @if (_others.Count > 0)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="Still open" Title="More opportunities">
+                    <Action>
+                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="opportunities">
+                            See the board
+                        </MudButton>
+                    </Action>
+                </SectionHeading>
+
+                <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                    @foreach (var (other, i) in _others.Take(3).Select((o, i) => (o, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Fade" Delay="@(i * 60)">
+                            <OpportunityCard Opportunity="other" />
+                        </Reveal>
+                    }
+                </div>
+            </section>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private OpportunityDto? _item;
+    private List<OpportunityDto> _others = [];
+    private bool _loading = true;
+
+    private bool HasPoster => !string.IsNullOrWhiteSpace(_item?.PosterUrl);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _loading = true;
+        _item = null;
+        _others = [];
+
+        try
+        {
+            _item = await OpportunityFeed.GetAsync(Id);
+
+            if (_item is not null)
+            {
+                _others = (await OpportunityFeed.GetOpenAsync())
+                    .Where(o => o.Id != Id)
+                    .ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string Stamp(DateTimeOffset? moment, string fallback) =>
+        moment is null ? fallback : moment.Value.ToLocalTime().ToString("ddd, MMM d");
+
+    // Past stages read as done, the rest as pending, so the row shows at a glance where
+    // in its life the thing is. A stage with no date is neither.
+    private static string StageState(DateTimeOffset? moment) => moment switch
+    {
+        null => "blank",
+        var m when m.Value < DateTimeOffset.Now => "done",
+        _ => "ahead",
+    };
+
+    private async Task ShareAsync()
+    {
+        var result = await JS.InvokeAsync<string>(
+            "upcsgShare", _item?.Title ?? "UPCSG opportunity", Navigation.Uri);
+
+        switch (result)
+        {
+            case "shared":
+            case "cancelled":
+                break;
+            case "copied":
+                Snackbar.Add("Link copied.", Severity.Success);
+                break;
+            default:
+                Snackbar.Add("Couldn't share. You can copy the link from the address bar.", Severity.Warning);
+                break;
+        }
+    }
+}

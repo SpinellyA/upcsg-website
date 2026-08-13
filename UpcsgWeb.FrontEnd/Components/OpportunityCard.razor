@@ -1,86 +1,43 @@
 @using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
 
-<article class="upcsg-oppcard @(Opportunity.IsFeatured ? "upcsg-oppcard--featured" : null)">
+<a class="upcsg-oppcard @(Opportunity.IsFeatured ? "upcsg-oppcard--featured" : null)"
+   href="@($"opportunities/{Opportunity.Id}")">
+
     <CosmicImage Src="@Opportunity.PosterUrl"
                  Alt="@Opportunity.Title"
                  Seed="@Opportunity.Title"
                  Class="upcsg-oppcard__poster" />
 
-    <div class="upcsg-oppcard__body">
-        <div class="upcsg-oppcard__meta">
-            <span class="upcsg-chip">@KindLabel(Opportunity.Kind)</span>
+    <span class="upcsg-oppcard__body">
+        <span class="upcsg-oppcard__meta">
+            <span class="upcsg-chip">@OpportunityText.KindLabel(Opportunity.Kind)</span>
 
             @if (Opportunity.IsFeatured)
             {
                 <span class="upcsg-chip upcsg-chip--gold">Featured</span>
             }
-        </div>
+        </span>
 
-        <h3 class="upcsg-oppcard__title">@Opportunity.Title</h3>
+        <span class="upcsg-oppcard__title">@Opportunity.Title</span>
 
         @if (!string.IsNullOrWhiteSpace(Opportunity.Organiser))
         {
-            <p class="upcsg-oppcard__org">@Opportunity.Organiser</p>
+            <span class="upcsg-oppcard__org">@Opportunity.Organiser</span>
         }
 
         @if (!string.IsNullOrWhiteSpace(Opportunity.Description))
         {
-            <p class="upcsg-oppcard__blurb">@Summarise(Opportunity.Description)</p>
+            <span class="upcsg-oppcard__blurb">@OpportunityText.Summarise(Opportunity.Description)</span>
         }
 
-        <div class="upcsg-oppcard__foot">
-            <span class="upcsg-oppcard__deadline">@Deadline()</span>
-
-            @if (!string.IsNullOrWhiteSpace(Opportunity.Url))
-            {
-                <MudButton Variant="Variant.Outlined"
-                           Class="upcsg-ghost-button px-5"
-                           Href="@Opportunity.Url"
-                           Target="_blank"
-                           rel="noopener noreferrer">
-                    Details
-                </MudButton>
-            }
-        </div>
-    </div>
-</article>
+        <span class="upcsg-oppcard__foot">
+            <span class="upcsg-oppcard__deadline">@OpportunityText.Deadline(Opportunity)</span>
+            <span class="upcsg-oppcard__arrow" aria-hidden="true">&rarr;</span>
+        </span>
+    </span>
+</a>
 
 @code {
     [Parameter, EditorRequired] public OpportunityDto Opportunity { get; set; } = default!;
-
-    private string Deadline()
-    {
-        if (Opportunity.ClosesAt is null)
-        {
-            return Opportunity.HappensAt is null
-                ? "No deadline given"
-                : $"Happens {Opportunity.HappensAt.Value.ToLocalTime():MMM d}";
-        }
-
-        var days = Opportunity.DaysLeft ?? 0;
-
-        return days switch
-        {
-            < 0 => "Closed",
-            0 => "Closes today",
-            1 => "Closes tomorrow",
-            <= 14 => $"Closes in {days} days",
-            _ => $"Closes {Opportunity.ClosesAt.Value.ToLocalTime():MMM d}",
-        };
-    }
-
-    private static string Summarise(string description)
-    {
-        var first = description
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .FirstOrDefault() ?? string.Empty;
-
-        return first.Length <= 180 ? first : first[..180].TrimEnd() + "…";
-    }
-
-    private static string KindLabel(OpportunityKindDto kind) => kind switch
-    {
-        OpportunityKindDto.CallForPapers => "Call for papers",
-        _ => kind.ToString(),
-    };
 }

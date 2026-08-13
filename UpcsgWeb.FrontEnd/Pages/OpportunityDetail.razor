@@ -1,4 +1,5 @@
 @page "/opportunities/{Id:guid}"
+@using System.Globalization
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IOpportunityService OpportunityFeed
@@ -8,119 +9,137 @@
 
 <PageTitle>@(_item?.Title ?? "Opportunity") - UPCSG</PageTitle>
 
-<div class="upcsg-page">
-    @if (_loading)
-    {
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="260px" Class="upcsg-skeleton my-6" />
+@if (_loading)
+{
+    <div class="upcsg-page">
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="320px" Class="upcsg-skeleton my-6" />
         <MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" />
         <MudSkeleton SkeletonType="SkeletonType.Text" Width="90%" />
-    }
-    else if (_item is null)
-    {
+    </div>
+}
+else if (_item is null)
+{
+    <div class="upcsg-page">
         <MudAlert Severity="Severity.Warning">
             We couldn't find that opportunity. It may have closed, or the link may be wrong.
         </MudAlert>
         <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="opportunities">
             Back to Opportunities
         </MudButton>
-    }
-    else
-    {
-        <MudLink Href="opportunities" Class="mb-4 d-inline-block">&larr; All opportunities</MudLink>
+    </div>
+}
+else
+{
+    <section class="upcsg-oppmast">
+        <div class="upcsg-flare upcsg-oppmast__flare"></div>
+        <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 22%; right: 18%;"><span class="upcsg-star" style="width: 1.1rem; height: 1.1rem;"></span></span>
+        <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 26%; right: 34%;"><span class="upcsg-star" style="width: 0.7rem; height: 0.7rem;"></span></span>
 
-        <Reveal Variant="Reveal.RevealMotion.Up">
-            <header class="upcsg-opphead @(HasPoster ? null : "upcsg-opphead--plain")">
-                <div class="upcsg-opphead__text">
-                    <div class="upcsg-opphead__chips">
-                        <span class="upcsg-chip">@OpportunityText.KindLabel(_item.Kind)</span>
+        <div class="upcsg-oppmast__inner @(HasPoster ? null : "upcsg-oppmast__inner--plain")">
+            <div class="upcsg-oppmast__text">
+                <MudLink Href="opportunities" Class="upcsg-oppmast__back">&larr; All opportunities</MudLink>
 
-                        @if (_item.IsFeatured)
-                        {
-                            <span class="upcsg-chip upcsg-chip--gold">Featured</span>
-                        }
-                    </div>
+                <div class="upcsg-oppmast__chips">
+                    <span class="upcsg-chip">@OpportunityText.KindLabel(_item.Kind)</span>
 
-                    <h1 class="upcsg-opphead__title">@_item.Title</h1>
+                    @if (_item.IsFeatured)
+                    {
+                        <span class="upcsg-chip upcsg-chip--gold">Featured</span>
+                    }
+                </div>
 
+                <h1 class="upcsg-oppmast__title">
+                    <span class="upcsg-gradient-text">@_item.Title</span>
+                </h1>
+
+                <p class="upcsg-oppmast__meta">
                     @if (!string.IsNullOrWhiteSpace(_item.Organiser))
                     {
-                        <p class="upcsg-opphead__org">by @_item.Organiser</p>
+                        <span class="upcsg-oppmast__org">@_item.Organiser</span>
                     }
 
                     @if (!string.IsNullOrWhiteSpace(_item.Location))
                     {
-                        <p class="upcsg-opphead__where">
+                        <span class="upcsg-oppmast__where">
                             <MudIcon Icon="@Icons.Material.Outlined.Place" Size="Size.Small" />
                             @_item.Location
-                        </p>
+                        </span>
                     }
+                </p>
+            </div>
+
+            @if (HasPoster)
+            {
+                <CosmicImage Src="@_item.PosterUrl"
+                             Alt="@($"Poster for {_item.Title}")"
+                             Seed="@_item.Title"
+                             Eager="true"
+                             Class="upcsg-oppmast__plate" />
+            }
+        </div>
+    </section>
+
+    <div class="upcsg-page upcsg-page--after-hero">
+        <Reveal Variant="Reveal.RevealMotion.Up">
+            <section class="upcsg-surface upcsg-oppdeadline upcsg-oppdeadline--@OpportunityText.Urgency(_item)">
+                <div class="upcsg-dial" style="@DialStyle">
+                    <div class="upcsg-dial__face">
+                        <span class="upcsg-dial__num">@OpportunityText.Countdown(_item)</span>
+                        <span class="upcsg-dial__unit">@OpportunityText.CountdownUnit(_item)</span>
+                    </div>
                 </div>
 
-                @if (HasPoster)
-                {
-                    <CosmicImage Src="@_item.PosterUrl"
-                                 Alt="@($"Poster for {_item.Title}")"
-                                 Seed="@_item.Title"
-                                 Eager="true"
-                                 Class="upcsg-opphead__plate" />
-                }
-            </header>
-        </Reveal>
+                <div class="upcsg-oppdeadline__body">
+                    <ol class="upcsg-oppstages">
+                        <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.OpensAt)">
+                            <span class="upcsg-oppstages__label">Opens</span>
+                            <span class="upcsg-oppstages__value">@Stamp(_item.OpensAt, "Already open")</span>
+                        </li>
+                        <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.ClosesAt)">
+                            <span class="upcsg-oppstages__label">Closes</span>
+                            <span class="upcsg-oppstages__value">@Stamp(_item.ClosesAt, "No deadline")</span>
+                        </li>
+                        <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.HappensAt)">
+                            <span class="upcsg-oppstages__label">Happens</span>
+                            <span class="upcsg-oppstages__value">@Stamp(_item.HappensAt, "Not announced")</span>
+                        </li>
+                    </ol>
 
-        <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
-            <section class="upcsg-oppdeadline upcsg-oppdeadline--@OpportunityText.Urgency(_item)">
-                <div class="upcsg-oppdeadline__count">
-                    <span class="upcsg-oppdeadline__num">@OpportunityText.Countdown(_item)</span>
-                    <span class="upcsg-oppdeadline__unit">@OpportunityText.CountdownUnit(_item)</span>
-                </div>
+                    <div class="upcsg-oppdeadline__actions">
+                        @if (!string.IsNullOrWhiteSpace(_item.Url))
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                       Size="Size.Large"
+                                       Class="upcsg-cta-button px-8"
+                                       EndIcon="@Icons.Material.Outlined.OpenInNew"
+                                       Href="@_item.Url"
+                                       Target="_blank">
+                                @(_item.IsClosed ? "Visit the page" : "Register")
+                            </MudButton>
+                        }
 
-                <ol class="upcsg-oppstages">
-                    <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.OpensAt)">
-                        <span class="upcsg-oppstages__label">Opens</span>
-                        <span class="upcsg-oppstages__value">@Stamp(_item.OpensAt, "Already open")</span>
-                    </li>
-                    <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.ClosesAt)">
-                        <span class="upcsg-oppstages__label">Closes</span>
-                        <span class="upcsg-oppstages__value">@Stamp(_item.ClosesAt, "No deadline")</span>
-                    </li>
-                    <li class="upcsg-oppstages__step upcsg-oppstages__step--@StageState(_item.HappensAt)">
-                        <span class="upcsg-oppstages__label">Happens</span>
-                        <span class="upcsg-oppstages__value">@Stamp(_item.HappensAt, "Not announced")</span>
-                    </li>
-                </ol>
-
-                <div class="upcsg-oppdeadline__actions">
-                    @if (!string.IsNullOrWhiteSpace(_item.Url))
-                    {
-                        <MudButton Variant="Variant.Filled"
-                                   Size="Size.Large"
-                                   Class="upcsg-cta-button px-8"
-                                   EndIcon="@Icons.Material.Outlined.OpenInNew"
-                                   Href="@_item.Url"
-                                   Target="_blank">
-                            @(_item.IsClosed ? "Visit the page" : "Register")
+                        <MudButton Variant="Variant.Outlined"
+                                   Class="upcsg-ghost-button px-6"
+                                   StartIcon="@Icons.Material.Outlined.Share"
+                                   OnClick="ShareAsync">
+                            Share
                         </MudButton>
-                    }
-
-                    <MudButton Variant="Variant.Outlined"
-                               Class="upcsg-ghost-button px-6"
-                               StartIcon="@Icons.Material.Outlined.Share"
-                               OnClick="ShareAsync">
-                        Share
-                    </MudButton>
+                    </div>
                 </div>
             </section>
         </Reveal>
 
-        @if (!string.IsNullOrWhiteSpace(_item.Description))
+        @if (Paragraphs.Count > 0)
         {
-            <Reveal Variant="Reveal.RevealMotion.Up" Delay="140">
-                <article class="upcsg-eventbody upcsg-eventbody--wide">
+            <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
+                <article class="upcsg-oppbody">
                     <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> What it is</p>
 
-                    @foreach (var paragraph in OpportunityText.Paragraphs(_item.Description))
+                    <p class="upcsg-oppbody__lead">@Paragraphs[0]</p>
+
+                    @foreach (var paragraph in Paragraphs.Skip(1))
                     {
-                        <p class="upcsg-eventbody__para">@paragraph</p>
+                        <p class="upcsg-oppbody__para">@paragraph</p>
                     }
                 </article>
             </Reveal>
@@ -157,8 +176,8 @@
                 </div>
             </section>
         }
-    }
-</div>
+    </div>
+}
 
 @code {
     [Parameter] public Guid Id { get; set; }
@@ -168,6 +187,41 @@
     private bool _loading = true;
 
     private bool HasPoster => !string.IsNullOrWhiteSpace(_item?.PosterUrl);
+
+    private List<string> Paragraphs =>
+        [.. OpportunityText.Paragraphs(_item?.Description)];
+
+    // How much of the application window has burned through. The window runs from when
+    // applications opened - or, when no opening date was given, from the day the guild
+    // posted it, which is the point it became something a reader could act on.
+    private double? WindowProgress
+    {
+        get
+        {
+            if (_item?.ClosesAt is null)
+            {
+                return null;
+            }
+
+            var opens = (_item.OpensAt ?? _item.CreatedAt).ToLocalTime();
+            var closes = _item.ClosesAt.Value.ToLocalTime();
+
+            if (closes <= opens)
+            {
+                return 1;
+            }
+
+            var elapsed = (DateTimeOffset.Now - opens).TotalSeconds / (closes - opens).TotalSeconds;
+
+            return Math.Clamp(elapsed, 0, 1);
+        }
+    }
+
+    // Invariant formatting matters: a comma decimal separator is not a valid CSS number,
+    // and this machine's culture is not the reader's.
+    private string DialStyle => WindowProgress is null
+        ? "--upcsg-dial-progress: 0"
+        : $"--upcsg-dial-progress: {WindowProgress.Value.ToString("0.###", CultureInfo.InvariantCulture)}";
 
     protected override async Task OnParametersSetAsync()
     {

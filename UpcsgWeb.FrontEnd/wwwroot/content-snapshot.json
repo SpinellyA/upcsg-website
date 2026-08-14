@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-13T17:17:00.7103893Z",
+  "generatedAt": "2026-08-14T17:14:55.8644158Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -312,13 +312,13 @@
       "opensAt": "2026-08-11T16:00:00+00:00",
       "closesAt": "2026-08-15T15:59:59+00:00",
       "happensAt": "2026-08-25T16:00:00+00:00",
-      "url": "https://localhost:7030/admin/opportunities/new",
-      "posterUrl": "http://localhost:5027/media/events/2026/08/bac369d93639-hopper-scaled.webp",
+      "url": null,
+      "posterUrl": null,
       "isFeatured": false,
       "createdAt": "2026-08-12T17:18:39.247906+00:00",
       "isClosed": false,
       "hasDeadline": true,
-      "daysLeft": 2
+      "daysLeft": 1
     },
     {
       "id": "019ff95f-a9c5-7570-a123-a004a1e77b47",
@@ -331,12 +331,12 @@
       "closesAt": "2026-09-01T15:59:59+00:00",
       "happensAt": "2026-09-15T16:00:00+00:00",
       "url": null,
-      "posterUrl": "http://localhost:5027/media/events/2026/08/e1c9929b3971-a403b2d3-987e-4bf4-b43e-7d97e61665e3.webp",
+      "posterUrl": null,
       "isFeatured": false,
       "createdAt": "2026-08-13T04:27:04.005357+00:00",
       "isClosed": false,
       "hasDeadline": true,
-      "daysLeft": 19
+      "daysLeft": 18
     }
   ],
   "settings": {

@@ -1,0 +1,39 @@
+@using UpcsgWeb.FrontEnd.Services
+
+@if (Photos.Count > 0)
+{
+    <div class="upcsg-photorail" role="group" aria-label="@Label">
+        <div class="upcsg-photorail__track" style="--rail-duration: @(Seconds)s;">
+            @for (var pass = 0; pass < 2; pass++)
+            {
+                <div class="upcsg-photorail__run" aria-hidden="@(pass == 1 ? "true" : null)">
+                    @foreach (var photo in Photos)
+                    {
+                        <figure class="upcsg-photorail__frame">
+                            @* Not lazy: a frame that has not loaded yet drifts past as an
+                               empty box, and the rail is the evidence this section rests on. *@
+                            <img src="@photo.File" alt="@(photo.Caption ?? string.Empty)" />
+
+                            @if (photo.Caption is not null)
+                            {
+                                <figcaption>@photo.Caption</figcaption>
+                            }
+                        </figure>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<GuildPhoto> Photos { get; set; } = [];
+
+    // Long enough that the rail reads as drift rather than travel. Scaled by how many
+    // photos there are so adding one does not speed the whole thing up.
+    [Parameter] public int SecondsPerPhoto { get; set; } = 9;
+
+    [Parameter] public string Label { get; set; } = "Photos from the guild";
+
+    private int Seconds => Math.Max(20, Photos.Count * SecondsPerPhoto);
+}

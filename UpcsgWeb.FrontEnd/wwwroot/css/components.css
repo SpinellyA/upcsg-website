@@ -2298,7 +2298,7 @@
     .upcsg-mdlg__arrow { transition: none; }
 }
 
-/* --- Quote plate (About identity section) -------------------------------- */
+/* --- Quote plate (Contact) ----------------------------------------------- */
 
 .upcsg-quoteplate {
     position: relative;
@@ -2340,6 +2340,145 @@
     width: 62%;
     opacity: 0.22;
     pointer-events: none;
+}
+
+/* --- About: identity ----------------------------------------------------- *
+   Claim, then evidence, then belief. The statement is centred and narrow so it
+   reads as a single sentence rather than a column of body copy; the rail below
+   is the only place on the site with real photography, so it gets the full
+   width of the viewport; the creed closes the section in the guild's own words.
+ * ------------------------------------------------------------------------- */
+
+.upcsg-identity__statement {
+    max-width: 44rem;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.upcsg-identity__title {
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    line-height: 1.04;
+    margin: 0 0 1.25rem;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-identity__lede {
+    margin-bottom: 0;
+}
+
+/* Breaks the page container so the photos run edge to edge. */
+.upcsg-photorail {
+    position: relative;
+    margin: clamp(2.5rem, 6vw, 4rem) calc(50% - 50vw);
+    overflow: hidden;
+
+    /* Photos drift out of nothing and back into it, rather than being cut off
+       against an edge. */
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.upcsg-photorail__track {
+    display: flex;
+    width: max-content;
+    animation: upcsg-marquee-scroll var(--rail-duration, 60s) linear infinite;
+}
+
+.upcsg-photorail:hover .upcsg-photorail__track {
+    animation-play-state: paused;
+}
+
+.upcsg-photorail__run {
+    display: flex;
+    align-items: flex-start;
+    gap: clamp(0.75rem, 2vw, 1.25rem);
+    padding-right: clamp(0.75rem, 2vw, 1.25rem);
+}
+
+.upcsg-photorail__frame {
+    margin: 0;
+    flex: none;
+}
+
+/* Both dimensions are fixed rather than letting each photo size itself. Uniform
+   frames read as a rail instead of a ragged strip, a portrait photo gets cropped
+   rather than becoming a sliver, and the track's width does not change as images
+   arrive - an auto width collapses to nothing until the file has loaded. */
+.upcsg-photorail__frame img {
+    display: block;
+    width: clamp(14rem, 28vw, 22rem);
+    height: clamp(11rem, 21vw, 16.5rem);
+    object-fit: cover;
+    background: rgba(246, 255, 233, 0.04);
+    border-radius: var(--upcsg-radius);
+    border: var(--upcsg-hairline);
+    box-shadow: var(--upcsg-shadow-md);
+}
+
+.upcsg-photorail__frame figcaption {
+    max-width: clamp(14rem, 28vw, 22rem);
+    margin-top: 0.6rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-identity__creed {
+    position: relative;
+    isolation: isolate;
+    max-width: 40rem;
+    margin: 0 auto;
+    padding-top: 1rem;
+    text-align: center;
+}
+
+.upcsg-identity__burst {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    width: clamp(16rem, 34vw, 26rem);
+    transform: translate(-50%, -50%);
+    opacity: 0.14;
+    pointer-events: none;
+}
+
+.upcsg-identity__quote {
+    margin: 0;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.35rem, 3.2vw, 2.1rem);
+    line-height: 1.35;
+    color: var(--upcsg-honeydew-white);
+}
+
+/* Quotation marks belong to the sentence, not to a decorative slab beside it. */
+.upcsg-identity__quote::before { content: "\201C"; }
+.upcsg-identity__quote::after { content: "\201D"; }
+
+.upcsg-identity__source {
+    margin: 1.1rem 0 0;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+/* A stopped marquee hides everything past the first screenful, so when motion is
+   off the rail becomes something you can scroll through instead. */
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-photorail {
+        overflow-x: auto;
+        mask-image: none;
+        -webkit-mask-image: none;
+    }
+
+    .upcsg-photorail__track { animation: none; }
+
+    .upcsg-photorail__run:nth-child(2) { display: none; }
 }
 
 .upcsg-statrow--spread {

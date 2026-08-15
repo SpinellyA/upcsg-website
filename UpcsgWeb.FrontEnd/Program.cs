@@ -52,6 +52,10 @@ builder.Services.AddScoped<ISnapshotService>(sp => new SnapshotService(
     new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) },
     sp.GetRequiredService<ILogger<SnapshotService>>()));
 
+builder.Services.AddScoped<IGuildPhotoService>(sp => new GuildPhotoService(
+    new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) },
+    sp.GetRequiredService<ILogger<GuildPhotoService>>()));
+
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IMerchService, MerchService>();
 builder.Services.AddScoped<IMemberService, MemberService>();

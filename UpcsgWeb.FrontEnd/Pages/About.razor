@@ -2,6 +2,7 @@
 @using UpcsgWeb.Shared.Contracts
 @using UpcsgWeb.FrontEnd.Services
 @inject IMemberService MemberService
+@inject IGuildPhotoService GuildPhotos
 
 <PageTitle>About - UPCSG</PageTitle>
 
@@ -24,33 +25,33 @@
 
 <div class="upcsg-page upcsg-page--after-hero">
 
-    <section class="upcsg-section upcsg-feature">
-        <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__visual">
-            <div class="upcsg-quoteplate">
-                <span class="upcsg-quoteplate__mark" aria-hidden="true">&ldquo;</span>
-                <blockquote class="upcsg-quoteplate__text">
-                    Computer science is not just an industry of machines, but a canvas of
-                    endless creative expression.
-                </blockquote>
-                <img class="upcsg-quoteplate__burst" src="img/starburst.png" alt="" aria-hidden="true" />
-            </div>
+    <section class="upcsg-section upcsg-identity">
+        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-identity__statement">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Our identity</p>
+            <h2 class="upcsg-identity__title">Students run all of it</h2>
+            @* The closing sentence points at the rail, so it only belongs here when
+               there are photos to point at. *@
+            <p class="upcsg-lede upcsg-identity__lede">
+                The academic support, the competitions, the industry nights, the socials that hold
+                a year together &mdash; every one of them is organised by guilders carrying the
+                same problem sets and deadlines as the people they organise it for. There is no
+                staff behind us.@(_photos.Count > 0 ? " This is what that looks like." : string.Empty)
+            </p>
         </Reveal>
 
-        <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__body" Delay="120">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Our identity</p>
-            <h2 class="upcsg-title-xl">Built and run by students</h2>
-            <p class="upcsg-lede">
-                UPCSG exists to support guilders through their degree and beyond &mdash; academic
-                support, competitions, industry nights, and the socials that hold it all together.
-            </p>
-            <p class="upcsg-lede">
-                This academic year we're building on our minimalist visual identity rather than
-                replacing it, expanding our tech-futuristic edge toward the intersection of
-                technology and artistry. Our theme takes its cue from Van Gogh's
-                <em>Starry Night</em> &mdash; layered over a clean, functional structure, its high
-                contrast stands for the truth that engineering solutions is its own form of
-                modern art.
-            </p>
+        @if (_photos.Count > 0)
+        {
+            <PhotoRail Photos="_photos" Label="Photos from the guild's year" />
+        }
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-identity__creed">
+            <img class="upcsg-identity__burst" src="img/starburst.png" alt="" aria-hidden="true" />
+
+            <blockquote class="upcsg-identity__quote">
+                Computer science is not just an industry of machines, but a canvas of endless
+                creative expression.
+            </blockquote>
+            <p class="upcsg-identity__source">UPCSG Brandbook, A.Y. 2026&ndash;2027</p>
         </Reveal>
     </section>
 
@@ -147,6 +148,7 @@
     private List<MemberDto> _faculty = [];
     private List<MemberDto> _allOfficers = [];
     private List<CommitteeGroup> _committees = [];
+    private List<GuildPhoto> _photos = [];
     private bool _loading = true;
 
     private static readonly string[] Ticker =
@@ -157,6 +159,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        _photos = await GuildPhotos.GetAsync();
+
         var members = await MemberService.GetMembersAsync();
 
         _faculty = [.. members

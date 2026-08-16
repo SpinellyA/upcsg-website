@@ -1,0 +1,76 @@
+@using UpcsgWeb.Shared.Contracts
+@inject IDialogService Dialogs
+
+@* Not a card. An officer gets a band of the page: portrait lit from behind by the
+   nebula, text beside it, a hairline under. Sides alternate down the list. The card
+   framing that used to be here put every person in an identical gradient box, which
+   made eleven people read as eleven tiles rather than eleven people. *@
+<section class="upcsg-officer @(Flip ? "upcsg-officer--flip" : null)">
+    <div class="upcsg-officer__plate">
+        <div class="upcsg-officer__bloom" aria-hidden="true"></div>
+
+        <CosmicImage Src="@Member.PhotoUrl"
+                     Alt="@Member.Name"
+                     Seed="@Member.Name"
+                     ShowInitials="true"
+                     Class="upcsg-officer__portrait" />
+    </div>
+
+    <div class="upcsg-officer__text">
+        <p class="upcsg-officer__role">@Member.Role</p>
+        <h3 class="upcsg-officer__name">@Member.Name</h3>
+
+        @if (!string.IsNullOrWhiteSpace(Member.Quote))
+        {
+            <blockquote class="upcsg-officer__quote">@Member.Quote</blockquote>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Member.Bio))
+        {
+            <p class="upcsg-officer__bio">@Member.Bio</p>
+        }
+
+        @* Only offered when there is something behind it. A button that opens a
+           near-empty panel is worse than no button. *@
+        @if (Member.HasProfile)
+        {
+            <MudButton Variant="Variant.Outlined"
+                       Class="upcsg-ghost-button px-6 upcsg-officer__more"
+                       EndIcon="@Icons.Material.Rounded.ArrowForward"
+                       OnClick="OpenAsync">
+                Know more
+            </MudButton>
+        }
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;
+
+    [Parameter] public bool Flip { get; set; }
+
+    [Parameter] public IReadOnlyList<MemberDto>? Roster { get; set; }
+
+    private Task OpenAsync()
+    {
+        var roster = Roster is { Count: > 0 } ? Roster : [Member];
+        var index = Math.Max(0, roster.ToList().FindIndex(m => m.Id == Member.Id));
+
+        var parameters = new DialogParameters<MemberDialog>
+        {
+            { d => d.Members, roster },
+            { d => d.Index, index },
+        };
+
+        return Dialogs.ShowAsync<MemberDialog>(
+            Member.Name,
+            parameters,
+            new DialogOptions
+            {
+                MaxWidth = MaxWidth.Medium,
+                FullWidth = true,
+                CloseButton = false,
+                BackdropClick = true,
+            });
+    }
+}

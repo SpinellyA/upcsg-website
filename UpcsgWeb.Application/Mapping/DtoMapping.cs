@@ -66,6 +66,17 @@ public static class DtoMapping
         PhotoUrl = m.PhotoUrl,
         Quote = m.Quote,
         Bio = m.Bio,
+        Profile = m.Profile,
+        Achievements = [.. m.Achievements.Select(a => new MemberAchievementDto
+        {
+            Title = a.Title,
+            Year = a.Year,
+        })],
+        Links = [.. m.Links.Select(l => new MemberLinkDto
+        {
+            Kind = Enum.Parse<MemberLinkKindDto>(l.Kind.ToString()),
+            Value = l.Value,
+        })],
         DisplayOrder = m.DisplayOrder,
     };
 

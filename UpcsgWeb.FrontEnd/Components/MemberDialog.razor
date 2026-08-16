@@ -16,15 +16,11 @@
                            OnClick="Close" />
 
             <div class="upcsg-mdlg__stage" @key="_index">
-                <div class="upcsg-mdlg__head">
-                    <CosmicImage Src="@Current.PhotoUrl"
-                                 Alt="@Current.Name"
-                                 Seed="@Current.Name"
-                                 ShowInitials="true"
-                                 Eager="true"
-                                 Class="upcsg-mdlg__portrait" />
 
-                    <div class="upcsg-mdlg__scrim"></div>
+                @* Masthead: portrait cut into a disc over the nebula, name beside it.
+                   The old layout had the name overlaid on the photo, which meant the
+                   longer names sat on a face. *@
+                <header class="upcsg-mdlg__head">
                     <div class="upcsg-mdlg__bloom" aria-hidden="true"></div>
 
                     <span class="upcsg-sparkle upcsg-sparkle--gold upcsg-mdlg__spark upcsg-mdlg__spark--a" aria-hidden="true">
@@ -33,6 +29,13 @@
                     <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2 upcsg-mdlg__spark upcsg-mdlg__spark--b" aria-hidden="true">
                         <span class="upcsg-star"></span>
                     </span>
+
+                    <CosmicImage Src="@Current.PhotoUrl"
+                                 Alt="@Current.Name"
+                                 Seed="@Current.Name"
+                                 ShowInitials="true"
+                                 Eager="true"
+                                 Class="upcsg-mdlg__portrait" />
 
                     <div class="upcsg-mdlg__title" aria-live="polite">
                         <p class="upcsg-mdlg__role">@Current.Role</p>
@@ -43,26 +46,71 @@
                             <span class="upcsg-mdlg__chip">@Current.Committee</span>
                         }
                     </div>
-                </div>
+                </header>
+
+                @if (!string.IsNullOrWhiteSpace(Current.Quote))
+                {
+                    <blockquote class="upcsg-mdlg__quote">@Current.Quote</blockquote>
+                }
 
                 <div class="upcsg-mdlg__body">
-                    @if (!string.IsNullOrWhiteSpace(Current.Quote))
+                    @if (Paragraphs.Count > 0)
                     {
-                        <blockquote class="upcsg-mdlg__quote">
-                            <span class="upcsg-mdlg__mark" aria-hidden="true">&ldquo;</span>
-                            @Current.Quote
-                        </blockquote>
-                    }
-
-                    @if (!string.IsNullOrWhiteSpace(Current.Bio))
-                    {
-                        <p class="upcsg-mdlg__bio">@Current.Bio</p>
+                        <div class="upcsg-mdlg__prose">
+                            @foreach (var paragraph in Paragraphs)
+                            {
+                                <p>@paragraph</p>
+                            }
+                        </div>
                     }
                     else
                     {
-                        <p class="upcsg-mdlg__bio upcsg-mdlg__bio--none">
-                            No profile has been written for this officer yet.
+                        <p class="upcsg-mdlg__prose upcsg-mdlg__prose--none">
+                            No profile has been written for @FirstName yet.
                         </p>
+                    }
+
+                    @if (Current.Achievements.Count > 0)
+                    {
+                        <section class="upcsg-mdlg__panel">
+                            <h3 class="upcsg-mdlg__panel-title">Record</h3>
+
+                            @* The year is a real gutter, not decoration: it sorts the list
+                               and lets the eye scan down one column. Undated entries fall
+                               to the bottom with the gutter left empty rather than filled
+                               with a guess. *@
+                            <ol class="upcsg-mdlg__record">
+                                @foreach (var entry in Achievements)
+                                {
+                                    <li>
+                                        <span class="upcsg-mdlg__year">@(entry.Year?.ToString() ?? "")</span>
+                                        <span class="upcsg-mdlg__deed">@entry.Title</span>
+                                    </li>
+                                }
+                            </ol>
+                        </section>
+                    }
+
+                    @if (Current.Links.Count > 0)
+                    {
+                        <section class="upcsg-mdlg__panel">
+                            <h3 class="upcsg-mdlg__panel-title">Reach them</h3>
+
+                            <ul class="upcsg-mdlg__links">
+                                @foreach (var link in Current.Links)
+                                {
+                                    <li>
+                                        <a href="@link.Href"
+                                           target="@(link.IsEmail ? null : "_blank")"
+                                           rel="@(link.IsEmail ? null : "noopener noreferrer")">
+                                            <MudIcon Icon="@IconFor(link.Kind)" Size="Size.Small" />
+                                            <span class="upcsg-mdlg__linkkind">@link.Kind</span>
+                                            <span class="upcsg-mdlg__linkvalue">@link.Display</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </section>
                     }
                 </div>
             </div>
@@ -108,6 +156,32 @@
     private bool _focused;
 
     private MemberDto Current => Members[_index];
+
+    private string FirstName =>
+        Current.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()
+        ?? Current.Name;
+
+    private List<string> Paragraphs =>
+        [.. (Current.Profile ?? Current.Bio ?? string.Empty)
+            .Replace("\r\n", "\n")
+            .Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(p => p.Replace('\n', ' '))];
+
+    // Newest first, and anything undated after everything dated.
+    private List<MemberAchievementDto> Achievements =>
+        [.. Current.Achievements
+            .OrderByDescending(a => a.Year.HasValue)
+            .ThenByDescending(a => a.Year)];
+
+    private static string IconFor(MemberLinkKindDto kind) => kind switch
+    {
+        MemberLinkKindDto.Email => Icons.Material.Outlined.MailOutline,
+        MemberLinkKindDto.Facebook => Icons.Custom.Brands.Facebook,
+        MemberLinkKindDto.Instagram => Icons.Custom.Brands.Instagram,
+        MemberLinkKindDto.LinkedIn => Icons.Custom.Brands.LinkedIn,
+        MemberLinkKindDto.GitHub => Icons.Custom.Brands.GitHub,
+        _ => Icons.Material.Outlined.Language,
+    };
 
     protected override void OnParametersSet() =>
         _index = Math.Clamp(Index, 0, Math.Max(0, Members.Count - 1));

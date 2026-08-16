@@ -103,17 +103,12 @@
                     <span class="upcsg-committee-rule__count">@committee.Count</span>
                 </Reveal>
 
-                <div class="upcsg-membershowcase">
-                    @foreach (var row in committee.Rows)
-                    {
-                        <Reveal Variant="@(row.Flip ? Reveal.RevealMotion.Right : Reveal.RevealMotion.Left)">
-                            <MemberCard Member="row.Member"
-                                        Variant="@(row.IsLead ? MemberCard.Density.Spotlight : MemberCard.Density.Showcase)"
-                                        Flip="row.Flip"
-                                        Roster="_allOfficers" />
-                        </Reveal>
-                    }
-                </div>
+                @foreach (var row in committee.Rows)
+                {
+                    <Reveal Variant="@(row.Flip ? Reveal.RevealMotion.Right : Reveal.RevealMotion.Left)">
+                        <OfficerBand Member="row.Member" Flip="row.Flip" Roster="_allOfficers" />
+                    </Reveal>
+                }
             }
         }
     </section>

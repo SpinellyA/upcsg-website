@@ -14,7 +14,7 @@
 /* The hidden starting state is deliberately scoped to .upcsg-motion, which the
    inline script in index.html sets only when the browser supports the observer,
    and removes again if the module fails to load. Unscoped, a blocked script would
-   leave every section below the hero permanently invisible — the animation is
+   leave every section below the hero permanently invisible â€” the animation is
    decoration, so its absence must cost nothing. */
 .upcsg-motion .upcsg-reveal {
     opacity: 0;
@@ -328,6 +328,38 @@
 }
 
 .upcsg-eventcard:hover .upcsg-eventcard__arrow { transform: translateX(5px); }
+
+/* --- CMS repeater rows (member achievements, contacts) ------------------- */
+
+.upcsg-repeater__row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7rem auto;
+    gap: 0.65rem;
+    align-items: start;
+    margin-bottom: 0.65rem;
+}
+
+.upcsg-repeater__year { width: 7rem; }
+
+.upcsg-repeater__kind { width: 100%; }
+
+/* The kind select leads the contact row, so that row's first column is the narrow one. */
+.upcsg-repeater__row:has(.upcsg-repeater__kind) {
+    grid-template-columns: 9rem minmax(0, 1fr) auto;
+}
+
+@media (max-width: 40rem) {
+    .upcsg-repeater__row,
+    .upcsg-repeater__row:has(.upcsg-repeater__kind) {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .upcsg-repeater__year,
+    .upcsg-repeater__kind {
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+}
 
 /* --- OpportunityCard ----------------------------------------------------- */
 
@@ -783,7 +815,7 @@
 .upcsg-merchcard__was { color: var(--upcsg-periwinkle); text-decoration: line-through; font-size: 0.82rem; }
 .upcsg-merchcard__gone { color: var(--upcsg-periwinkle); }
 
-/* A sold-out item stays legible and clickable — its page still explains itself — but
+/* A sold-out item stays legible and clickable â€” its page still explains itself â€” but
    stops competing with what can actually be bought. */
 .upcsg-merchcard--out .upcsg-merchcard__thumb { opacity: 0.55; }
 
@@ -980,7 +1012,7 @@
 }
 
 /* MudTooltip wraps each face in an element of its own, so the flex items here are the
-   wrappers and not the buttons — flex rules on .upcsg-facepile__face never reach the
+   wrappers and not the buttons â€” flex rules on .upcsg-facepile__face never reach the
    thing being sized, and the wrappers would shrink the faces rather than wrap them. */
 .upcsg-facepile > .mud-tooltip-root {
     flex: 0 0 auto;
@@ -1041,7 +1073,7 @@
 }
 
 /* Whoever is in the plate beside the strip. Lifted and ringed rather than just
-   brightened — in a row of round portraits at this size, a colour shift alone does not
+   brightened â€” in a row of round portraits at this size, a colour shift alone does not
    read as "this one". */
 .upcsg-facepile__face--on {
     transform: translateY(-6px) scale(1.12);
@@ -1156,7 +1188,7 @@
 .upcsg-feature--reverse .upcsg-feature__visual { order: -1; }
 
 /* Below the breakpoint the plate always follows the text, whichever side it takes on
-   desktop — a picture above its own heading reads as belonging to the section before. */
+   desktop â€” a picture above its own heading reads as belonging to the section before. */
 @media (max-width: 62rem) {
     .upcsg-feature--reverse .upcsg-feature__visual { order: 0; }
 }
@@ -1761,7 +1793,7 @@
 /* --- Member roster ------------------------------------------------------- */
 
 /* auto-fill, not auto-fit. auto-fit collapses the empty tracks and stretches what is
-   left, so the Representatives committee — which has exactly one member — would render
+   left, so the Representatives committee â€” which has exactly one member â€” would render
    as a single card spanning the full page width. auto-fill keeps the column rhythm and
    lets a short row simply end. */
 .upcsg-memberpile {
@@ -1978,7 +2010,7 @@
 }
 
 /* Keyboard users never trigger :hover, so the affordance has to be visible whenever
-   the card is focused — and on touch, where hover does not exist at all. */
+   the card is focused â€” and on touch, where hover does not exist at all. */
 @media (hover: none) {
     .upcsg-membercard__more { opacity: 1; transform: none; }
 }
@@ -2038,7 +2070,7 @@
 
 .upcsg-madeby:hover,
 .upcsg-madeby:focus-visible {
-    /* Overrides the generic .upcsg-footer a:hover, which turns links gold — gold would
+    /* Overrides the generic .upcsg-footer a:hover, which turns links gold â€” gold would
        fight the mark's own lilac dot. */
     color: var(--upcsg-honeydew-white) !important;
     opacity: 0.9;
@@ -2060,6 +2092,105 @@
 
 @media (prefers-reduced-motion: reduce) {
     .upcsg-madeby { transition: none; }
+}
+
+/* --- Officer bands (About) ----------------------------------------------- *
+   One band of page per officer, sides alternating. No card: the portrait is lit
+   from behind by the nebula and the text sits on the page, so eleven officers
+   read as eleven people rather than eleven identical gradient tiles.
+ * ------------------------------------------------------------------------- */
+
+.upcsg-officer {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(1.5rem, 5vw, 4rem);
+    align-items: center;
+    padding: clamp(2rem, 5vw, 3.25rem) 0;
+    border-bottom: var(--upcsg-hairline);
+}
+
+.upcsg-officer:last-child { border-bottom: none; }
+
+/* Reordering alone would leave the wide column on the same side, so the tracks
+   swap with it. */
+.upcsg-officer--flip { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
+
+.upcsg-officer--flip .upcsg-officer__plate { order: 2; }
+
+.upcsg-officer__plate {
+    position: relative;
+    isolation: isolate;
+}
+
+.upcsg-officer__bloom {
+    position: absolute;
+    z-index: -1;
+    inset: -12%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(162, 83, 184, 0.55) 0%, transparent 68%);
+    filter: blur(30px);
+    pointer-events: none;
+}
+
+.upcsg-officer__portrait {
+    aspect-ratio: 3 / 4;
+    border-radius: var(--upcsg-radius);
+    box-shadow: var(--upcsg-shadow-lg);
+}
+
+.upcsg-officer__role {
+    margin: 0 0 0.5rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-officer__name {
+    margin: 0;
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.8rem, 4.5vw, 2.9rem);
+    line-height: 1.05;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-officer__quote {
+    margin: 1.1rem 0 0;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(246, 200, 117, 0.35);
+    font-family: var(--upcsg-font-subheading);
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.55;
+    color: var(--upcsg-cosmic-lavender);
+}
+
+.upcsg-officer__quote::before { content: "\201C"; }
+.upcsg-officer__quote::after { content: "\201D"; }
+
+.upcsg-officer__bio {
+    margin: 1.1rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--upcsg-periwinkle);
+}
+
+.upcsg-officer__more { margin-top: 1.5rem; }
+
+@media (max-width: 52rem) {
+    .upcsg-officer,
+    .upcsg-officer--flip {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.25rem;
+    }
+
+    /* On one column the portrait always leads: a picture below its own heading
+       reads as belonging to the officer above it. */
+    .upcsg-officer--flip .upcsg-officer__plate { order: 0; }
+
+    .upcsg-officer__plate { max-width: 18rem; }
 }
 
 /* --- Member dialog ------------------------------------------------------- */
@@ -2106,147 +2237,237 @@
     to   { opacity: 1; transform: none; }
 }
 
+/* Masthead: the portrait is a disc lit from behind, with the name beside it. The old
+   layout laid the name over the photo, so a long name sat across someone's face. */
 .upcsg-mdlg__head {
     position: relative;
     isolation: isolate;
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 1.75rem);
+    padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 1.75rem);
+    border-bottom: 1px solid rgba(246, 200, 117, 0.22);
 }
 
-/* An orchid bloom bleeding up from the portrait's lower edge, so the photograph melts
-   into the body instead of ending at a hard seam. */
 .upcsg-mdlg__bloom {
     position: absolute;
-    inset-inline: 0;
-    bottom: -1px;
-    height: 45%;
-    background: linear-gradient(to top, rgba(162, 83, 184, 0.30), transparent);
-    mix-blend-mode: screen;
+    z-index: -1;
+    top: -35%;
+    left: -10%;
+    width: 55%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(162, 83, 184, 0.55) 0%, transparent 68%);
+    filter: blur(28px);
     pointer-events: none;
-    z-index: 1;
 }
 
 .upcsg-mdlg__spark {
     position: absolute;
-    z-index: 2;
+    z-index: 1;
     pointer-events: none;
 }
 
-.upcsg-mdlg__spark--a { top: 14%; right: 12%; }
+.upcsg-mdlg__spark--a { top: 18%; right: 9%; }
 .upcsg-mdlg__spark--a .upcsg-star { width: 0.9rem; height: 0.9rem; }
 
-.upcsg-mdlg__spark--b { top: 32%; right: 26%; }
+.upcsg-mdlg__spark--b { bottom: 22%; right: 22%; }
 .upcsg-mdlg__spark--b .upcsg-star { width: 0.55rem; height: 0.55rem; }
 
 .upcsg-mdlg__portrait {
-    width: 100%;
-    aspect-ratio: 16 / 11;
-    border-radius: 0;
-}
-
-/* Carries the title over any photograph, however bright. Without it the name sits on
-   whatever happens to be in the top of the frame. */
-.upcsg-mdlg__scrim {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        to top,
-        rgba(6, 3, 24, 0.95) 0%,
-        rgba(6, 3, 24, 0.55) 38%,
-        rgba(6, 3, 24, 0.05) 70%);
-    pointer-events: none;
+    flex: none;
+    width: clamp(5.5rem, 16vw, 8rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid rgba(246, 200, 117, 0.4);
+    box-shadow: var(--upcsg-shadow-md), 0 0 40px -10px rgba(162, 83, 184, 0.7);
 }
 
 .upcsg-mdlg__close {
     position: absolute !important;
     top: 0.6rem;
     right: 0.6rem;
-    z-index: 3;
-    color: var(--upcsg-honeydew-white) !important;
-    background: rgba(6, 3, 24, 0.55) !important;
-    backdrop-filter: blur(6px);
+    z-index: 4;
+    color: var(--upcsg-text-muted) !important;
+    background: rgba(6, 3, 24, 0.5) !important;
 }
 
-.upcsg-mdlg__title {
-    position: absolute;
-    inset-inline: 0;
-    bottom: 0;
-    z-index: 2;
-    padding: 1.5rem 1.4rem 1.15rem;
-}
+.upcsg-mdlg__title { min-width: 0; }
 
 .upcsg-mdlg__role {
-    margin: 0;
+    margin: 0 0 0.35rem;
     font-family: var(--upcsg-font-heading);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--upcsg-liquid-chrome-gold);
 }
 
 .upcsg-mdlg__name {
-    margin: 0.25rem 0 0.6rem;
+    margin: 0;
     font-family: var(--upcsg-font-display);
-    font-size: clamp(1.6rem, 5vw, 2.2rem);
-    line-height: 1.15;
+    font-size: clamp(1.6rem, 4.5vw, 2.5rem);
+    line-height: 1.06;
     color: var(--upcsg-honeydew-white);
-    text-shadow: 0 2px 20px rgba(6, 3, 24, 0.7);
 }
 
 .upcsg-mdlg__chip {
     display: inline-block;
-    padding: 0.2rem 0.7rem;
-    border: 1px solid rgba(246, 255, 233, 0.22);
+    margin-top: 0.6rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 999px;
-    background: rgba(6, 3, 24, 0.5);
-    backdrop-filter: blur(6px);
+    border: 1px solid rgba(204, 174, 222, 0.3);
+    background: rgba(204, 174, 222, 0.08);
     font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.66rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+/* Their own words, given the width of the dialog and a gold rule to sit against. */
+.upcsg-mdlg__quote {
+    margin: 0;
+    padding: clamp(1.1rem, 3vw, 1.6rem) clamp(1.5rem, 4vw, 2.5rem);
+    border-bottom: var(--upcsg-hairline);
+    font-family: var(--upcsg-font-display);
+    font-size: clamp(1.05rem, 2.6vw, 1.4rem);
+    font-style: italic;
+    line-height: 1.45;
     color: var(--upcsg-cosmic-lavender);
 }
 
+.upcsg-mdlg__quote::before { content: "\201C"; }
+.upcsg-mdlg__quote::after { content: "\201D"; }
+
 .upcsg-mdlg__body {
-    position: relative;
-    padding: 1.6rem 1.5rem 0.6rem;
+    display: grid;
+    gap: clamp(1.25rem, 3vw, 1.75rem);
+    padding: clamp(1.25rem, 3.5vw, 2rem) clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2rem);
+    max-height: min(46vh, 30rem);
+    overflow-y: auto;
 }
 
-/* The quote is the officer's voice and the bio is description; they were set at almost
-   the same weight, so the panel read as one undifferentiated block of text. The quote is
-   now a genuine pull-quote, closed by a hairline that separates the two registers. */
-.upcsg-mdlg__quote {
-    position: relative;
-    margin: 0 0 1.25rem;
-    padding: 0 0 1.25rem 2.6rem;
-    border-bottom: var(--upcsg-hairline);
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.15rem, 3.2vw, 1.35rem);
-    line-height: 1.5;
-    color: var(--upcsg-honeydew-white);
-}
-
-/* Large and held back rather than small and solid: it should read as a typographic mark
-   behind the words, not as punctuation competing with them. */
-.upcsg-mdlg__mark {
-    position: absolute;
-    left: -0.25rem;
-    top: -1.4rem;
-    font-family: var(--upcsg-font-display);
-    font-size: 5rem;
-    line-height: 1;
-    color: var(--upcsg-galactic-orchid);
-    opacity: 0.35;
-    pointer-events: none;
-}
-
-.upcsg-mdlg__bio {
-    margin: 0;
+.upcsg-mdlg__prose p {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
     line-height: 1.75;
     color: var(--upcsg-periwinkle);
 }
 
-.upcsg-mdlg__bio--none { font-style: italic; opacity: 0.75; }
+.upcsg-mdlg__prose p:last-child { margin-bottom: 0; }
+
+.upcsg-mdlg__prose--none {
+    font-style: italic;
+    opacity: 0.75;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-mdlg__panel {
+    padding-top: clamp(1rem, 2.5vw, 1.35rem);
+    border-top: var(--upcsg-hairline);
+}
+
+.upcsg-mdlg__panel-title {
+    margin: 0 0 0.85rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+/* Year gutter: a fixed first column so the eye runs down the dates. */
+.upcsg-mdlg__record {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.upcsg-mdlg__record li {
+    display: grid;
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+}
+
+.upcsg-mdlg__year {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--upcsg-liquid-chrome-gold);
+    font-variant-numeric: tabular-nums;
+}
+
+.upcsg-mdlg__deed {
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-mdlg__links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.upcsg-mdlg__links a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.15rem 0.6rem;
+    align-items: center;
+    padding: 0.55rem 0.75rem;
+    border: var(--upcsg-hairline);
+    border-radius: 12px;
+    background: rgba(246, 255, 233, 0.03);
+    text-decoration: none;
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+
+.upcsg-mdlg__links a:hover,
+.upcsg-mdlg__links a:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(246, 200, 117, 0.4);
+    background: rgba(246, 200, 117, 0.08);
+}
+
+.upcsg-mdlg__links .mud-icon-root {
+    grid-row: 1 / span 2;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-mdlg__linkkind {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-mdlg__linkvalue {
+    font-size: 0.85rem;
+    color: var(--upcsg-honeydew-white);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 34rem) {
+    .upcsg-mdlg__head {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+}
 
 .upcsg-mdlg__nav {
     display: flex;
@@ -2373,10 +2594,12 @@
     margin: clamp(2.5rem, 6vw, 4rem) calc(50% - 50vw);
     overflow: hidden;
 
-    /* Photos drift out of nothing and back into it, rather than being cut off
-       against an edge. */
-    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    /* Photos drift out of nothing rather than being cut off against an edge. The
+       fade is a fixed width, not a percentage: at 10% of the viewport it grew with
+       the window until 144px of photo sat ghosted at each end, which read as the
+       rail failing to reach the edge rather than as a soft entry. */
+    mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
 }
 
 .upcsg-photorail__track {

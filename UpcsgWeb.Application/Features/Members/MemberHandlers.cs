@@ -41,7 +41,9 @@ public class CreateMemberCommandHandler(IUnitOfWork uow)
             dto.Committee,
             dto.DisplayOrder);
 
-        member.SetProfile(dto.PhotoUrl, dto.Quote, dto.Bio);
+        member.SetProfile(dto.PhotoUrl, dto.Quote, dto.Bio, dto.Profile);
+        member.SetAchievements(MemberProfile.AchievementsFrom(dto));
+        member.SetLinks(MemberProfile.LinksFrom(dto));
 
         uow.Members.Add(member);
         await uow.SaveChangesAsync(ct);
@@ -60,7 +62,9 @@ public class UpdateMemberCommandHandler(IUnitOfWork uow)
 
         var dto = command.Member;
         member.Update(dto.Name, dto.Role, dto.Committee, dto.DisplayOrder);
-        member.SetProfile(dto.PhotoUrl, dto.Quote, dto.Bio);
+        member.SetProfile(dto.PhotoUrl, dto.Quote, dto.Bio, dto.Profile);
+        member.SetAchievements(MemberProfile.AchievementsFrom(dto));
+        member.SetLinks(MemberProfile.LinksFrom(dto));
 
         await uow.SaveChangesAsync(ct);
 

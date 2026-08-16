@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using UpcsgWeb.Domain.Content;
 
@@ -19,8 +20,33 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.Property(m => m.PhotoUrl).HasMaxLength(500);
         builder.Property(m => m.Quote).HasMaxLength(500);
         builder.Property(m => m.Bio).HasMaxLength(4000);
+        builder.Property(m => m.Profile).HasMaxLength(8000);
 
         builder.Property(m => m.Category).HasConversion<string>().HasMaxLength(30).IsRequired();
+
+        // Achievements and contacts are only ever read as part of the member and never
+        // queried on their own, so they go in JSON columns rather than two join tables
+        // every read would then have to remember to include.
+        builder.OwnsMany(m => m.Achievements, a =>
+        {
+            a.ToJson("Achievements");
+            a.Property(x => x.Title).HasMaxLength(300);
+        });
+
+        builder.Navigation(m => m.Achievements)
+            .HasField("_achievements")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
+        builder.OwnsMany(m => m.Links, l =>
+        {
+            l.ToJson("Links");
+            l.Property(x => x.Kind).HasConversion<string>().HasMaxLength(30);
+            l.Property(x => x.Value).HasMaxLength(400);
+        });
+
+        builder.Navigation(m => m.Links)
+            .HasField("_links")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
 
         builder.HasIndex(m => new { m.Category, m.DisplayOrder });
     }

@@ -94,9 +94,93 @@
                           TextChanged="_ => Touch()" Class="mb-4" />
 
             <MudTextField @bind-Value="_item.Bio" Immediate="true"
-                          Label="What they do" Variant="Variant.Outlined" Lines="8"
-                          HelperText="Leave a blank line between paragraphs."
+                          Label="What they do" Variant="Variant.Outlined" Lines="5"
+                          HelperText="The paragraph beside their photo on the About page. Two or three sentences."
+                          TextChanged="_ => Touch()" Class="mb-4" />
+
+            <MudTextField @bind-Value="_item.Profile" Immediate="true"
+                          Label="Full profile" Variant="Variant.Outlined" Lines="10"
+                          HelperText="Only shown behind Know more, so there is room here. Leave a blank line between paragraphs."
                           TextChanged="_ => Touch()" />
+        </MudPaper>
+
+        <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
+            <MudText Typo="Typo.overline" Class="upcsg-panel__title">Achievements</MudText>
+
+            <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-3">
+                What they have won or been recognised for. Shown as a list behind Know more,
+                newest year first. The year is optional.
+            </MudText>
+
+            @foreach (var (achievement, index) in _item.Achievements.Select((a, i) => (a, i)))
+            {
+                var row = index;
+
+                <div class="upcsg-repeater__row" @key="row">
+                    <MudTextField @bind-Value="achievement.Title" Immediate="true"
+                                  Label="Achievement" Variant="Variant.Outlined"
+                                  Placeholder="Champion, PSITE Regional Quizbowl"
+                                  TextChanged="_ => Touch()" />
+
+                    <MudNumericField T="int?" @bind-Value="achievement.Year" @bind-Value:after="Touch"
+                                     Label="Year" Variant="Variant.Outlined"
+                                     Min="1900" Max="@(DateTime.Today.Year + 1)"
+                                     Class="upcsg-repeater__year" />
+
+                    <MudIconButton Icon="@Icons.Material.Outlined.DeleteOutline"
+                                   Color="Color.Error"
+                                   aria-label="Remove this achievement"
+                                   OnClick="() => RemoveAchievement(row)" />
+                </div>
+            }
+
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-5 mt-2"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AddAchievement">
+                Add achievement
+            </MudButton>
+        </MudPaper>
+
+        <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
+            <MudText Typo="Typo.overline" Class="upcsg-panel__title">Where to reach them</MudText>
+
+            <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-3">
+                Only what they are happy to have on a public page. One entry per kind.
+                Links need the full https address; email is just the address.
+            </MudText>
+
+            @foreach (var (link, index) in _item.Links.Select((l, i) => (l, i)))
+            {
+                var row = index;
+
+                <div class="upcsg-repeater__row" @key="row">
+                    <MudSelect T="MemberLinkKindDto" @bind-Value="link.Kind" @bind-Value:after="Touch"
+                               Label="Kind" Variant="Variant.Outlined"
+                               Class="upcsg-repeater__kind">
+                        @foreach (var kind in Enum.GetValues<MemberLinkKindDto>())
+                        {
+                            <MudSelectItem T="MemberLinkKindDto" Value="@kind">@kind</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudTextField @bind-Value="link.Value" Immediate="true"
+                                  Label="@(link.Kind == MemberLinkKindDto.Email ? "Email address" : "Link")"
+                                  Variant="Variant.Outlined"
+                                  Placeholder="@(link.Kind == MemberLinkKindDto.Email ? "name@up.edu.ph" : "https://")"
+                                  TextChanged="_ => Touch()" />
+
+                    <MudIconButton Icon="@Icons.Material.Outlined.DeleteOutline"
+                                   Color="Color.Error"
+                                   aria-label="Remove this contact"
+                                   OnClick="() => RemoveLink(row)" />
+                </div>
+            }
+
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-5 mt-2"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AddLink">
+                Add contact
+            </MudButton>
         </MudPaper>
 
         <div class="upcsg-formbar">
@@ -221,6 +305,37 @@
     private void OnPhotoChanged(string? url)
     {
         _item.PhotoUrl = url;
+        Touch();
+    }
+
+    private void AddAchievement()
+    {
+        _item.Achievements.Add(new MemberAchievementDto());
+        Touch();
+    }
+
+    private void RemoveAchievement(int index)
+    {
+        _item.Achievements.RemoveAt(index);
+        Touch();
+    }
+
+    // Defaults to the first kind not already used, so adding a second contact does not
+    // land on Email again and trip the one-per-kind rule.
+    private void AddLink()
+    {
+        var used = _item.Links.Select(l => l.Kind).ToHashSet();
+
+        var next = Enum.GetValues<MemberLinkKindDto>()
+            .FirstOrDefault(k => !used.Contains(k), MemberLinkKindDto.Website);
+
+        _item.Links.Add(new MemberLinkDto { Kind = next });
+        Touch();
+    }
+
+    private void RemoveLink(int index)
+    {
+        _item.Links.RemoveAt(index);
         Touch();
     }
 

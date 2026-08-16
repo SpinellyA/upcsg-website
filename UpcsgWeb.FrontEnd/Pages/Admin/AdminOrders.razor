@@ -36,12 +36,12 @@
 
     <AdminNav />
 
-    @* Counts on the filters, so the queue says where the work is instead of making you
-       click each status to find out. Only the four live statuses carry one: they come
-       free from the open-queue fetch, while Received and Cancelled are archives you
-       look things up in rather than triage. *@
-    <div class="upcsg-filter upcsg-filter--records mt-4">
-        <button type="button" class="upcsg-filter__btn"
+    @* Seven pills in a flat row read as seven equal choices, which they are not. The
+       queue splits in two: statuses an officer works, and two archives they look
+       things up in. Grouping says that, and keeps every one a single click - a
+       dropdown would tidy the row by hiding the counts, which are the point. *@
+    <div class="upcsg-filter upcsg-filter--records mt-4" role="group" aria-label="Filter orders">
+        <button type="button" class="upcsg-filter__btn upcsg-filter__btn--all"
                 aria-pressed="@(_filter is null ? "true" : "false")"
                 @onclick="() => SetFilterAsync(null)">
             Open queue
@@ -50,12 +50,15 @@
                 <span class="upcsg-filter__count">@_open.Count</span>
             }
         </button>
-        @foreach (var status in AllStatuses)
+
+        <span class="upcsg-filter__sep" aria-hidden="true"></span>
+
+        @foreach (var status in LiveStatuses)
         {
             var s = status;
             var count = OpenCount(s);
 
-            <button type="button" class="upcsg-filter__btn"
+            <button type="button" class="upcsg-filter__btn @(count == 0 ? "upcsg-filter__btn--empty" : null)"
                     aria-pressed="@(_filter == s ? "true" : "false")"
                     @onclick="() => SetFilterAsync(s)">
                 @OrderStatusDisplay.Label(s)
@@ -63,6 +66,19 @@
                 {
                     <span class="upcsg-filter__count">@count</span>
                 }
+            </button>
+        }
+
+        <span class="upcsg-filter__sep" aria-hidden="true"></span>
+
+        @foreach (var status in ArchiveStatuses)
+        {
+            var s = status;
+
+            <button type="button" class="upcsg-filter__btn upcsg-filter__btn--quiet"
+                    aria-pressed="@(_filter == s ? "true" : "false")"
+                    @onclick="() => SetFilterAsync(s)">
+                @OrderStatusDisplay.Label(s)
             </button>
         }
     </div>
@@ -178,12 +194,9 @@
 </div>
 
 @code {
-    private static readonly OrderStatusDto[] AllStatuses =
+    // Statuses that still need somebody, and the two that are only ever looked up.
+    private static readonly OrderStatusDto[] ArchiveStatuses =
     [
-        OrderStatusDto.AwaitingPayment,
-        OrderStatusDto.Pending,
-        OrderStatusDto.Acknowledged,
-        OrderStatusDto.Released,
         OrderStatusDto.Received,
         OrderStatusDto.Cancelled,
     ];

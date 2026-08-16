@@ -397,8 +397,22 @@ h4, h5, h6, .upcsg-heading {
 
 /* No padding here — sections decide their own width so a hero can run full-bleed.
    Ordinary page content opts into .upcsg-page for the centred column. */
+/* Fills the window even when the page does not. A short CMS table used to leave the
+   footer floating mid-screen with dead space under it - nothing was holding it down,
+   so it simply ended where the content ended.
+
+   @Body renders a page's root elements straight in here, and that is one element on a
+   CMS page but three on a public one, so there is nothing single to stretch. Pushing
+   the last child down with an auto margin works whatever @Body emitted. */
 .upcsg-main {
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.upcsg-main > .upcsg-container:last-child {
+    margin-top: auto;
 }
 
 .upcsg-container {
@@ -3034,6 +3048,35 @@ h4, h5, h6, .upcsg-heading {
 
 .upcsg-filter__btn[aria-pressed="true"] .upcsg-filter__count {
     background: rgba(6, 3, 24, 0.35);
+}
+
+/* The whole open queue: where an officer starts, so it reads a step louder. */
+.upcsg-filter__btn--all {
+    border-color: rgba(246, 200, 117, 0.34);
+    color: var(--upcsg-text);
+}
+
+/* A live status with nothing in it is still worth showing - it says "nothing is
+   waiting on payment", which is information - but it should not compete. */
+.upcsg-filter__btn--empty { opacity: 0.55; }
+
+/* Archives. Same click, quieter voice: these are looked up, not worked. */
+.upcsg-filter__btn--quiet {
+    border-color: rgba(204, 174, 222, 0.16);
+    background: transparent;
+}
+
+.upcsg-filter__sep {
+    width: 1px;
+    align-self: stretch;
+    margin: 0.15rem 0.35rem;
+    background: rgba(204, 174, 222, 0.22);
+}
+
+/* Wrapped onto its own line the rule would sit alone at the start of a row, so it
+   goes once the pills are stacking anyway. */
+@media (max-width: 46rem) {
+    .upcsg-filter__sep { display: none; }
 }
 
 .upcsg-filter__btn:hover {

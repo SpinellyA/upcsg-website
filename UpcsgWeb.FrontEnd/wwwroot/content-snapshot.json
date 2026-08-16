@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-09T16:59:05.9582257Z",
+  "generatedAt": "2026-08-15T16:44:56.9051021Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -151,7 +151,8 @@
       "description": "Second-year Computer Science students from UP Cebu earned top finishes at the NEXT LEVEL: Esports Game Dev Challenge.\n\nSecond-year Computer Science students from UP Cebu earned top finishes at the NEXT LEVEL: Esports Game Dev Challenge, with Team <blank> claiming first runner-up and Team Casa de Kirby finishing in the top ten during the 2026 Regional Science, Technology, and Innovation Week celebration organized by DOST Central Visayas held on July 13-15, 2026, at Waterfront Cebu City Hotel.\nTeam <blank> developed the game SARAP!, a Filipino cooking game where players prepare nearly forgotten regional dishes. The team is composed of Tyrone Gareth Cular, Krysta Belle Amojedo, Alynnah Rhein Cahutay, and Clandestine Maglasang, mentored by Ms. J Isle Rocamora.\nAnother finalist, Team Casa de Kirby, created Rescue Rush, a speedrun game where players save civilians scattered around a flooded village as fast as they can. The team is composed of Resha Alpuerto, Angelo Luize Ramirez, Sam Joash Recodo, Joy Montilde, and John Kirby Monleon, under the mentorship of Mr. Eli Edrian Tan.",
       "year": 2026,
       "imageUrl": "offline-media/9228f43aefe61e3c.webp",
-      "category": "Competition"
+      "category": "Competition",
+      "createdAt": "2026-08-05T13:55:41.965649+00:00"
     },
     {
       "id": "019fe20f-2c08-74c4-97e1-8cabdfd31040",
@@ -159,7 +160,8 @@
       "description": "Team Culay from the University of the Philippines Cebu (UP Cebu) won the AI Hackathon Championship at AI Fest 2026 held at the Iloilo Convention Center.\n\nHuge congratulations to the 𝗨𝗻𝗶𝘃𝗲𝗿𝘀𝗶𝘁𝘆 𝗼𝗳 𝘁𝗵𝗲 𝗣𝗵𝗶𝗹𝗶𝗽𝗽𝗶𝗻𝗲𝘀 𝗖𝗲𝗯𝘂 (𝗨𝗣 𝗖𝗲𝗯𝘂) for taking home the 𝗔𝗜 𝗛𝗮𝗰𝗸𝗮𝘁𝗵𝗼𝗻 𝗖𝗵𝗮𝗺𝗽𝗶𝗼𝗻𝘀𝗵𝗶𝗽 at 𝗔𝗜 𝗙𝗲𝘀𝘁 𝟮𝟬𝟮𝟲, held at the Iloilo Convention Center!\nTeam 𝗖𝘂𝗹𝗮𝘆 impressed the judges with 𝘒𝘢𝘩𝘢𝘺𝘢𝘨, an AI-powered engineering and sales assistant designed to streamline pre-sales for residential solar installations under the \"Clean and Renewable Energy\" theme.\n\nApplause to the team behind the winning solution:\n• Jezreel Chad Lumbab\n• Joanalyn Cadampog\n• Christian Brillos\n• Jimmy Eleazer Mijares\n• Berk Stephen Cutamora\n\nCongratulations, UP Cebu! Your achievement continues to inspire the next generation of Filipino innovators. 💡",
       "year": 2026,
       "imageUrl": "offline-media/225e627d7b108fc5.webp",
-      "category": "Competition"
+      "category": "Competition",
+      "createdAt": "2026-08-08T15:47:52.96875+00:00"
     }
   ],
   "merch": [
@@ -297,6 +299,26 @@
       "hasActiveSale": true,
       "isPreorderClosed": false,
       "imageUrl": "offline-media/a5c25bbab5fad4c8.webp"
+    }
+  ],
+  "opportunities": [
+    {
+      "id": "019ff95f-a9c5-7570-a123-a004a1e77b47",
+      "title": "2026 Gawr Gura Hackathon",
+      "description": "The inaugural 2026 Gawr Gura Hackathon has officially launched, drawing thousands of programmers, designers, and VTuber enthusiasts globally to build open-source community tools. Organized by independent fan developers, the virtual event focuses on creating interactive widgets, chat integrations, and fan games dedicated to the legacy of the former Hololive English star Gawr Gura.\n\nKey Event Details\nFormat: 100% Virtual global hackathon\nDuration: 48-hour continuous coding session\nTotal Prize Pool: $5,000 USD funded via community crowdfunding\nPrimary Track: Open-source web tools and interactive streaming extensions\nCompetition TracksStreamer Tooling: Interactive widgets designed for Twitch and YouTube overlays.Fan Games: Lightweight, browser-playable mini-games built using HTML5 or Unity.\nAI & Voice: Responsible AI applications for soundboards and chat moderation assistants.Accessibility: Closed-captioning and screen-reading tools tailored for live virtual content.\nRules and Submission Guidelines\n\nOpen Source: All project code must be made public on GitHub.Fresh Code: Teams cannot use pre-existing software frameworks unique to their specific project.Team Size: Maximum of 5 members per participating team.Deadlines: Final project repositories must be submitted before Sunday at 11:59 PM UTC.",
+      "kind": "Hackathon",
+      "organiser": "Hololive LLC",
+      "location": "Atlantis",
+      "opensAt": "2026-08-30T16:00:00+00:00",
+      "closesAt": "2026-09-01T15:59:59+00:00",
+      "happensAt": "2026-09-15T16:00:00+00:00",
+      "url": null,
+      "posterUrl": null,
+      "isFeatured": false,
+      "createdAt": "2026-08-13T04:27:04.005357+00:00",
+      "isClosed": false,
+      "hasDeadline": true,
+      "daysLeft": 17
     }
   ],
   "settings": {

@@ -2557,48 +2557,56 @@
     .upcsg-mdlg__arrow { transition: none; }
 }
 
-/* --- Quote plate (Contact) ----------------------------------------------- */
+/* --- Ways in (Contact) --------------------------------------------------- *
+   Replaced a purple quote slab whose line restated the heading next to it. This
+   is a list rather than a plate: no fixed aspect ratio to fill, so it ends where
+   its content ends, and the gold marks the four routes without another gradient.
+ * ------------------------------------------------------------------------- */
 
-.upcsg-quoteplate {
-    position: relative;
-    overflow: hidden;
-    display: grid;
-    align-content: center;
-    aspect-ratio: 4 / 5;
-    padding: clamp(1.75rem, 4vw, 3rem);
-    border-radius: var(--upcsg-radius);
+.upcsg-waysin {
+    padding: clamp(1.25rem, 3vw, 1.75rem);
     border: var(--upcsg-hairline);
-    background:
-        radial-gradient(120% 90% at 20% 15%, rgba(162, 83, 184, 0.55), transparent 60%),
-        linear-gradient(150deg, var(--upcsg-deep-amethyst), var(--upcsg-dark-ultramarine));
-    box-shadow: var(--upcsg-shadow-lg);
+    border-radius: var(--upcsg-radius);
+    background: rgba(246, 255, 233, 0.03);
 }
 
-.upcsg-quoteplate__mark {
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(4rem, 12vw, 7rem);
-    line-height: 0.7;
+.upcsg-waysin__title {
+    margin: 0 0 1.1rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     color: var(--upcsg-liquid-chrome-gold);
-    opacity: 0.55;
 }
 
-.upcsg-quoteplate__text {
-    position: relative;
-    z-index: 1;
-    margin: 0.5rem 0 0;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.25rem, 2.6vw, 1.9rem);
-    line-height: 1.35;
+.upcsg-waysin__list {
+    display: grid;
+    gap: 1.1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.upcsg-waysin__list li {
+    padding-left: 1.1rem;
+    border-left: 2px solid rgba(246, 200, 117, 0.3);
+}
+
+.upcsg-waysin__what {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
+    font-size: 0.98rem;
     color: var(--upcsg-honeydew-white);
 }
 
-.upcsg-quoteplate__burst {
-    position: absolute;
-    right: -18%;
-    bottom: -22%;
-    width: 62%;
-    opacity: 0.22;
-    pointer-events: none;
+.upcsg-waysin__how {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--upcsg-periwinkle);
 }
 
 /* --- About: identity ----------------------------------------------------- *

@@ -329,6 +329,34 @@
 
 .upcsg-eventcard:hover .upcsg-eventcard__arrow { transform: translateX(5px); }
 
+/* --- Order age (orders queue) -------------------------------------------- */
+
+.upcsg-age {
+    display: block;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--upcsg-text);
+}
+
+/* An unattended order past a few days. Gold rather than red: it wants an officer,
+   it is not an error, and the queue would be a wall of alarm otherwise. */
+.upcsg-age--stale {
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-age--stale::after {
+    content: "";
+    display: inline-block;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-left: 0.4rem;
+    vertical-align: 0.1em;
+    border-radius: 50%;
+    background: currentColor;
+}
+
 /* --- CMS repeater rows (member achievements, contacts) ------------------- */
 
 .upcsg-repeater__row {

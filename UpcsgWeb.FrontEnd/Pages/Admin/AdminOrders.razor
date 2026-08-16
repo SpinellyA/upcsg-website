@@ -36,19 +36,33 @@
 
     <AdminNav />
 
+    @* Counts on the filters, so the queue says where the work is instead of making you
+       click each status to find out. Only the four live statuses carry one: they come
+       free from the open-queue fetch, while Received and Cancelled are archives you
+       look things up in rather than triage. *@
     <div class="upcsg-filter upcsg-filter--records mt-4">
         <button type="button" class="upcsg-filter__btn"
                 aria-pressed="@(_filter is null ? "true" : "false")"
                 @onclick="() => SetFilterAsync(null)">
             Open queue
+            @if (_open.Count > 0)
+            {
+                <span class="upcsg-filter__count">@_open.Count</span>
+            }
         </button>
         @foreach (var status in AllStatuses)
         {
             var s = status;
+            var count = OpenCount(s);
+
             <button type="button" class="upcsg-filter__btn"
                     aria-pressed="@(_filter == s ? "true" : "false")"
                     @onclick="() => SetFilterAsync(s)">
                 @OrderStatusDisplay.Label(s)
+                @if (count > 0)
+                {
+                    <span class="upcsg-filter__count">@count</span>
+                }
             </button>
         }
     </div>
@@ -89,7 +103,12 @@
                         Order
                     </MudTableSortLabel>
                 </MudTh>
-                <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.PlacedAt)">Placed</MudTableSortLabel></MudTh>
+                <MudTh>
+                    <MudTableSortLabel T="OrderDto" SortBy="@(o => o.PlacedAt)"
+                                       InitialDirection="SortDirection.Ascending">
+                        Waiting
+                    </MudTableSortLabel>
+                </MudTh>
                 <MudTh><MudTableSortLabel T="OrderDto" SortBy="@(o => o.GuilderName ?? string.Empty)">Guilder</MudTableSortLabel></MudTh>
                 <MudTh Class="upcsg-num">
                     <MudTableSortLabel T="OrderDto" SortBy="@(o => o.Lines.Sum(l => l.Quantity))">Items</MudTableSortLabel>
@@ -100,7 +119,18 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Order"><strong>#@context.Reference</strong></MudTd>
-                <MudTd DataLabel="Placed">@context.PlacedAt.ToLocalTime().ToString("MMM d, h:mm tt")</MudTd>
+
+                @* How long it has been sitting, not just when it arrived. A receipt
+                   submitted four days ago is the one that needs an officer; the exact
+                   timestamp is what you check afterwards, so it goes underneath. *@
+                <MudTd DataLabel="Waiting">
+                    <span class="@(IsStale(context) ? "upcsg-age upcsg-age--stale" : "upcsg-age")">
+                        @Age(context.PlacedAt)
+                    </span>
+                    <span class="upcsg-datatable__flag">
+                        @context.PlacedAt.ToLocalTime().ToString("MMM d, yyyy")
+                    </span>
+                </MudTd>
 
                 <MudTd DataLabel="Guilder">
                     @if (string.IsNullOrWhiteSpace(context.GuilderName))
@@ -160,6 +190,15 @@
 
     private static readonly int[] PageSizes = [10, 25, 50, 100];
 
+    // Statuses that still need somebody. Anything past these is history.
+    private static readonly OrderStatusDto[] LiveStatuses =
+    [
+        OrderStatusDto.AwaitingPayment,
+        OrderStatusDto.Pending,
+        OrderStatusDto.Acknowledged,
+        OrderStatusDto.Released,
+    ];
+
     private List<OrderDto> _orders = [];
     private OrderStatusDto? _filter;
     private string _search = string.Empty;
@@ -167,15 +206,41 @@
     private bool _releasing;
     private string? _error;
 
-    private List<OrderDto> _confirmed = [];
+    // The whole open queue, held so the filter counts and the release button come from
+    // one fetch. Switching between live statuses is then a local filter, not a round
+    // trip; only the two archive statuses go back to the server.
+    private List<OrderDto> _open = [];
 
-    private int ConfirmedCount => _confirmed.Count;
+    private int ConfirmedCount => _open.Count(o => o.Status == OrderStatusDto.Acknowledged);
+
+    private int OpenCount(OrderStatusDto status) =>
+        LiveStatuses.Contains(status) ? _open.Count(o => o.Status == status) : 0;
+
+    // An order nobody has touched for a few days is the one worth surfacing. Three days
+    // is a guess, but a guess that draws the eye to the right rows beats no signal.
+    private static bool IsStale(OrderDto order) =>
+        order.Status is OrderStatusDto.Pending or OrderStatusDto.AwaitingPayment
+        && (DateTimeOffset.Now - order.PlacedAt).TotalDays >= 3;
+
+    private static string Age(DateTimeOffset placed)
+    {
+        var span = DateTimeOffset.Now - placed;
+
+        return span switch
+        {
+            { TotalMinutes: < 1 } => "just now",
+            { TotalMinutes: < 60 } => $"{(int)span.TotalMinutes}m",
+            { TotalHours: < 24 } => $"{(int)span.TotalHours}h",
+            { TotalDays: < 7 } => $"{(int)span.TotalDays}d",
+            _ => $"{(int)(span.TotalDays / 7)}w",
+        };
+    }
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
     private async Task ReleaseConfirmedAsync()
     {
-        var owing = _confirmed.Count(o => o.HasRefundDue);
+        var owing = _open.Count(o => o.Status == OrderStatusDto.Acknowledged && o.HasRefundDue);
 
         var detail = $"Mark {ConfirmedCount} confirmed order(s) as released? Do this once the items are actually in the guilders' hands.";
 
@@ -252,6 +317,20 @@
     private async Task SetFilterAsync(OrderStatusDto? status)
     {
         _filter = status;
+
+        // A live status is already in hand; only the archives need the server.
+        if (status is null)
+        {
+            _orders = _open;
+            return;
+        }
+
+        if (LiveStatuses.Contains(status.Value))
+        {
+            _orders = [.. _open.Where(o => o.Status == status.Value)];
+            return;
+        }
+
         await LoadAsync();
     }
 
@@ -262,10 +341,13 @@
 
         try
         {
-            _orders = await OrderService.GetQueueAsync(_filter);
-            _confirmed = _filter == OrderStatusDto.Acknowledged
-                ? _orders
-                : await OrderService.GetQueueAsync(OrderStatusDto.Acknowledged);
+            _open = await OrderService.GetQueueAsync(null);
+
+            _orders = _filter is { } status && !LiveStatuses.Contains(status)
+                ? await OrderService.GetQueueAsync(status)
+                : _filter is { } live
+                    ? [.. _open.Where(o => o.Status == live)]
+                    : _open;
         }
         catch (Exception ex)
         {

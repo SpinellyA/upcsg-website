@@ -30,6 +30,14 @@
                         ? $"Guilder {OrderReference.For(_order.UserId)}"
                         : _order.GuilderName)
                     &middot; placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")
+
+                    @* When it last moved, which is what tells you whether anyone has
+                       picked it up. The DTO has carried this all along without ever
+                       showing it. *@
+                    @if (_order.UpdatedAt > _order.PlacedAt.AddMinutes(1))
+                    {
+                        <text> &middot; last moved @Ago(_order.UpdatedAt)</text>
+                    }
                 </p>
                 <h1 class="upcsg-title-xl">Order #@_order.Reference</h1>
                 @if (!string.IsNullOrWhiteSpace(_order.GuilderEmail))
@@ -478,6 +486,28 @@
 
     private async Task CancelAsync()
     {
+        // Cancelling an acknowledged order now puts its stock back, which is a real
+        // change to the shelf. Say so before it happens rather than after.
+        if (_order?.Status == OrderStatusDto.Acknowledged)
+        {
+            var returning = _order.Lines
+                .Where(l => l.Status == OrderLineStatusDto.ToFulfil)
+                .Sum(l => l.Quantity);
+
+            var ok = await DialogService.ShowMessageBoxAsync(
+                "Cancel a confirmed order",
+                $"This order was confirmed, so {returning} item(s) were already taken off the "
+                + "shelf. Cancelling puts them back into stock.\n\nIf the guilder has paid, you "
+                + "will still need to return the money yourself — cancelling does not send it.",
+                yesText: "Continue",
+                cancelText: "Keep the order");
+
+            if (ok != true)
+            {
+                return;
+            }
+        }
+
         var reason = await PromptAsync($"Cancel order #{OrderReference.For(Id)}", "Reason (the guilder will see this)");
         if (string.IsNullOrWhiteSpace(reason))
         {
@@ -499,6 +529,20 @@
         {
             _busy = false;
         }
+    }
+
+    private static string Ago(DateTimeOffset when)
+    {
+        var span = DateTimeOffset.Now - when;
+
+        return span switch
+        {
+            { TotalMinutes: < 1 } => "just now",
+            { TotalMinutes: < 60 } => $"{(int)span.TotalMinutes} minutes ago",
+            { TotalHours: < 24 } => $"{(int)span.TotalHours} hours ago",
+            { TotalDays: < 7 } => $"{(int)span.TotalDays} days ago",
+            _ => when.ToLocalTime().ToString("MMM d"),
+        };
     }
 
     private async Task<string?> PromptAsync(string title, string label)

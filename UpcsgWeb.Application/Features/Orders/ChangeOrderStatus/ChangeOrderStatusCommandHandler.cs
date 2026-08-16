@@ -43,7 +43,13 @@ public class ChangeOrderStatusCommandHandler(IUnitOfWork uow)
                 break;
 
             case OrderStatusDto.Cancelled:
-                order.Cancel(command.Reason ?? string.Empty);
+                // Loaded even when nothing will come back: whether stock moves depends
+                // on the order's own status, which is the aggregate's call, not this
+                // handler's to guess at.
+                var stocked = await uow.Merch.GetManyAsync(
+                    order.Lines.Select(l => l.MerchItemId), cancellationToken);
+
+                order.Cancel(command.Reason ?? string.Empty, stocked.ToDictionary(i => i.Id));
                 break;
 
             default:

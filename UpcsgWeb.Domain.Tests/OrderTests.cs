@@ -198,7 +198,7 @@ public class OrderLifecycleTests
         order.MarkReceived();
 
         Assert.Throws<DomainException>(order.Release);
-        Assert.Throws<DomainException>(() => order.Cancel("changed my mind"));
+        Assert.Throws<DomainException>(() => order.Cancel("changed my mind", Catalog(item)));
     }
 
     [Fact]
@@ -208,14 +208,14 @@ public class OrderLifecycleTests
         order.Acknowledge(Catalog(item));
         order.Release();
 
-        Assert.Throws<DomainException>(() => order.Cancel("too late"));
+        Assert.Throws<DomainException>(() => order.Cancel("too late", Catalog(item)));
     }
 
     [Fact]
     public void UnpaidOrderCanBeCancelled()
     {
         var order = AwaitingPaymentOrder(out var item);
-        order.Cancel("Never paid");
+        order.Cancel("Never paid", Catalog(item));
 
         Assert.Equal(OrderStatus.Cancelled, order.Status);
         Assert.Equal("Never paid", order.CancellationReason);
@@ -225,7 +225,65 @@ public class OrderLifecycleTests
     public void CancellingRequiresAReason()
     {
         var order = AwaitingPaymentOrder(out var item);
-        Assert.Throws<DomainException>(() => order.Cancel("  "));
+        Assert.Throws<DomainException>(() => order.Cancel("  ", Catalog(item)));
+    }
+
+    [Fact]
+    public void CancellingAnAcknowledgedOrderPutsTheStockBack()
+    {
+        var order = AwaitingPaymentOrder(out var item);
+        var before = item.StockFor("M");
+
+        order.SubmitReceipt(Receipt());
+        order.Acknowledge(Catalog(item));
+
+        Assert.Equal(before - 1, item.StockFor("M"));
+
+        var returned = order.Cancel("Guilder backed out", Catalog(item));
+
+        Assert.Single(returned);
+        Assert.Equal(before, item.StockFor("M"));
+    }
+
+    [Fact]
+    public void CancellingBeforeAcknowledgementReturnsNothing()
+    {
+        var order = AwaitingPaymentOrder(out var item);
+        var before = item.StockFor("M");
+
+        // Nothing was deducted, so nothing may come back - otherwise cancelling an
+        // unpaid order would invent stock out of nowhere.
+        var returned = order.Cancel("Never paid", Catalog(item));
+
+        Assert.Empty(returned);
+        Assert.Equal(before, item.StockFor("M"));
+    }
+
+    [Fact]
+    public void CancellingReturnsOnlyTheLinesThatWereActuallyFilled()
+    {
+        var hoodie = Hoodie();
+        hoodie.SetVariantStock(hoodie.Variants.First(v => v.Name == "M").Id, 1);
+
+        var tote = Tote();
+        var toteBefore = tote.StockFor("One size");
+
+        var order = Order.Create(UserId);
+        order.AddLine(hoodie, "M", 3);   // only one in stock, so this goes refund-due
+        order.AddLine(tote, "One size", 2);
+        order.SubmitReceipt(Receipt());
+
+        order.AcknowledgeWithShortfall(Catalog(hoodie, tote));
+
+        // The hoodie line never moved stock; the tote line did.
+        Assert.Equal(1, hoodie.StockFor("M"));
+        Assert.Equal(toteBefore - 2, tote.StockFor("One size"));
+
+        var returned = order.Cancel("Cannot supply", Catalog(hoodie, tote));
+
+        Assert.Single(returned);
+        Assert.Equal(1, hoodie.StockFor("M"));            // unchanged, nothing to give back
+        Assert.Equal(toteBefore, tote.StockFor("One size"));
     }
 
     [Fact]

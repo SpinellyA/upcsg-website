@@ -291,16 +291,45 @@ public class Order : AggregateRoot
         Raise(new OrderReceivedEvent(Id, UserId));
     }
 
-    public void Cancel(string reason)
+    // Cancelling an acknowledged order has to put the stock back. Acknowledging is what
+    // deducts it, so before this the shirts stayed "sold" forever and the store showed
+    // fewer than were actually on the shelf - with no way to notice except counting.
+    //
+    // Only lines that were actually deducted come back: a line marked refund-due was
+    // never taken from stock, and a refunded one has been settled in money instead.
+    // Cancelling before acknowledgement touches nothing, because nothing was taken.
+    public IReadOnlyList<OrderLine> Cancel(
+        string reason,
+        IReadOnlyDictionary<Guid, MerchItem> items)
     {
         if (string.IsNullOrWhiteSpace(reason))
         {
             throw new DomainException("Cancelling an order requires a reason.");
         }
 
+        var returned = new List<OrderLine>();
+
+        if (Status == OrderStatus.Acknowledged)
+        {
+            foreach (var line in _lines.Where(l => l.Status == OrderLineStatus.ToFulfil))
+            {
+                // An item deleted from the catalogue since checkout has nowhere to go
+                // back to. That is not a reason to block the cancellation.
+                if (!items.TryGetValue(line.MerchItemId, out var item))
+                {
+                    continue;
+                }
+
+                item.Restock(line.Variant, line.Quantity);
+                returned.Add(line);
+            }
+        }
+
         TransitionTo(OrderStatus.Cancelled);
         Raise(new OrderCancelledEvent(Id, UserId, reason.Trim()));
         CancellationReason = reason;
+
+        return returned;
     }
 
     private void TransitionTo(OrderStatus next)

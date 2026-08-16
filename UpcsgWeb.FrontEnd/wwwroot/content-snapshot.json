@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-15T16:44:56.9051021Z",
+  "generatedAt": "2026-08-16T16:45:44.0649551Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -11,7 +11,33 @@
       "photoUrl": "offline-media/681b222c4543c990.webp",
       "quote": "du bist gut genug",
       "bio": "Chriscia leads the guild: she sets the direction for the year, chairs the Executive Committee, and answers for everything UPCSG puts its name on.",
-      "displayOrder": 1
+      "profile": "I'm Chriscia, I'm the director of the upcsg ofapokadofkjaogsw Chriscia leads the guild: she sets the direction for the year, chairs the Executive Committee, and answers for everything UPCSG puts its name on.",
+      "achievements": [],
+      "links": [
+        {
+          "kind": "Email",
+          "value": "xanelle@up.edu.ph",
+          "href": "mailto:xanelle@up.edu.ph",
+          "isEmail": true,
+          "display": "xanelle@up.edu.ph"
+        },
+        {
+          "kind": "Facebook",
+          "value": "https://www.facebook.com/",
+          "href": "https://www.facebook.com/",
+          "isEmail": false,
+          "display": "facebook.com"
+        },
+        {
+          "kind": "Instagram",
+          "value": "https://instagram.com",
+          "href": "https://instagram.com",
+          "isEmail": false,
+          "display": "instagram.com"
+        }
+      ],
+      "displayOrder": 1,
+      "hasProfile": true
     },
     {
       "id": "019fcda6-dcbc-7691-82a0-08fb9c96b65a",
@@ -22,7 +48,11 @@
       "photoUrl": "offline-media/454f6fff661abb86.webp",
       "quote": "Start where you are, with what you have.",
       "bio": "Diane works alongside the Executive Director to keep the committees moving, and steps in wherever a project needs a second pair of hands.",
-      "displayOrder": 2
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 2,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-dd31-7218-88d0-ea5396ed53bd",
@@ -33,7 +63,11 @@
       "photoUrl": "offline-media/a1d0d1043dee0689.webp",
       "quote": "If it wasn't written down, it didn't happen.",
       "bio": "Irish keeps the guild's records: minutes of every meeting, the membership roll, and the correspondence that goes out under the org's name.",
-      "displayOrder": 3
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 3,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-dda9-746b-94bc-c276bf99ab86",
@@ -44,7 +78,11 @@
       "photoUrl": "offline-media/eb1f1c20744a4848.webp",
       "quote": "Every peso has a paper trail.",
       "bio": "Nino handles the guild's funds - budgets for each event, collections for merch and dues, and the financial report the org answers to.",
-      "displayOrder": 4
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 4,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-de21-79e2-89d0-e697cd1662ff",
@@ -55,7 +93,11 @@
       "photoUrl": "offline-media/8c501508a3706547.webp",
       "quote": "Trust, then check anyway.",
       "bio": "Tiffany reviews the books independently of the Treasurer, checking that disbursements match what was approved and that the records hold up.",
-      "displayOrder": 5
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 5,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-de9b-7edf-93a2-619b1a4cae1a",
@@ -66,7 +108,11 @@
       "photoUrl": "offline-media/decceb4f535ea97a.webp",
       "quote": "Good work deserves to be seen.",
       "bio": "Emman runs the guild's promotion: campaigns for events and merch drops, and making sure the things guilders build actually reach an audience.",
-      "displayOrder": 6
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 6,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-df11-700f-91a6-1b48ac46df3f",
@@ -77,7 +123,11 @@
       "photoUrl": "offline-media/402d5edb6c75912d.webp",
       "quote": "Make it clear first. Then make it beautiful.",
       "bio": "Jasmine owns the guild's visual identity - publication materials, event branding, and the look of everything UPCSG publishes.",
-      "displayOrder": 7
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 7,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-df89-7d19-8cd7-01eb99b17b5d",
@@ -88,7 +138,11 @@
       "photoUrl": "offline-media/9294a1f398b5bd42.webp",
       "quote": "Nobody builds anything alone.",
       "bio": "Sylvia builds the guild's relationships outside the org: sponsors, partner organizations, and the industry contacts behind our talks and events.",
-      "displayOrder": 8
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 8,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-e018-7716-bd59-cd5453845e12",
@@ -99,7 +153,11 @@
       "photoUrl": "offline-media/edaf0d3ba4c3da1e.webp",
       "quote": "Teach the thing you struggled with.",
       "bio": "June runs the academic side of the guild - tutorials, workshops, and the study sessions that run every week rather than only before finals.",
-      "displayOrder": 9
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 9,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-e092-7f62-afc0-cee471ee048d",
@@ -110,7 +168,11 @@
       "photoUrl": "offline-media/a45ce7fd682bbbc1.webp",
       "quote": "The venue, the schedule, and the group chat.",
       "bio": "Erik keeps events standing up: booking, equipment, timelines, and the internal communication that gets everyone to the right place.",
-      "displayOrder": 10
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 10,
+      "hasProfile": false
     },
     {
       "id": "019fcda6-e10c-793d-be45-7e934ad6f000",
@@ -121,7 +183,11 @@
       "photoUrl": "offline-media/ba202a99b4542243.webp",
       "quote": "Bring it up. That's what I'm here for.",
       "bio": "Suzzane represents UPCSG in the SRP, carrying guilder concerns into wider student representation and bringing decisions back to the org.",
-      "displayOrder": 11
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 11,
+      "hasProfile": false
     }
   ],
   "events": [
@@ -318,7 +384,7 @@
       "createdAt": "2026-08-13T04:27:04.005357+00:00",
       "isClosed": false,
       "hasDeadline": true,
-      "daysLeft": 17
+      "daysLeft": 16
     }
   ],
   "settings": {

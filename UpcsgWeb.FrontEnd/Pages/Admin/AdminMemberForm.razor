@@ -261,7 +261,11 @@
         }
         catch (Exception ex)
         {
+            // The inline alert sits at the top of the form, which is not where you are
+            // when you press Save at the bottom. The snackbar is what tells you; the
+            // alert stays so the message is still readable once it fades.
             _error = ex.Message;
+            Snackbar.Add(ex.Message, Severity.Error);
         }
         finally
         {
@@ -361,7 +365,11 @@
         }
         catch (Exception ex)
         {
+            // The inline alert sits at the top of the form, which is not where you are
+            // when you press Save at the bottom. The snackbar is what tells you; the
+            // alert stays so the message is still readable once it fades.
             _error = ex.Message;
+            Snackbar.Add(ex.Message, Severity.Error);
         }
         finally
         {

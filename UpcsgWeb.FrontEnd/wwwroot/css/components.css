@@ -2197,16 +2197,21 @@
 
 /* The dialog paper itself. MudBlazor's default is a flat plum rectangle, which is the
    one surface on the site that looked like a component library rather than the guild. */
+/* The purple was doing too much: a 0.55 wash over the whole top plus a second bloom
+   behind the portrait, which read as a purple card rather than as a night sky. The
+   wash is halved and pushed into the corner, and a thin warm note comes in from the
+   other side so the two brand colours share the surface instead of one flooding it. */
 .upcsg-mdlg__paper {
     border-radius: 26px !important;
     border: var(--upcsg-hairline);
     overflow: hidden;
 
     background:
-        radial-gradient(ellipse 120% 80% at 50% 0%, rgba(83, 37, 126, 0.55) 0%, transparent 60%),
-        linear-gradient(180deg, #1B1445 0%, #120E30 100%) !important;
+        radial-gradient(ellipse 90% 60% at 12% 0%, rgba(83, 37, 126, 0.28) 0%, transparent 62%),
+        radial-gradient(ellipse 70% 50% at 95% 8%, rgba(226, 190, 122, 0.09) 0%, transparent 60%),
+        linear-gradient(180deg, #171240 0%, #100C2B 100%) !important;
 
-    box-shadow: var(--upcsg-bloom), var(--upcsg-shadow-lg) !important;
+    box-shadow: var(--upcsg-shadow-lg) !important;
 }
 
 /* MudBlazor pads dialog content by default, which framed the portrait in a 24px
@@ -2237,28 +2242,30 @@
     to   { opacity: 1; transform: none; }
 }
 
-/* Masthead: the portrait is a disc lit from behind, with the name beside it. The old
-   layout laid the name over the photo, so a long name sat across someone's face. */
+/* Masthead: the portrait at full frame beside the name, quote and all. A two-column
+   grid rather than a flex row, so the text column can never be squeezed by a long
+   name and the portrait keeps its ratio. */
 .upcsg-mdlg__head {
     position: relative;
     isolation: isolate;
-    display: flex;
+    display: grid;
+    grid-template-columns: clamp(8rem, 30%, 13rem) minmax(0, 1fr);
+    gap: clamp(1.1rem, 3vw, 2rem);
     align-items: center;
-    gap: clamp(1rem, 3vw, 1.75rem);
-    padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2.5rem) clamp(1.25rem, 3vw, 1.75rem);
+    padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 3.5vw, 2rem);
     border-bottom: 1px solid rgba(246, 200, 117, 0.22);
 }
 
 .upcsg-mdlg__bloom {
     position: absolute;
     z-index: -1;
-    top: -35%;
-    left: -10%;
-    width: 55%;
+    top: -30%;
+    left: -8%;
+    width: 45%;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(162, 83, 184, 0.55) 0%, transparent 68%);
-    filter: blur(28px);
+    background: radial-gradient(circle, rgba(162, 83, 184, 0.3) 0%, transparent 70%);
+    filter: blur(34px);
     pointer-events: none;
 }
 
@@ -2274,13 +2281,14 @@
 .upcsg-mdlg__spark--b { bottom: 22%; right: 22%; }
 .upcsg-mdlg__spark--b .upcsg-star { width: 0.55rem; height: 0.55rem; }
 
+/* The whole frame, at the crop the CMS asks portraits to be shot in, rather than a
+   disc that cut everyone down to a head. */
 .upcsg-mdlg__portrait {
-    flex: none;
-    width: clamp(5.5rem, 16vw, 8rem);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    border: 2px solid rgba(246, 200, 117, 0.4);
-    box-shadow: var(--upcsg-shadow-md), 0 0 40px -10px rgba(162, 83, 184, 0.7);
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--upcsg-radius);
+    border: 1px solid rgba(246, 200, 117, 0.28);
+    box-shadow: var(--upcsg-shadow-md);
 }
 
 .upcsg-mdlg__close {
@@ -2326,16 +2334,18 @@
     color: var(--upcsg-text-muted);
 }
 
-/* Their own words, given the width of the dialog and a gold rule to sit against. */
+/* Their own words, in the metal rather than the lavender. Gold is the accent the rest
+   of the card spends on the year gutter and the link icons, so the quote reading in it
+   ties the head to the body; lavender put it in the same key as the background wash. */
 .upcsg-mdlg__quote {
-    margin: 0;
-    padding: clamp(1.1rem, 3vw, 1.6rem) clamp(1.5rem, 4vw, 2.5rem);
-    border-bottom: var(--upcsg-hairline);
+    margin: 1rem 0 0;
+    padding-left: 0.9rem;
+    border-left: 2px solid rgba(246, 200, 117, 0.4);
     font-family: var(--upcsg-font-display);
-    font-size: clamp(1.05rem, 2.6vw, 1.4rem);
+    font-size: clamp(1rem, 2.2vw, 1.25rem);
     font-style: italic;
     line-height: 1.45;
-    color: var(--upcsg-cosmic-lavender);
+    color: var(--upcsg-liquid-chrome-gold);
 }
 
 .upcsg-mdlg__quote::before { content: "\201C"; }
@@ -2461,12 +2471,12 @@
     white-space: nowrap;
 }
 
-@media (max-width: 34rem) {
-    .upcsg-mdlg__head {
-        flex-direction: column;
-        align-items: flex-start;
-        text-align: left;
-    }
+@media (max-width: 40rem) {
+    .upcsg-mdlg__head { grid-template-columns: minmax(0, 1fr); }
+
+    /* The portrait keeps its ratio but stops eating the screen once it is the only
+       thing in the column. */
+    .upcsg-mdlg__portrait { max-width: 11rem; }
 }
 
 .upcsg-mdlg__nav {

@@ -17,9 +17,10 @@
 
             <div class="upcsg-mdlg__stage" @key="_index">
 
-                @* Masthead: portrait cut into a disc over the nebula, name beside it.
-                   The old layout had the name overlaid on the photo, which meant the
-                   longer names sat on a face. *@
+                @* Masthead: the portrait at full frame beside the name. It was a small
+                   disc, which cropped everyone to a head and threw away whatever the
+                   photographer framed. The quote sits up here with the name, so the
+                   head reads as one block rather than three stacked strips. *@
                 <header class="upcsg-mdlg__head">
                     <div class="upcsg-mdlg__bloom" aria-hidden="true"></div>
 
@@ -45,13 +46,13 @@
                         {
                             <span class="upcsg-mdlg__chip">@Current.Committee</span>
                         }
+
+                        @if (!string.IsNullOrWhiteSpace(Current.Quote))
+                        {
+                            <blockquote class="upcsg-mdlg__quote">@Current.Quote</blockquote>
+                        }
                     </div>
                 </header>
-
-                @if (!string.IsNullOrWhiteSpace(Current.Quote))
-                {
-                    <blockquote class="upcsg-mdlg__quote">@Current.Quote</blockquote>
-                }
 
                 <div class="upcsg-mdlg__body">
                     @if (Paragraphs.Count > 0)

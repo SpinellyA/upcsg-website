@@ -329,6 +329,66 @@
 
 .upcsg-eventcard:hover .upcsg-eventcard__arrow { transform: translateX(5px); }
 
+/* --- CMS tables on a phone ----------------------------------------------- *
+   MudBlazor already stacks a table below 600px: each cell becomes a full-width
+   row with its DataLabel printed in front. What it does not do is say where one
+   record stops and the next starts - eleven people came out as fifty-five
+   identical bordered lines - or drop the cells that only made sense as columns.
+ * ------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+    /* Each record becomes a card. Without this the only separator between two
+       people is the same hairline that sits between their name and their role. */
+    .upcsg-datatable .mud-table-body .mud-table-row {
+        display: block;
+        margin-bottom: 0.7rem;
+        border: 1px solid var(--upcsg-ink-rule);
+        border-radius: 12px;
+        background: var(--upcsg-ink-panel);
+        overflow: hidden;
+    }
+
+    /* Group headings inside the table are a label, not a record. */
+    .upcsg-datatable .mud-table-body .mud-table-row:has(> td:only-child) {
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0;
+        background: none;
+    }
+
+    /* The divider goes on the top of each field rather than the bottom, so a hidden
+       last cell - the chevron below - cannot leave a rule floating above the card's
+       own edge. Order-independent, unlike :last-child. */
+    .upcsg-datatable .mud-table-body .mud-table-cell {
+        border-bottom: none;
+        border-top: 1px solid var(--upcsg-ink-rule);
+    }
+
+    .upcsg-datatable .mud-table-body .mud-table-cell:first-child {
+        border-top: none;
+    }
+
+    /* A chevron is a column affordance: it said "this row opens" when the row was
+       a line. Stacked, it becomes a labelless strip under every record saying
+       nothing - and the whole card is tappable anyway. */
+    .upcsg-datatable__chevron {
+        display: none !important;
+    }
+
+    /* Totals lost their pairing when the colspan collapsed: the caption and the
+       amount landed on two separate lines. Put them back on one. */
+    .upcsg-recordtable .mud-table-foot .mud-table-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .upcsg-recordtable .mud-table-foot .mud-table-cell {
+        border-bottom: none;
+    }
+}
+
 /* --- Order age (orders queue) -------------------------------------------- */
 
 .upcsg-age {
@@ -376,16 +436,28 @@
     grid-template-columns: 9rem minmax(0, 1fr) auto;
 }
 
+/* On a phone the row stops being a grid entirely. The earlier attempt moved the
+   year and kind columns by class, but those classes are handed to MudSelect and
+   MudNumericField, which put them on an inner element rather than on the grid
+   child - so the rules addressed nothing and the row stayed at 66px and 229px.
+   Stacking every child needs no knowledge of where a class ended up. */
 @media (max-width: 40rem) {
     .upcsg-repeater__row,
     .upcsg-repeater__row:has(.upcsg-repeater__kind) {
-        grid-template-columns: minmax(0, 1fr) auto;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
     }
 
     .upcsg-repeater__year,
     .upcsg-repeater__kind {
         width: 100%;
-        grid-column: 1 / -1;
+    }
+
+    /* The delete button is the last child and should not be a full-width bar. */
+    .upcsg-repeater__row > :last-child {
+        align-self: flex-end;
     }
 }
 

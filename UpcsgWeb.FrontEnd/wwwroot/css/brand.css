@@ -1066,6 +1066,15 @@ h4, h5, h6, .upcsg-heading {
     align-items: start;
 }
 
+/* Every CMS form used this grid with no breakpoint, so on a phone an officer got
+   two 161px columns: labels wrapping to three lines, date pickers with nowhere to
+   open. A form field needs real width before a second column earns its place. */
+@media (max-width: 60rem) {
+    .upcsg-merchform {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
 .upcsg-photostrip__status {
     margin: 0.6rem 0 0;
     font-family: var(--upcsg-font-heading);
@@ -1834,9 +1843,12 @@ h4, h5, h6, .upcsg-heading {
     overflow-wrap: anywhere;
 }
 
+/* 9rem let two columns survive on a phone at 160px each, which put "University of
+   the Philippines Cebu" over three lines. These values are short labels, not a
+   grid to be filled - one per line is fine when there is no room for two. */
 .upcsg-contact__facts {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     gap: 1.15rem 1.5rem;
     margin: 2rem 0 0;
 }

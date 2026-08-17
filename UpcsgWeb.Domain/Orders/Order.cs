@@ -168,7 +168,7 @@ public class Order : AggregateRoot
             {
                 var left = item.StockFor(line.Variant);
                 throw new DomainException(
-                    $"Not enough {line.ItemName}{(line.Variant is null ? "" : $" ({line.Variant})")} — "
+                    $"Not enough {line.ItemName}{(line.Variant is null ? "" : $" ({line.Variant})")}: "
                     + $"{line.Quantity} ordered, {left} left.");
             }
         }
@@ -228,7 +228,7 @@ public class Order : AggregateRoot
         if (RefundSettled)
         {
             throw new DomainException(
-                "This order's refund has already been sent. You cannot un-send GCash — "
+                "This order's refund has already been sent. You cannot un-send GCash, so "
                 + "ask the guilder to place a new order.");
         }
 
@@ -244,7 +244,7 @@ public class Order : AggregateRoot
         if (!item.CanFulfil(variant, line.Quantity))
         {
             var left = item.StockFor(variant);
-            throw new DomainException($"Still not enough — {line.Quantity} needed, {left} left.");
+            throw new DomainException($"Still not enough: {line.Quantity} needed, {left} left.");
         }
 
         item.DeductStock(variant, line.Quantity);
@@ -262,7 +262,7 @@ public class Order : AggregateRoot
         if (string.IsNullOrWhiteSpace(reference))
         {
             throw new DomainException(
-                "Recording a refund requires the GCash reference — without it the Auditor "
+                "Recording a refund requires the GCash reference. Without it the Auditor "
                 + "cannot verify the money actually moved.");
         }
 

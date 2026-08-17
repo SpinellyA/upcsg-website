@@ -96,7 +96,7 @@
                                     <span class="upcsg-line__refunded">Refunded</span>
                                 }
                             </MudTd>
-                            <MudTd DataLabel="Variant">@(string.IsNullOrWhiteSpace(context.Variant) ? "—" : context.Variant)</MudTd>
+                            <MudTd DataLabel="Variant">@(string.IsNullOrWhiteSpace(context.Variant) ? "None" : context.Variant)</MudTd>
                             <MudTd DataLabel="Unit" Class="upcsg-num">&#8369;@context.UnitPrice.ToString("N2")</MudTd>
                             <MudTd DataLabel="Qty" Class="upcsg-num">@context.Quantity</MudTd>
                             <MudTd DataLabel="Total" Class="upcsg-num">&#8369;@context.LineTotal.ToString("N2")</MudTd>
@@ -154,7 +154,7 @@
                                 <MudText Typo="Typo.overline" Class="upcsg-fact__key">Reference</MudText>
                                 <MudText Typo="Typo.body2" Class="upcsg-fact__mono">
                                     @(string.IsNullOrWhiteSpace(_order.Receipt.ReferenceNumber)
-                                        ? "Not given — see screenshot"
+                                        ? "Not given, see screenshot"
                                         : _order.Receipt.ReferenceNumber)
                                 </MudText>
                             </div>
@@ -180,7 +180,7 @@
                                 <span class="upcsg-receipt__zoom">Open full size &nearr;</span>
                                 <span class="upcsg-receipt__broken">
                                     <strong>Screenshot didn't load.</strong>
-                                    The link may be dead or private — open it directly, or ask the
+                                    The link may be dead or private. Open it directly, or ask the
                                     guilder to resend before confirming payment.
                                 </span>
                             </a>
@@ -188,7 +188,7 @@
                         else
                         {
                             <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
-                                Reference number only — no screenshot was attached. Verify against the
+                                Reference number only. No screenshot was attached. Verify against the
                                 guild's GCash transaction log before confirming.
                             </MudText>
                         }
@@ -219,7 +219,7 @@
                                 @_order.RefundReference
                             </MudText>
                             <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
-                                Settled refunds are final — a restock can no longer put these lines back.
+                                Settled refunds are final. A restock can no longer put these lines back.
                             </MudText>
                         }
                         else
@@ -229,7 +229,7 @@
                             </MudText>
 
                             <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-3">
-                                Restocking is usually the better fix — send the money back only when
+                                Restocking is usually the better fix. Send the money back only when
                                 you genuinely can't supply the item.
                             </MudText>
 
@@ -498,7 +498,7 @@
                 "Cancel a confirmed order",
                 $"This order was confirmed, so {returning} item(s) were already taken off the "
                 + "shelf. Cancelling puts them back into stock.\n\nIf the guilder has paid, you "
-                + "will still need to return the money yourself — cancelling does not send it.",
+                + "will still need to return the money yourself. Cancelling does not send it.",
                 yesText: "Continue",
                 cancelText: "Keep the order");
 

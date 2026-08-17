@@ -28,7 +28,7 @@
 
       Elements wrapped in <Reveal> start at opacity 0 and are only shown once the observer
       reaches them, so if the motion module never runs, every section below the hero stays
-      invisible — a blank page, not a missing flourish. The hidden state is therefore
+      invisible: a blank page, not a missing flourish. The hidden state is therefore
       scoped to .upcsg-motion, which is only set here when the browser can actually honour
       it, and withdrawn again if the module fails to load.
 
@@ -84,7 +84,7 @@
 
             <p class="upcsg-splash__slow">
                 This is taking longer than usual. If the site was updated recently your
-                browser may be holding an old copy &mdash;
+                browser may be holding an old copy. Try a
                 <a href=".">reload</a>, or hard-refresh with Ctrl+Shift+R.
             </p>
         </div>
@@ -228,7 +228,7 @@
         };
 
         // Session persistence. localStorage is readable by any script on the origin, so the
-        // value here must stay a short-lived API token — never a Google refresh token.
+        // value here must stay a short-lived API token, never a Google refresh token.
         window.upcsgStorage = {
             get: key => localStorage.getItem(key),
             set: (key, value) => localStorage.setItem(key, value),

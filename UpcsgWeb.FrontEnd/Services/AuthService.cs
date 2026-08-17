@@ -32,8 +32,8 @@ public class AuthService(HttpClient http, ISessionStore store, ApiOptions api) :
         {
             case HttpStatusCode.Unauthorized:
                 return "Google sign-in was rejected by the site. This usually means the "
-                     + "site's Google configuration is wrong rather than anything you did — "
-                     + "please report it to the ExeCom.";
+                     + "site's Google configuration is wrong rather than anything you did. "
+                     + "Please report it to the ExeCom.";
 
             case HttpStatusCode.Forbidden:
                 return "Sign-in is limited to UP accounts. Please use your UP Mail "
@@ -56,7 +56,7 @@ public class AuthService(HttpClient http, ISessionStore store, ApiOptions api) :
             if (!response.IsSuccessStatusCode)
             {
                 throw new ApiException(
-                    "Dev sign-in failed. It only exists when the API runs in Development — "
+                    "Dev sign-in failed. It only exists when the API runs in Development. "
                     + $"{await CartService.DescribeAsync(response)}");
             }
 

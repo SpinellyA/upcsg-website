@@ -5,7 +5,7 @@
     {
         var isSelected = IsSelected(member);
 
-        <MudTooltip Text="@($"{member.Name} — {member.Role}")" Placement="Placement.Top">
+        <MudTooltip Text="@($"{member.Name}, {member.Role}")" Placement="Placement.Top">
             <button type="button"
                     class="@($"upcsg-facepile__face{(isSelected ? " upcsg-facepile__face--on" : string.Empty)}")"
                     aria-pressed="@(isSelected ? "true" : "false")"

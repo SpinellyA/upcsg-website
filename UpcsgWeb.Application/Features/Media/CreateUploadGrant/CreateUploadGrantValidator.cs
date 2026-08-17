@@ -17,6 +17,6 @@ public class CreateUploadGrantValidator : AbstractValidator<CreateUploadGrantCom
 
         RuleFor(c => c.ContentType)
             .Must(MediaKeys.IsAllowedType)
-            .WithMessage($"Images only — {string.Join(", ", MediaKeys.AllowedContentTypes)}.");
+            .WithMessage($"Images only: {string.Join(", ", MediaKeys.AllowedContentTypes)}.");
     }
 }

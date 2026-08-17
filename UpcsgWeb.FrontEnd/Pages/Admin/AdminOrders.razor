@@ -182,7 +182,7 @@
             <NoRecordsContent>
                 <p class="upcsg-lede my-4">
                     @(string.IsNullOrWhiteSpace(_search)
-                        ? _filter is null ? "The queue is clear — nothing needs an officer right now." : "No orders with that status."
+                        ? _filter is null ? "The queue is clear. Nothing needs an officer right now." : "No orders with that status."
                         : $"No orders match \"{_search}\".")
                 </p>
             </NoRecordsContent>
@@ -259,7 +259,7 @@
 
         if (owing > 0)
         {
-            detail += $"\n\n{owing} of them still owe a refund. Releasing doesn't send that money — you'll still have to settle it.";
+            detail += $"\n\n{owing} of them still owe a refund. Releasing doesn't send that money, so you'll still have to settle it.";
         }
 
         var confirmed = await DialogService.ShowMessageBoxAsync(

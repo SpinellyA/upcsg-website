@@ -99,8 +99,8 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
                 Description =
                     """
                     Your first night as part of the guild. We run through what UPCSG actually does
-                    across a school year — the academic support, the competitions we send teams to,
-                    the socials, and the committees you can join — then get out of the way so you
+                    across a school year: the academic support, the competitions we send teams to,
+                    the socials, and the committees you can join. Then we get out of the way so you
                     can meet the people you'll be spending the next four years with.
 
                     The second half is games and giveaways. Bring nothing but yourself; we'll handle
@@ -108,7 +108,7 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
                     check sizing before the pre-order window opens later this month.
 
                     Open to all incoming Computer Science freshies. Upperclassmen are welcome to
-                    drop in, and honestly we'd rather you did — the orientation goes better when
+                    drop in, and honestly we'd rather you did. The orientation goes better when
                     there are people around who've already been through it.
                     """,
                 StartDateTime = new DateTime(now.Year, now.Month, 5, 17, 0, 0),
@@ -125,8 +125,8 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
                     never touched a contest problem before. We start from reading a problem statement
                     properly and work up through complexity, greedy reasoning, and binary search.
 
-                    Bring a laptop. Any language with a working compiler or interpreter is fine —
-                    the ideas transfer, and nobody is going to tell you your choice of language is
+                    Bring a laptop. Any language with a working compiler or interpreter is fine.
+                    The ideas transfer, and nobody is going to tell you your choice of language is
                     wrong.
 
                     No prerequisites beyond an introductory programming course. If you can write a
@@ -147,7 +147,7 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
 
                     The open forum is the part that matters. If you have a question about how
                     something is being run, where the funds went, or why a decision was made, this
-                    is the venue for it — and it's on the record.
+                    is the venue for it, and it's on the record.
                     """,
                 StartDateTime = new DateTime(now.Year, now.Month, 22, 18, 0, 0),
                 Location = "Online (Google Meet)",
@@ -176,7 +176,7 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
                 Description =
                     """
                     Alumni and industry partners talk about what the first year out of university
-                    actually looks like — the parts nobody puts in a job posting.
+                    actually looks like, including the parts nobody puts in a job posting.
 
                     Expect frank answers on interviews, what a junior role really involves day to
                     day, and which of the things you're learning now turn out to matter. Bring

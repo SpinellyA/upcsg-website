@@ -70,9 +70,9 @@
             <RowTemplate>
                 <MudTd DataLabel="Title">@context.Title</MudTd>
                 <MudTd DataLabel="Kind">@KindLabel(context.Kind)</MudTd>
-                <MudTd DataLabel="Organiser">@(context.Organiser ?? "—")</MudTd>
+                <MudTd DataLabel="Organiser">@(context.Organiser ?? "Not given")</MudTd>
                 <MudTd DataLabel="Closes">
-                    @(context.ClosesAt is null ? "—" : context.ClosesAt.Value.ToLocalTime().ToString("MMM d, yyyy"))
+                    @(context.ClosesAt is null ? "No deadline" : context.ClosesAt.Value.ToLocalTime().ToString("MMM d, yyyy"))
                 </MudTd>
                 <MudTd DataLabel="Status">
                     @if (context.IsClosed)

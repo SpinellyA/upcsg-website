@@ -65,7 +65,7 @@
 
     private static string StepLabel(OrderStatusDto status) => status switch
     {
-        OrderStatusDto.AwaitingPayment => "Placed — awaiting payment",
+        OrderStatusDto.AwaitingPayment => "Placed, awaiting payment",
         OrderStatusDto.Pending => "Receipt submitted",
         OrderStatusDto.Acknowledged => "Payment confirmed",
         OrderStatusDto.Released => "Released to guilder",

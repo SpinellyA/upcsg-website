@@ -21,7 +21,7 @@
 
     <p class="upcsg-lede mt-4">
         These addresses get officer rights when they sign in with Google. Everyone else signs
-        in as an ordinary guilder. Roles are not set per account &mdash; this list is the only
+        in as an ordinary guilder. Roles are not set per account. This list is the only
         thing that decides them.
     </p>
 
@@ -98,7 +98,7 @@
                     <MudChip T="string" Size="Size.Small" Class="ml-2">you</MudChip>
                 }
             </MudTd>
-            <MudTd DataLabel="Who">@(context.Note ?? "—")</MudTd>
+            <MudTd DataLabel="Who">@(context.Note ?? "Not noted")</MudTd>
             <MudTd DataLabel="Added">@context.AddedAt.ToLocalTime().ToString("MMM d, yyyy")</MudTd>
             <MudTd DataLabel="Status">
                 @if (context.HasSignedIn)
@@ -122,7 +122,7 @@
         <NoRecordsContent>
             <p class="upcsg-lede my-4">
                 @(string.IsNullOrWhiteSpace(_search)
-                    ? "No officers yet. That should be impossible — add one now."
+                    ? "No officers yet. That should be impossible, so add one now."
                     : $"No officer matches \"{_search}\".")
             </p>
         </NoRecordsContent>

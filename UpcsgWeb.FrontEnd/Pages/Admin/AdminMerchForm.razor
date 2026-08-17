@@ -68,7 +68,7 @@
                     {
                         <text>
                             Variants price themselves, so this is only a fallback. The store shows
-                            &#8369;@CheapestVariant.ToString("N2") &mdash; the cheapest variant.
+                            &#8369;@CheapestVariant.ToString("N2"), the cheapest variant.
                         </text>
                     }
                 </MudText>
@@ -137,7 +137,7 @@
                 else
                 {
                     <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
-                        Stock is per variant &mdash; @TotalVariantStock unit(s) across
+                        Stock is per variant: @TotalVariantStock unit(s) across
                         @_item.Variants.Count variant(s). Set the numbers in the variant list below.
                     </MudText>
                 }

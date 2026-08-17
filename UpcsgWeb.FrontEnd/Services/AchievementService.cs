@@ -54,7 +54,7 @@ public class AchievementService(HttpClient http, ApiOptions options, ISnapshotSe
 
                 The brief was open-ended: build something that makes campus life measurably
                 better. Most teams went for scheduling and food delivery. Ours went narrower
-                and harder — a screen-reader-first interface for the campus service portal,
+                and harder: a screen-reader-first interface for the campus service portal,
                 built after talking to students who actually rely on one.
 
                 The judges singled out the decision to test with real users mid-build rather

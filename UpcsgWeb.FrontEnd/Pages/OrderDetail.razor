@@ -51,7 +51,7 @@
             <MudAlert Severity="Severity.Warning" Class="my-4">
                 <strong>&#8369;@_order.RefundDue.ToString("N2") is coming back to you.</strong>
                 We couldn't fill part of this order. An officer will send it to the GCash number
-                you paid from &mdash; message us if it hasn't arrived in a few days.
+                you paid from. Message us if it hasn't arrived in a few days.
             </MudAlert>
         }
         else if (_order.RefundHasBeenSettled)
@@ -99,7 +99,7 @@
                                 <span class="upcsg-line__refunded">Refunded</span>
                             }
                         </MudTd>
-                        <MudTd DataLabel="Variant">@(string.IsNullOrWhiteSpace(context.Variant) ? "—" : context.Variant)</MudTd>
+                        <MudTd DataLabel="Variant">@(string.IsNullOrWhiteSpace(context.Variant) ? "None" : context.Variant)</MudTd>
                         <MudTd DataLabel="Unit" Class="upcsg-num">&#8369;@context.UnitPrice.ToString("N2")</MudTd>
                         <MudTd DataLabel="Qty" Class="upcsg-num">@context.Quantity</MudTd>
                         <MudTd DataLabel="Total" Class="upcsg-num">&#8369;@context.LineTotal.ToString("N2")</MudTd>

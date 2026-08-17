@@ -90,8 +90,8 @@
             await PhotosChanged.InvokeAsync(Photos);
 
             _status = result.OriginalBytes > result.SizeBytes
-                ? $"Uploaded — {Kb(result.OriginalBytes)} shrunk to {Kb(result.SizeBytes)}."
-                : $"Uploaded — {Kb(result.SizeBytes)}.";
+                ? $"Uploaded. {Kb(result.OriginalBytes)} shrunk to {Kb(result.SizeBytes)}."
+                : $"Uploaded. {Kb(result.SizeBytes)}.";
         }
         finally
         {

@@ -131,21 +131,40 @@
         </Reveal>
 
         <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual" Delay="120">
-            @if (_selected is not null)
-            {
-                <CosmicImage @key="_selected.Name"
-                             Src="@_selected.PhotoUrl"
-                             Alt="@_selected.Name"
-                             Seed="@_selected.Name"
-                             ShowInitials="true"
-                             Class="upcsg-feature__plate">
-                    <Overlay>
-                        <p class="upcsg-feature__plate-role">@_selected.Role</p>
-                        <p class="upcsg-feature__plate-name">@_selected.Name</p>
-                    </Overlay>
-                </CosmicImage>
-            }
+            @* Both officers are on the stage during a switch: the outgoing one is lifted out
+               of flow and slides off to the right while the incoming one fades in from the
+               left. The incoming plate stays in flow so it alone sizes the column. *@
+            <div class="upcsg-officerstage">
+                @if (_leaving is not null)
+                {
+                    <CosmicImage @key="@("leaving-" + _leaving.Name)"
+                                 Src="@_leaving.PhotoUrl"
+                                 Alt=""
+                                 Seed="@_leaving.Name"
+                                 ShowInitials="true"
+                                 Class="upcsg-feature__plate upcsg-officerstage__leaving">
+                        <Overlay>
+                            <p class="upcsg-feature__plate-role">@_leaving.Role</p>
+                            <p class="upcsg-feature__plate-name">@_leaving.Name</p>
+                        </Overlay>
+                    </CosmicImage>
+                }
 
+                @if (_selected is not null)
+                {
+                    <CosmicImage @key="@("current-" + _selected.Name)"
+                                 Src="@_selected.PhotoUrl"
+                                 Alt="@_selected.Name"
+                                 Seed="@_selected.Name"
+                                 ShowInitials="true"
+                                 Class="upcsg-feature__plate upcsg-officerstage__current">
+                        <Overlay>
+                            <p class="upcsg-feature__plate-role">@_selected.Role</p>
+                            <p class="upcsg-feature__plate-name">@_selected.Name</p>
+                        </Overlay>
+                    </CosmicImage>
+                }
+            </div>
         </Reveal>
     </section>
 
@@ -247,13 +266,30 @@
     private MemberDto? _lead;
 
     private MemberDto? _selected;
+    private MemberDto? _leaving;
+    private int _transition;
 
     private int _execCount;
     private bool _loading = true;
 
-    private void SelectOfficer(MemberDto member) {
+    private async Task SelectOfficer(MemberDto member) {
+        if (_selected?.Name == member.Name) {
+            return;
+        }
+
+        _leaving = _selected;
         _selected = member;
+        var mine = ++_transition;
         StateHasChanged();
+
+        // Hold the outgoing plate on the stage for the length of the animation, then drop
+        // it. The transition id guards against a rapid second click clearing the plate that
+        // a later switch is still animating out.
+        await Task.Delay(450);
+        if (mine == _transition) {
+            _leaving = null;
+            StateHasChanged();
+        }
     }
 
     private DateTime _month = DateTime.Now;

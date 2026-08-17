@@ -1299,6 +1299,40 @@
     box-shadow: var(--upcsg-shadow-lg);
 }
 
+/* Officer switcher on the home page. The stage is the positioning context for the
+   outgoing plate, which is taken out of flow so the incoming plate sizes the column. */
+.upcsg-officerstage {
+    position: relative;
+}
+
+.upcsg-officerstage__current {
+    animation: upcsg-officer-in 0.45s ease;
+}
+
+.upcsg-officerstage__leaving {
+    position: absolute;
+    inset: 0;
+    animation: upcsg-officer-out 0.45s ease;
+    pointer-events: none;
+}
+
+@keyframes upcsg-officer-in {
+    from { opacity: 0; transform: translateX(-2.5rem); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes upcsg-officer-out {
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(2.5rem); }
+}
+
+/* No slide for anyone who asked the OS to reduce motion; the incoming plate just
+   appears, and the outgoing one is hidden at once rather than lingering on top. */
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-officerstage__current { animation: none; }
+    .upcsg-officerstage__leaving { display: none; }
+}
+
 .upcsg-feature__plate-role {
     margin: 0;
     font-family: var(--upcsg-font-heading);

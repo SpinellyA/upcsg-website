@@ -1,7 +1,7 @@
 // Saves text the browser already has to a file, without a server round trip.
 //
 // The snapshot is fetched from the API into .NET and handed here as a string, so this
-// never re-requests it — and the download works even for content the browser could not
+// never re-requests it, and the download works even for content the browser could not
 // simply navigate to.
 export function saveText(fileName, text, mimeType) {
     const blob = new Blob([text], { type: mimeType || 'application/json' });

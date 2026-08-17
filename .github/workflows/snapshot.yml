@@ -63,9 +63,9 @@ jobs:
           data = json.load(open("snapshot.raw.json"))
           for key in ("members", "events", "achievements", "merch", "settings"):
               if key not in data:
-                  sys.exit(f"Snapshot is missing '{key}' — refusing to commit it.")
+                  sys.exit(f"Snapshot is missing '{key}'. Refusing to commit it.")
           if not any(data[k] for k in ("members", "events", "achievements", "merch")):
-              sys.exit("Snapshot is entirely empty — refusing to overwrite a good one.")
+              sys.exit("Snapshot is entirely empty. Refusing to overwrite a good one.")
           json.dump(data, open("UpcsgWeb.FrontEnd/wwwroot/content-snapshot.json", "w"),
                     indent=2, ensure_ascii=False)
           print("Snapshot OK:",

@@ -129,7 +129,7 @@ jobs:
       # provide and now force onto Node 24 with a deprecation warning.
       #
       # include-hidden-files is not optional here. v5 pulls in upload-artifact v7, which
-      # excludes dotfiles by default, and the artifact contains .nojekyll — without it
+      # excludes dotfiles by default, and the artifact contains .nojekyll. Without it
       # Pages runs Jekyll, Jekyll strips directories beginning with an underscore, and
       # _framework is the entire .NET runtime. That failure would publish successfully and
       # serve a blank page.

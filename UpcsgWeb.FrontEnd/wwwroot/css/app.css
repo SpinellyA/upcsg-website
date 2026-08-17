@@ -66,7 +66,7 @@
 
    This is the only screen a first-time visitor is guaranteed to see: a
    WebAssembly runtime is several MB, so on campus wifi it holds for ten seconds
-   or more. It therefore has to do three things a logo alone does not — show that
+   or more. It therefore has to do three things a logo alone does not: show that
    progress is real, avoid appearing at all when the load is instant, and offer a
    way out when the load never finishes.
 
@@ -140,7 +140,7 @@
 }
 
 /* Real progress, not a spinner. Blazor's loader writes --blazor-load-percentage
-   onto the root element, so a stalled download visibly stops moving — which is
+   onto the root element, so a stalled download visibly stops moving, which is
    the honest signal, and what tells someone their connection died rather than
    leaving them to guess. */
 .upcsg-splash__track {
@@ -176,7 +176,7 @@
 /* The escape hatch.
 
    Every deploy re-fingerprints the runtime (dotnet.<hash>.js), and a browser
-   holding a stale index.html asks for a hash that no longer exists — which
+   holding a stale index.html asks for a hash that no longer exists, which
    fails silently and leaves this screen up forever. Nothing client-side can fix
    that, but saying so beats an endless shimmer, and a hard refresh does fix it.
 
@@ -200,7 +200,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    /* The fades stay — they are what stops the splash flashing on a warm load,
+    /* The fades stay: they are what stops the splash flashing on a warm load,
        and removing them would make the experience worse, not calmer. Only the
        looping animation goes. */
     .upcsg-splash__glow {

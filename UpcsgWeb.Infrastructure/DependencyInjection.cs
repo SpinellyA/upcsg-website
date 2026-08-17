@@ -62,7 +62,7 @@ public static class DependencyInjection
 
         return new MediaSetup(
             partial
-                ? $"local disk — bucket storage is PARTIALLY configured, missing: {string.Join(", ", missing)}"
+                ? $"local disk, but bucket storage is PARTIALLY configured, missing: {string.Join(", ", missing)}"
                 : "local disk (no bucket configuration found)",
             UsingBucket: false);
     }

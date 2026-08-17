@@ -46,7 +46,7 @@
     --upcsg-font-subheading: 'Noto Serif', serif;                    /* matches brandbook directly */
     --upcsg-font-body: 'Inter', 'Helvetica Now', 'Neue Montreal', sans-serif; /* stand-in for Neue Montreal / Helvetica Now */
 
-    /* Elevation ramp — layered depth against the dark backdrop */
+    /* Elevation ramp: layered depth against the dark backdrop */
     --upcsg-shadow-sm: 0 2px 8px rgba(6, 3, 24, 0.45);
     --upcsg-shadow-md: 0 12px 32px -8px rgba(6, 3, 24, 0.65);
     --upcsg-shadow-lg: 0 28px 64px -16px rgba(6, 3, 24, 0.8);
@@ -54,7 +54,7 @@
     --upcsg-radius: 20px;
     --upcsg-hairline: 1px solid rgba(246, 255, 233, 0.1);
 
-    /* Flat, solid inks for officer-facing records — deliberately not gradients.
+    /* Flat, solid inks for officer-facing records, deliberately not gradients.
        The CMS is a ledger, so it should read like one. */
     --upcsg-ink-panel: #191347;
     --upcsg-ink-head: #221A57;
@@ -73,7 +73,7 @@ html, body {
     -webkit-font-smoothing: antialiased;
 }
 
-/* Nebula bloom layer — soft purple/blue illumination, fixed behind everything. */
+/* Nebula bloom layer: soft purple/blue illumination, fixed behind everything. */
 body::before {
     content: "";
     position: fixed;
@@ -88,7 +88,7 @@ body::before {
         linear-gradient(180deg, #1B1246 0%, var(--upcsg-bg) 40%, #0E0A28 100%);
 }
 
-/* Cosmic dust layer — tiled starfield that drifts very slowly. */
+/* Cosmic dust layer: tiled starfield that drifts very slowly. */
 body::after {
     content: "";
     position: fixed;
@@ -189,7 +189,7 @@ h4, h5, h6, .upcsg-heading {
 .upcsg-sparkle--delay-2 { animation-delay: -2.8s; }
 .upcsg-sparkle--delay-3 { animation-delay: -4.1s; }
 
-/* Scale/fade only — rotating a 4-pointed star through 45deg reads as an "x" close icon. */
+/* Scale/fade only. Rotating a 4-pointed star through 45deg reads as an "x" close icon. */
 @keyframes upcsg-twinkle {
     0%, 100% { transform: scale(0.6);  opacity: 0.3; }
     50%      { transform: scale(1.15); opacity: 1; }
@@ -205,7 +205,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Surfaces — two of them, on purpose.
+   Surfaces: two of them, on purpose.
 
    .upcsg-surface  content pages (home, about, merch, hall of fame, contact):
                    rounded, gradient-filled, lifted. This is the guild's face.
@@ -227,7 +227,7 @@ h4, h5, h6, .upcsg-heading {
     isolation: isolate;
 }
 
-/* Top sheen — the "metallic-silk" highlight running along a card's upper edge. */
+/* Top sheen: the "metallic-silk" highlight running along a card's upper edge. */
 .upcsg-surface::before {
     content: "";
     position: absolute;
@@ -287,7 +287,7 @@ h4, h5, h6, .upcsg-heading {
     font-weight: 600;
     letter-spacing: 0.04em;
     border-radius: 999px !important;
-    /* Neutral drop shadow rather than a coloured halo — the gradient fill already
+    /* Neutral drop shadow rather than a coloured halo. The gradient fill already
        carries enough emphasis without the glow. */
     box-shadow: 0 4px 14px -6px rgba(2, 1, 8, 0.7);
     transition: background-position 0.5s ease, transform 0.25s ease, box-shadow 0.25s ease;
@@ -316,7 +316,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   App shell — glass app bar, nav links, footer
+   App shell: glass app bar, nav links, footer
  * ------------------------------------------------------------------ */
 
 .upcsg-appbar {
@@ -395,7 +395,7 @@ h4, h5, h6, .upcsg-heading {
     display: none;
 }
 
-/* No padding here — sections decide their own width so a hero can run full-bleed.
+/* No padding here. Sections decide their own width so a hero can run full-bleed.
    Ordinary page content opts into .upcsg-page for the centred column. */
 /* Fills the window even when the page does not. A short CMS table used to leave the
    footer floating mid-screen with dead space under it - nothing was holding it down,
@@ -481,7 +481,7 @@ h4, h5, h6, .upcsg-heading {
     border-bottom: var(--upcsg-hairline);
     /* Inline padding lives on __inner so the hero copy lines up with .upcsg-page below. */
     padding: 8rem 0 6rem;
-    /* Brandbook nebula plate under a tinted scrim — the scrim alpha is what keeps the
+    /* Brandbook nebula plate under a tinted scrim. The scrim alpha is what keeps the
        texture readable behind the headline; drop the url() layer to go back to flat. */
     background-color: var(--upcsg-bg);
     background-image:
@@ -535,7 +535,7 @@ h4, h5, h6, .upcsg-heading {
     max-width: 46rem;
 }
 
-/* Scroll cue — a full-screen hero hides the fact that there's more below. */
+/* Scroll cue: a full-screen hero hides the fact that there's more below. */
 .upcsg-hero__scroll {
     position: absolute;
     left: 50%;
@@ -570,7 +570,7 @@ h4, h5, h6, .upcsg-heading {
     50%      { transform: translateY(5px); opacity: 1; }
 }
 
-/* Must sit after the base hero rules — a media query adds no specificity, so an
+/* Must sit after the base hero rules. A media query adds no specificity, so an
    earlier block would lose to the declarations above. */
 @media (max-width: 959.98px) {
     .upcsg-hero {
@@ -696,7 +696,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Merch detail — gallery, buy panel, variants, quantity
+   Merch detail: gallery, buy panel, variants, quantity
  * ------------------------------------------------------------------ */
 
 .upcsg-page--tight {
@@ -1056,7 +1056,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Merch CMS — item form, photo strip, variant form
+   Merch CMS: item form, photo strip, variant form
  * ------------------------------------------------------------------ */
 
 .upcsg-merchform {
@@ -1335,7 +1335,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Hall of Fame — showcase and article
+   Hall of Fame: showcase and article
 
    Most entries have no photo, so the crest plate is the ordinary case and is
    designed as such rather than treated as a missing-image error.
@@ -1485,7 +1485,7 @@ h4, h5, h6, .upcsg-heading {
 
 /* auto-FILL, not auto-fit. auto-fit collapses the empty tracks and hands their space
    to the survivors, so a year with a single entry rendered one card the full width of
-   the page — and its 16:10 media then stood over 700px tall. auto-fill keeps the empty
+   the page, and its 16:10 media then stood over 700px tall. auto-fill keeps the empty
    tracks, so a lone card stays card-sized. */
 .upcsg-storygrid {
     display: grid;
@@ -1558,7 +1558,7 @@ h4, h5, h6, .upcsg-heading {
     margin: 0.75rem 0 0;
 }
 
-/* Larger and lighter than body copy — it's the summary, not the first paragraph. */
+/* Larger and lighter than body copy. It's the summary, not the first paragraph. */
 .upcsg-article__standfirst {
     margin: 1.25rem 0 0;
     font-size: clamp(1.05rem, 1.8vw, 1.3rem);
@@ -1819,8 +1819,8 @@ h4, h5, h6, .upcsg-heading {
 /* ------------------------------------------------------------------ *
    Contact
 
-   The channel cards reuse .upcsg-cards / .upcsg-card / .upcsg-lift wholesale —
-   only the icon badge and the mail-safe title are new here.
+   The channel cards reuse .upcsg-cards / .upcsg-card / .upcsg-lift wholesale.
+   Only the icon badge and the mail-safe title are new here.
  * ------------------------------------------------------------------ */
 
 .upcsg-channel__icon {
@@ -1895,7 +1895,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* MudBlazor's own gutter class sets 24px horizontally and outranks a plain
-   padding shorthand here, so both header and body are pinned to it — otherwise
+   padding shorthand here, so both header and body are pinned to it. Otherwise
    the answer sits 2px left of the question it belongs to. */
 .upcsg-faq .mud-expand-panel-header,
 .upcsg-faq .mud-expand-panel-header.mud-expand-panel-header-gutters {
@@ -1923,7 +1923,7 @@ h4, h5, h6, .upcsg-heading {
 /* Inline links in body copy.
 
    MudLink defaults to the theme primary (galactic orchid), which measures 2.6:1 on the
-   FAQ panel and 3.8:1 on the page background — both under AA's 4.5:1. Lavender clears
+   FAQ panel and 3.8:1 on the page background, both under AA's 4.5:1. Lavender clears
    6.3:1 on the panel and 7.4:1 on the page. Underlined as well, so the link is never
    signalled by colour alone.
 
@@ -1931,8 +1931,8 @@ h4, h5, h6, .upcsg-heading {
    !important, so a plain declaration loses at any specificity.
 
    The a.mud-link form is needed for the underline: .mud-link.mud-link-underline-hover
-   is (0,2,0), and a bare `.upcsg-article__body a` is only (0,1,1) — one class plus a
-   type selector — so it loses. */
+   is (0,2,0), and a bare `.upcsg-article__body a` is only (0,1,1), one class plus a
+   type selector, so it loses. */
 .upcsg-faq .mud-expand-panel-content a,
 .upcsg-article__body a,
 .upcsg-article__body a.mud-link {
@@ -1972,7 +1972,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Section rhythm — deliberately alternates shape so the page doesn't
+   Section rhythm: deliberately alternates shape so the page doesn't
    read as one repeated card grid (see the v2 site's layout cadence).
  * ------------------------------------------------------------------ */
 
@@ -1999,7 +1999,7 @@ h4, h5, h6, .upcsg-heading {
     margin: 0 0 0.75rem;
 }
 
-/* Big blocky uppercase heading — the counterpoint to the serif display type. */
+/* Big blocky uppercase heading: the counterpoint to the serif display type. */
 .upcsg-title-xl {
     font-family: var(--upcsg-font-heading);
     font-weight: 700;
@@ -2030,7 +2030,7 @@ h4, h5, h6, .upcsg-heading {
     order: -1;
 }
 
-/* Placeholder for org photography — swap the inner content for an <img> once
+/* Placeholder for org photography. Swap the inner content for an <img> once
    the ExeCom/faculty shoot is available. */
 .upcsg-split__visual {
     position: relative;
@@ -2239,7 +2239,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Interior page banner — shorter than the landing hero on purpose, so the
+   Interior page banner: shorter than the landing hero on purpose, so the
    home page keeps the full-viewport moment to itself.
  * ------------------------------------------------------------------ */
 
@@ -2258,7 +2258,7 @@ h4, h5, h6, .upcsg-heading {
         linear-gradient(140deg, rgba(83, 37, 126, 0.5) 0%, rgba(22, 17, 58, 0.85) 60%);
 }
 
-/* Crest used as an oversized watermark — identity page, so lean on the mark. */
+/* Crest used as an oversized watermark: identity page, so lean on the mark. */
 .upcsg-banner__crest {
     position: absolute;
     right: clamp(-6rem, -4vw, -2rem);
@@ -2287,7 +2287,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Narrative block — asymmetric, so it doesn't echo the 50/50 home splits
+   Narrative block: asymmetric, so it doesn't echo the 50/50 home splits
  * ------------------------------------------------------------------ */
 
 .upcsg-narrative {
@@ -2314,7 +2314,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Person profiles — one full-width section each, sides alternating.
+   Person profiles: one full-width section each, sides alternating.
    Affordable because the roster is small, and it lets every field stay
    inline rather than hiding the description behind a click.
  * ------------------------------------------------------------------ */
@@ -2331,7 +2331,7 @@ h4, h5, h6, .upcsg-heading {
     border-top: 1px solid rgba(204, 174, 222, 0.14);
 }
 
-/* Odd rows mirror. The track sizes must swap too — reordering alone leaves the
+/* Odd rows mirror. The track sizes must swap too. Reordering alone leaves the
    portrait sitting in the wide 1fr track, which blows it up. Placement is explicit
    rather than via `order`, so the narrow track always belongs to the portrait. */
 .upcsg-profile-row--flip {
@@ -2384,7 +2384,7 @@ h4, h5, h6, .upcsg-heading {
     transform: scale(1.04);
 }
 
-/* Shown until a PhotoUrl exists — initials over the cosmic wash. */
+/* Shown until a PhotoUrl exists: initials over the cosmic wash. */
 .upcsg-person__fallback {
     width: 100%;
     height: 100%;
@@ -2477,7 +2477,7 @@ h4, h5, h6, .upcsg-heading {
         gap: 1.5rem;
     }
 
-    /* One column — mirroring has no meaning, and right-aligned copy on a narrow
+    /* One column: mirroring has no meaning, and right-aligned copy on a narrow
        screen is worse than useless. The explicit placement has to be undone too,
        or flipped rows keep a phantom second column. */
     .upcsg-profile-row--flip .upcsg-profile-row__portrait,
@@ -2512,7 +2512,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Month calendar — current month only, marking days that have events.
+   Month calendar: current month only, marking days that have events.
    Days with events are buttons that drive the agenda list below.
  * ------------------------------------------------------------------ */
 
@@ -2596,7 +2596,7 @@ h4, h5, h6, .upcsg-heading {
     border-color: var(--upcsg-cta);
 }
 
-/* Past days stay clickable — the month is the archive — just quieter. */
+/* Past days stay clickable, since the month is the archive, just quieter. */
 .upcsg-cal__day--past.upcsg-cal__day--has-events {
     opacity: 0.72;
 }
@@ -2669,7 +2669,7 @@ h4, h5, h6, .upcsg-heading {
 .upcsg-cal__legend i.is-happens { background: var(--upcsg-cosmic-lavender); }
 
 /* ------------------------------------------------------------------ *
-   Agenda — expandable event rows beneath the calendar
+   Agenda: expandable event rows beneath the calendar
  * ------------------------------------------------------------------ */
 
 .upcsg-agenda {
@@ -2802,7 +2802,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Merch — featured drop, catalog grid, ordering steps
+   Merch: featured drop, catalog grid, ordering steps
  * ------------------------------------------------------------------ */
 
 .upcsg-featured {
@@ -2840,7 +2840,7 @@ h4, h5, h6, .upcsg-heading {
     margin: 0 0 1.25rem;
 }
 
-/* Product image placeholder — the crest stands in until photos exist. */
+/* Product image placeholder: the crest stands in until photos exist. */
 .upcsg-merch-placeholder {
     width: 46%;
     max-width: 11rem;
@@ -3017,7 +3017,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* ------------------------------------------------------------------ *
-   Hall of Fame — year-grouped timeline with a constellation spine
+   Hall of Fame: year-grouped timeline with a constellation spine
  * ------------------------------------------------------------------ */
 
 .upcsg-filter {
@@ -3368,7 +3368,7 @@ h4, h5, h6, .upcsg-heading {
 }
 
 /* MudBlazor puts mud-paper on the popover element itself, not inside it, so this
-   has to be a compound selector — as a descendant it silently matches nothing. */
+   has to be a compound selector; as a descendant it silently matches nothing. */
 .upcsg-usermenu.mud-paper {
     min-width: 15rem;
     background: var(--upcsg-ink-panel);
@@ -3985,7 +3985,7 @@ h4, h5, h6, .upcsg-heading {
     white-space: nowrap;
 }
 
-/* Colour carries meaning here, so each stage reads differently at a glance —
+/* Colour carries meaning here, so each stage reads differently at a glance,
    but the label is always present, never colour alone. */
 /* The hue advances along the order's journey and never doubles back, so the
    sequence can be learned once and then predicted:

@@ -2,7 +2,7 @@
 //
 // Hand-rolled rather than AOS/GSAP for two reasons. Blazor renders components after the
 // page loads and re-renders them on every state change, so a library that scans the DOM
-// once at init silently misses everything the framework adds later — the usual fix is
+// once at init silently misses everything the framework adds later. The usual fix is
 // re-initialising on each render, which fights the framework. Here each component hands
 // its own element over when it mounts, so timing is never in question. Second, this ships
 // to GitHub Pages: no CDN, no vendored bundle to audit, ~2 KB instead of ~14 KB.
@@ -10,7 +10,7 @@
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 // Tells the failsafe in index.html that this module arrived. Without it, the page gives
-// up on animation and shows everything — see the comment there for why that matters.
+// up on animation and shows everything. See the comment there for why that matters.
 window.__upcsgMotionReady = true;
 
 // One observer for the whole page. One per element would be hundreds of observers on a
@@ -41,7 +41,7 @@ export function reveal(element) {
         return;
     }
 
-    // Someone who asked the OS for less motion gets the finished state immediately —
+    // Someone who asked the OS for less motion gets the finished state immediately,
     // never a blank element that only appears if an observer happens to fire.
     if (reduceMotion.matches) {
         element.classList.add('is-revealed');

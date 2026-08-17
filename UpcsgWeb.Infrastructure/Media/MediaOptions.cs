@@ -60,7 +60,7 @@ public sealed class MediaOptions
 
         return HasPrivateBucket
             ? $"{vendor} (receipts in '{PrivateBucket}')"
-            : $"{vendor} — NO PRIVATE BUCKET: receipts go to the public bucket and are "
+            : $"{vendor}. NO PRIVATE BUCKET: receipts go to the public bucket and are "
               + "readable by anyone with the URL. Set Media:PrivateBucket.";
     }
 }

@@ -112,7 +112,7 @@ services:
 
       # GCash receipts. This bucket must NOT be public: it holds guilders' payment proof,
       # which carries their name, the amount and the transaction reference. There is no
-      # PublicBaseUrl to match it — officers read receipts through presigned GETs the API
+      # PublicBaseUrl to match it. Officers read receipts through presigned GETs the API
       # mints per view, which expire after Media:ReadUrlMinutes.
       #
       # Leaving this unset is a working configuration, not a broken one, which is exactly

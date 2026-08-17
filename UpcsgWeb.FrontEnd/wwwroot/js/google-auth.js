@@ -22,7 +22,7 @@ function loadLibrary() {
         script.onload = () => resolve();
         script.onerror = () => {
             // Cleared so a later attempt can retry rather than awaiting a promise that
-            // is already rejected — a blocked script on one render should not
+            // is already rejected. A blocked script on one render should not
             // permanently disable sign-in for the session.
             scriptPromise = null;
             reject(new Error('Could not load Google sign-in.'));
@@ -37,7 +37,7 @@ function loadLibrary() {
 /**
  * Renders Google's own button into `elementId` and hands the credential back to .NET.
  *
- * Google's button has to be rendered by their library — it is not something we can
+ * Google's button has to be rendered by their library. It is not something we can
  * style ourselves, and reimplementing it would break the "Sign in with Google" branding
  * rules as well as the one-tap behaviour.
  */

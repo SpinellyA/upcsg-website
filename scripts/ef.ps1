@@ -73,7 +73,7 @@ Put it in UpcsgWeb.Api/appsettings.Development.local.json (git-ignored):
 "@
 }
 
-# Confirm the target without revealing the credentials — dropping or migrating the wrong
+# Confirm the target without revealing the credentials. Dropping or migrating the wrong
 # database is the mistake this one line prevents.
 $hostName = [regex]::Match($conn, '(?i)(?:Host|Server)=([^;]+)').Groups[1].Value
 $dbName = [regex]::Match($conn, '(?i)Database=([^;]+)').Groups[1].Value

@@ -20,12 +20,16 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired();
 
         // Stored as text like Status, so the column reads plainly in the database rather than
-        // as an integer whose meaning shifts if the enum is ever reordered. Existing rows all
-        // predate cash, so GCash is the correct default for them.
+        // as an integer whose meaning shifts if the enum is ever reordered.
+        //
+        // Deliberately no HasDefaultValue. Cash is the first member, so it is the CLR default
+        // for the enum, and EF reads a property sitting at the CLR default as "never set" and
+        // writes the store default over it. That silently turned every cash order into a
+        // GCash one on save. Existing rows were backfilled by the migration that added the
+        // column, which is the only thing the default was ever needed for.
         builder.Property(o => o.PaymentMethod)
             .HasConversion<string>()
             .HasMaxLength(20)
-            .HasDefaultValue(PaymentMethod.GCash)
             .IsRequired();
 
         builder.Property(o => o.Note).HasMaxLength(1000);

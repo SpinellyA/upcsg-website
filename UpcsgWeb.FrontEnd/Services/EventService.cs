@@ -46,12 +46,31 @@ public class EventService(HttpClient http, ApiOptions options, ISnapshotService 
             snapshot =>
             [
                 .. snapshot.Events
-                    .Where(e => e.StartDateTime.ToLocalTime().Year == year
-                             && e.StartDateTime.ToLocalTime().Month == month)
+                    .Where(e => e.IsScheduled
+                             && e.StartDateTime!.Value.ToLocalTime().Year == year
+                             && e.StartDateTime!.Value.ToLocalTime().Month == month)
                     .OrderBy(e => e.StartDateTime)
             ],
             SeedData);
     }
+
+    public Task<List<EventDto>> GetComingSoonEventsAsync() =>
+        LiveOrSnapshot.ReadAsync(
+            options,
+            snapshots,
+            async () => await http.GetFromJsonAsync<List<EventDto>>(
+                "api/events/coming-soon", UpcsgJson.Options) ?? [],
+
+            // Same ordering as the API: pencilled-in months first, undated ones after.
+            snapshot =>
+            [
+                .. snapshot.Events
+                    .Where(e => e.IsComingSoon)
+                    .OrderBy(e => e.StartDateTime is null)
+                    .ThenBy(e => e.StartDateTime)
+                    .ThenBy(e => e.Title)
+            ],
+            () => []);
 
     public async Task<EventDto?> GetEventAsync(Guid id)
     {

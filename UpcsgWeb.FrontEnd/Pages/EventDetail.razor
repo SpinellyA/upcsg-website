@@ -41,7 +41,7 @@ else
         <div class="upcsg-eventhero__inner">
             <p class="upcsg-eyebrow">
                 <span class="upcsg-star"></span>
-                @Starts.ToString("dddd, MMMM d, yyyy")
+                @HeroWhen
             </p>
             <h1 class="upcsg-eventhero__title">@_event.Title</h1>
 
@@ -65,7 +65,7 @@ else
                 <MudGrid Spacing="3">
                     <MudItem xs="6" md="3">
                         <p class="upcsg-glance__label">When</p>
-                        <p class="upcsg-glance__value">@Starts.ToString("ddd, MMM d")</p>
+                        <p class="upcsg-glance__value">@GlanceWhen</p>
                     </MudItem>
 
                     <MudItem xs="6" md="3">
@@ -152,7 +152,20 @@ else
     private List<EventDto> _others = [];
     private bool _loading = true;
 
-    private DateTime Starts => _event is null ? default : EventTiming.Starts(_event);
+    private DateTime? Starts => _event is null ? null : EventTiming.Starts(_event);
+
+    // A coming-soon event has no confirmed day, so neither of these may state one. They fall
+    // back to the pencilled-in month where there is one, and say so plainly where there is not.
+    private string HeroWhen =>
+        _event is null ? string.Empty
+        : _event.IsScheduled && Starts is { } s ? s.ToString("dddd, MMMM d, yyyy")
+        : EventTiming.PencilledIn(_event) is { } month ? $"Around {month}"
+        : "Date to be announced";
+
+    private string GlanceWhen =>
+        _event is null ? string.Empty
+        : _event.IsScheduled && Starts is { } s ? s.ToString("ddd, MMM d")
+        : EventTiming.PencilledIn(_event) ?? "To be announced";
 
     private IEnumerable<string> Paragraphs =>
         (_event?.Description ?? string.Empty)

@@ -43,3 +43,6 @@ desktop.ini
 # Local media store output. Development only - production writes to R2, and
 # Render's disk is ephemeral anyway.
 UpcsgWeb.Api/wwwroot/media/
+
+# stdout/stderr and pid file from scripts/dev.ps1
+.dev-logs/

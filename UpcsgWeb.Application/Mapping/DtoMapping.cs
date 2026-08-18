@@ -20,6 +20,7 @@ public static class DtoMapping
         EndDateTime = e.EndDateTime,
         Location = e.Location,
         PosterUrl = e.PosterUrl,
+        IsDateTentative = e.IsDateTentative,
     };
 
     public static MerchItemDto ToDto(this MerchItem m) => new()

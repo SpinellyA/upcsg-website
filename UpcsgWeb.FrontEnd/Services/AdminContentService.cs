@@ -10,6 +10,13 @@ public interface IAdminContentService
     Task DeleteMerchAsync(Guid id);
 
     Task<List<EventDto>> GetEventsAsync(int year, int month);
+
+    /// <summary>
+    /// Events with no confirmed date. They belong to no month, so the month-by-month list
+    /// would never surface them and they would be uneditable once created.
+    /// </summary>
+    Task<List<EventDto>> GetComingSoonEventsAsync();
+
     Task<EventDto> SaveEventAsync(EventDto item);
     Task DeleteEventAsync(Guid id);
 
@@ -53,6 +60,13 @@ public class AdminContentService(HttpClient http, ApiOptions options) : IAdminCo
     {
         EnsureConfigured();
         return await http.GetFromJsonAsync<List<EventDto>>($"api/admin/events?year={year}&month={month}", UpcsgJson.Options) ?? [];
+    }
+
+    public async Task<List<EventDto>> GetComingSoonEventsAsync()
+    {
+        EnsureConfigured();
+        return await http.GetFromJsonAsync<List<EventDto>>(
+            "api/events/coming-soon", UpcsgJson.Options) ?? [];
     }
 
     public Task<EventDto> SaveEventAsync(EventDto item) =>

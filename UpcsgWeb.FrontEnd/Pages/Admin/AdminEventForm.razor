@@ -79,12 +79,23 @@
 
             <div class="upcsg-whenrow">
                 <MudDatePicker Date="_date" Label="Date" Variant="Variant.Outlined"
-                               DateChanged="OnDateChanged" />
+                               Clearable="true" DateChanged="OnDateChanged" />
                 <MudTimePicker Time="_startTime" Label="Start time" Variant="Variant.Outlined"
-                               TimeChanged="OnStartChanged" />
+                               Disabled="@(_date is null)" TimeChanged="OnStartChanged" />
                 <MudTimePicker Time="_endTime" Label="End time (optional)" Variant="Variant.Outlined"
-                               TimeChanged="OnEndChanged" />
+                               Disabled="@(_date is null)" TimeChanged="OnEndChanged" />
             </div>
+
+            <MudSwitch T="bool" @bind-Value="_item.IsDateTentative" @bind-Value:after="Touch"
+                       Color="Color.Warning"
+                       Label="Date is not final yet (show as Coming soon)" Class="mt-2" />
+
+            <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                Coming-soon events are listed on their own on the events page instead of being
+                placed on the calendar, because pinning one to a day claims a date nobody has
+                confirmed. Clear the date entirely to post something with no date at all; it
+                then reads "Date to be announced" and is always treated as not final.
+            </MudText>
 
             @if (EndsBeforeItStarts)
             {
@@ -97,7 +108,11 @@
             <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
                 @if (_date is null)
                 {
-                    <text>Pick a date to see how this will read.</text>
+                    <text>Guilders will see: <strong>Date to be announced</strong></text>
+                }
+                else if (_item.IsDateTentative)
+                {
+                    <text>Guilders will see: <strong>Around @_date.Value.ToString("MMMM yyyy")</strong></text>
                 }
                 else
                 {
@@ -161,7 +176,9 @@
 
     private bool IsNew => Id is null;
 
-    private bool CanSave => !string.IsNullOrWhiteSpace(_item.Title) && _date is not null;
+    // A date is no longer required: an event can be posted with none at all, which publishes
+    // it as coming soon. Only the title is genuinely needed.
+    private bool CanSave => !string.IsNullOrWhiteSpace(_item.Title);
 
     private bool EndsBeforeItStarts =>
         _endTime is { } end && _startTime is { } start && end <= start;
@@ -208,11 +225,14 @@
 
                     _populating = true;
 
-                    var localStart = found.StartDateTime.ToLocalTime();
-                    _date = localStart.Date;
-                    _startTime = localStart.TimeOfDay;
+                    // A coming-soon event may have no date at all, in which case the pickers
+                    // start empty rather than defaulting to today, which would look like a
+                    // date the officer had chosen.
+                    var localStart = found.StartDateTime?.ToLocalTime();
+                    _date = localStart?.Date;
+                    _startTime = localStart?.TimeOfDay;
                     _endTime = found.EndDateTime?.ToLocalTime().TimeOfDay;
-                    _originalMonth = localStart.Date;
+                    _originalMonth = localStart?.Date;
                 }
             }
             else
@@ -286,14 +306,24 @@
 
         try
         {
-            var date = _date!.Value.Date;
-            var start = date.Add(_startTime ?? DefaultStart);
+            if (_date is { } picked)
+            {
+                var date = picked.Date;
+                var start = date.Add(_startTime ?? DefaultStart);
 
-            _item.StartDateTime = DateTime.SpecifyKind(start, DateTimeKind.Local).ToUniversalTime();
+                _item.StartDateTime = DateTime.SpecifyKind(start, DateTimeKind.Local).ToUniversalTime();
 
-            _item.EndDateTime = _endTime is { } end && end > start.TimeOfDay
-                ? DateTime.SpecifyKind(date.Add(end), DateTimeKind.Local).ToUniversalTime()
-                : null;
+                _item.EndDateTime = _endTime is { } end && end > start.TimeOfDay
+                    ? DateTime.SpecifyKind(date.Add(end), DateTimeKind.Local).ToUniversalTime()
+                    : null;
+            }
+            else
+            {
+                // No date at all. The end time goes with it: the domain rejects an end
+                // without a start, and a leftover one from a cleared date is meaningless.
+                _item.StartDateTime = null;
+                _item.EndDateTime = null;
+            }
 
             var saved = await Admin.SaveEventAsync(_item);
             Snackbar.Add("Saved.", Severity.Success);
@@ -308,11 +338,11 @@
 
             _populating = true;
 
-            var localStart = saved.StartDateTime.ToLocalTime();
-            _date = localStart.Date;
-            _startTime = localStart.TimeOfDay;
+            var localStart = saved.StartDateTime?.ToLocalTime();
+            _date = localStart?.Date;
+            _startTime = localStart?.TimeOfDay;
             _endTime = saved.EndDateTime?.ToLocalTime().TimeOfDay;
-            _originalMonth = localStart.Date;
+            _originalMonth = localStart?.Date;
             _dirty = false;
         }
         catch (Exception ex)

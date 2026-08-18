@@ -68,7 +68,20 @@
                 <MudTh Style="width:3rem"></MudTh>
             </HeaderContent>
             <RowTemplate>
-                <MudTd DataLabel="When">@context.StartDateTime.ToLocalTime().ToString("MMM d, h:mm tt")</MudTd>
+                <MudTd DataLabel="When">
+                    @if (context.IsScheduled && context.StartDateTime is { } when)
+                    {
+                        @when.ToLocalTime().ToString("MMM d, h:mm tt")
+                    }
+                    else if (context.StartDateTime is { } pencilled)
+                    {
+                        <text>Around @pencilled.ToLocalTime().ToString("MMMM yyyy")</text>
+                    }
+                    else
+                    {
+                        <text>Date to be announced</text>
+                    }
+                </MudTd>
                 <MudTd DataLabel="Title">@context.Title</MudTd>
                 <MudTd DataLabel="Location">@context.Location</MudTd>
                 <MudTd Class="upcsg-num upcsg-datatable__chevron">&rsaquo;</MudTd>
@@ -82,6 +95,45 @@
                 <MudTablePager PageSizeOptions="PageSizes" InfoFormat="{first_item}-{last_item} of {all_items} events" />
             </PagerContent>
         </MudTable>
+
+        @* Outside the month table on purpose. These have no date, so they belong to no
+           month, and a month-by-month list would hide them for good once created. *@
+        @if (_comingSoon.Count > 0)
+        {
+            <MudText Typo="Typo.overline" Class="upcsg-panel__title mt-8">
+                Coming soon (no confirmed date)
+            </MudText>
+            <MudText Typo="Typo.caption" Class="upcsg-panel__hint mb-2">
+                Shown here whichever month you are viewing, because they do not belong to one.
+                Give an event a date and clear "not final" to move it into that month.
+            </MudText>
+
+            <MudTable Items="_comingSoon" Class="upcsg-datatable" Hover="true" Dense="true"
+                      Elevation="0" OnRowClick="@(args => OpenEvent(args.Item))"
+                      RowClass="upcsg-datatable__row" T="EventDto">
+                <HeaderContent>
+                    <MudTh>When</MudTh>
+                    <MudTh>Title</MudTh>
+                    <MudTh>Location</MudTh>
+                    <MudTh Style="width:3rem"></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="When">
+                        @if (context.StartDateTime is { } pencilled)
+                        {
+                            <text>Around @pencilled.ToLocalTime().ToString("MMMM yyyy")</text>
+                        }
+                        else
+                        {
+                            <text>Date to be announced</text>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Title">@context.Title</MudTd>
+                    <MudTd DataLabel="Location">@context.Location</MudTd>
+                    <MudTd Class="upcsg-num upcsg-datatable__chevron">&rsaquo;</MudTd>
+                </RowTemplate>
+            </MudTable>
+        }
     }
 </div>
 
@@ -89,6 +141,7 @@
     private static readonly int[] PageSizes = [10, 25, 50];
 
     private List<EventDto> _events = [];
+    private List<EventDto> _comingSoon = [];
     private int _year = DateTime.Now.Year;
     private int _month = DateTime.Now.Month;
     private string _search = string.Empty;
@@ -138,6 +191,7 @@
         try
         {
             _events = await Admin.GetEventsAsync(_year, _month);
+            _comingSoon = await Admin.GetComingSoonEventsAsync();
         }
         catch (Exception ex)
         {

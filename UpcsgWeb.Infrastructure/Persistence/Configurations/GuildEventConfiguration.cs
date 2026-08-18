@@ -18,6 +18,10 @@ public class GuildEventConfiguration : IEntityTypeConfiguration<GuildEvent>
         builder.Property(e => e.Description).HasMaxLength(4000);
         builder.Property(e => e.PosterUrl).HasMaxLength(500);
 
+        // Explicit default so the column can be added to a table that already has rows:
+        // every event published before this existed had a confirmed date by definition.
+        builder.Property(e => e.IsDateTentative).HasDefaultValue(false);
+
         builder.HasIndex(e => e.StartDateTime);
     }
 }

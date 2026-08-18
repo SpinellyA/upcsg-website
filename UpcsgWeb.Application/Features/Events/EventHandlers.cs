@@ -24,6 +24,16 @@ public class ListEventsForMonthQueryHandler(IUnitOfWork uow)
     }
 }
 
+public class ListComingSoonEventsQueryHandler(IUnitOfWork uow)
+    : IQueryHandler<ListComingSoonEventsQuery, List<EventDto>>
+{
+    public async Task<List<EventDto>> Handle(ListComingSoonEventsQuery query, CancellationToken ct)
+    {
+        var result = await uow.Events.GetComingSoonAsync(ct);
+        return [.. result.Select(e => e.ToDto())];
+    }
+}
+
 public class CreateEventCommandHandler(IUnitOfWork uow) : ICommandHandler<CreateEventCommand, EventDto>
 {
     public async Task<EventDto> Handle(CreateEventCommand command, CancellationToken ct)
@@ -31,7 +41,8 @@ public class CreateEventCommandHandler(IUnitOfWork uow) : ICommandHandler<Create
         var dto = command.Event;
 
         var created = GuildEvent.Create(
-            dto.Title, dto.Description, dto.StartDateTime, dto.EndDateTime, dto.Location, dto.PosterUrl);
+            dto.Title, dto.Description, dto.StartDateTime, dto.EndDateTime, dto.Location,
+            dto.PosterUrl, dto.IsDateTentative);
 
         uow.Events.Add(created);
         await uow.SaveChangesAsync(ct);
@@ -49,7 +60,8 @@ public class UpdateEventCommandHandler(IUnitOfWork uow) : ICommandHandler<Update
 
         var dto = command.Event;
         existing.Update(
-            dto.Title, dto.Description, dto.StartDateTime, dto.EndDateTime, dto.Location, dto.PosterUrl);
+            dto.Title, dto.Description, dto.StartDateTime, dto.EndDateTime, dto.Location,
+            dto.PosterUrl, dto.IsDateTentative);
 
         await uow.SaveChangesAsync(ct);
 

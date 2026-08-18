@@ -14,10 +14,21 @@
     }
 
     <span class="upcsg-eventcard__body">
-        <span class="upcsg-datechip">
-            <span class="upcsg-datechip__month">@Starts.ToString("MMM")</span>
-            <span class="upcsg-datechip__day">@Starts.Day</span>
-        </span>
+        @* A coming-soon event has no day to put in the chip. It gets a TBA plate instead of
+           a fabricated date; the line under the title carries the rough month if there is one. *@
+        @if (Starts is { } starts && !Event.IsComingSoon)
+        {
+            <span class="upcsg-datechip">
+                <span class="upcsg-datechip__month">@starts.ToString("MMM")</span>
+                <span class="upcsg-datechip__day">@starts.Day</span>
+            </span>
+        }
+        else
+        {
+            <span class="upcsg-datechip upcsg-datechip--soon">
+                <span class="upcsg-datechip__soon">TBA</span>
+            </span>
+        }
 
         <span class="upcsg-eventcard__text">
             <span class="upcsg-eventcard__title">@Event.Title</span>
@@ -64,7 +75,7 @@
 
     [Parameter] public bool ShowStatus { get; set; }
 
-    private DateTime Starts => EventTiming.Starts(Event);
+    private DateTime? Starts => EventTiming.Starts(Event);
 
     private string FirstParagraph
     {

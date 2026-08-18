@@ -2112,6 +2112,34 @@ h4, h5, h6, .upcsg-heading {
     line-height: 1.2;
 }
 
+/* Stands in for the date plate on an event with no confirmed day. Kept the same size as the
+   real chip so cards in a grid still line up, but off the gold used for actual dates: this
+   plate is the absence of one, and should not read as an announcement. */
+.upcsg-datechip--soon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(162, 83, 184, 0.12);
+    border-color: rgba(162, 83, 184, 0.4);
+}
+
+.upcsg-datechip__soon {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-comingsoon__count {
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
 .upcsg-eventrow__title {
     font-family: var(--upcsg-font-heading);
     font-size: 1.08rem;

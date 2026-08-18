@@ -38,14 +38,31 @@
     }
     else if (_events.Count == 0)
     {
+        @* Shrinks to a notice when there are coming-soon events below, so the page does not
+           claim to be empty while still having something to show. *@
         <section class="upcsg-section">
             <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty upcsg-empty--tall">
-                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                <div class="@(_comingSoon.Count == 0 ? "upcsg-empty upcsg-empty--tall" : "upcsg-empty")">
+                    @if (_comingSoon.Count == 0)
+                    {
+                        <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    }
                     <h2 class="upcsg-title-xl">Nothing scheduled yet</h2>
                     <p>
-                        @_month.ToString("MMMM")'s lineup hasn't been posted. Our socials get it
-                        first, so follow along there and it'll show up here once it's official.
+                        @_month.ToString("MMMM")'s lineup hasn't been posted.
+                        @if (_comingSoon.Count > 0)
+                        {
+                            <text>
+                                What the ExeCom has announced without a date yet is below.
+                            </text>
+                        }
+                        else
+                        {
+                            <text>
+                                Our socials get it first, so follow along there and it'll show
+                                up here once it's official.
+                            </text>
+                        }
                     </p>
                     <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="contact">
                         Get in touch
@@ -148,7 +165,7 @@
                     {
                         <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
                             <div id="@($"event-{evt.Id}")"
-                                 class="@(_selectedDate?.Date == EventTiming.Starts(evt).Date ? "upcsg-eventlist__hit" : null)">
+                                 class="@(_selectedDate?.Date == EventTiming.Starts(evt)?.Date ? "upcsg-eventlist__hit" : null)">
                                 <EventCard Event="evt" ShowStatus="true" />
                             </div>
                         </Reveal>
@@ -160,6 +177,30 @@
                     <div class="upcsg-empty">
                         <p>Nothing on @_selectedDate?.ToString("MMMM d").</p>
                     </div>
+                }
+            </div>
+        </section>
+    }
+
+    @* Outside the month branch on purpose: these have no month to belong to, so they show
+       whichever month is on display, and even when nothing is scheduled at all. *@
+    @if (!_loading && _comingSoon.Count > 0)
+    {
+        <section class="upcsg-section">
+            <SectionHeading Kicker="Not dated yet" Title="Coming soon">
+                <Action>
+                    <span class="upcsg-comingsoon__count">
+                        @_comingSoon.Count in the works
+                    </span>
+                </Action>
+            </SectionHeading>
+
+            <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                @foreach (var (evt, i) in _comingSoon.Select((e, i) => (e, i)))
+                {
+                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
+                        <EventCard Event="evt" ShowStatus="true" />
+                    </Reveal>
                 }
             </div>
         </section>
@@ -180,6 +221,7 @@
 
     private bool _loading = true;
     private List<EventDto> _events = [];
+    private List<EventDto> _comingSoon = [];
     private EventDto? _next;
     private DateTime? _selectedDate;
 
@@ -219,13 +261,17 @@
             .OrderBy(e => e.StartDateTime)
             .ToList();
 
+        // Not month-scoped: these have no confirmed date, so they belong to no month and
+        // stay visible whichever one is on display.
+        _comingSoon = await EventService.GetComingSoonEventsAsync();
+
         _next = _events.FirstOrDefault(e => !EventTiming.HasEnded(e)) ?? _events.LastOrDefault();
 
         _loading = false;
     }
 
     private List<EventDto> EventsOn(DateTime date) =>
-        [.. _events.Where(e => EventTiming.Starts(e).Date == date.Date)];
+        [.. _events.Where(e => EventTiming.Starts(e)?.Date == date.Date)];
 
     private void ClearSelection() => _selectedDate = null;
 

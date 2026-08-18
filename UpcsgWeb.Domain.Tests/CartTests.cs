@@ -91,7 +91,7 @@ public class CartTests
         var hoodie = Hoodie();
         cart.AddItem(hoodie, "M", 3);
 
-        cart.SetQuantity(hoodie.Id, "M", 0);
+        cart.SetQuantity(hoodie, "M", 0);
 
         Assert.True(cart.IsEmpty);
     }
@@ -100,7 +100,7 @@ public class CartTests
     public void UpdatingAnAbsentLineFails()
     {
         var cart = Cart.Create(UserId);
-        Assert.Throws<DomainException>(() => cart.SetQuantity(Guid.CreateVersion7(), null, 1));
+        Assert.Throws<DomainException>(() => cart.SetQuantity(Hoodie(), null, 1));
     }
 
     [Fact]

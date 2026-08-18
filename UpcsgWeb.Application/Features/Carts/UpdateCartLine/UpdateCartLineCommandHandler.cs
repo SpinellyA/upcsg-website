@@ -14,7 +14,20 @@ public class UpdateCartLineCommandHandler(IUnitOfWork uow)
         var cart = await uow.Carts.GetForUserAsync(command.UserId, cancellationToken)
             ?? throw new NotFoundException("Your cart");
 
-        cart.SetQuantity(command.MerchItemId, command.Variant, command.Quantity);
+        // Loaded so the quantity can be checked against stock as it stands now. Removing a
+        // line is exempt: an item that has been withdrawn entirely cannot be looked up, and
+        // refusing to remove it would leave the guilder stuck with a cart they cannot clear.
+        if (command.Quantity == 0)
+        {
+            cart.RemoveItem(command.MerchItemId, command.Variant);
+        }
+        else
+        {
+            var item = await uow.Merch.GetByIdAsync(command.MerchItemId, cancellationToken)
+                ?? throw new NotFoundException("That item");
+
+            cart.SetQuantity(item, command.Variant, command.Quantity);
+        }
 
         await uow.SaveChangesAsync(cancellationToken);
 

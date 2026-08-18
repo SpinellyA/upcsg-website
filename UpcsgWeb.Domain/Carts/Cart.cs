@@ -61,10 +61,7 @@ public class Cart : AggregateRoot
 
         if (!item.CanFulfil(variant, newQuantity))
         {
-            var left = item.StockFor(variant);
-            throw new DomainException(left == 0
-                ? $"{item.Name}{(variant is null ? "" : $" ({variant})")} is sold out."
-                : $"Only {left} of {item.Name}{(variant is null ? "" : $" ({variant})")} left.");
+            throw new DomainException(item.ShortfallMessage(variant));
         }
 
         if (newQuantity > MaxQuantityPerLine)
@@ -84,7 +81,13 @@ public class Cart : AggregateRoot
         Touch();
     }
 
-    public void SetQuantity(Guid merchItemId, string? variant, int quantity)
+    /// <summary>
+    /// Changes how many of a line are wanted, re-checking availability as it goes. The item
+    /// has to be passed in because stock can have moved since it went in the cart: without
+    /// it this could raise a line above what is left, which is how a sold-out item used to
+    /// reach checkout.
+    /// </summary>
+    public void SetQuantity(MerchItem item, string? variant, int quantity)
     {
         if (quantity < 0)
         {
@@ -96,18 +99,24 @@ public class Cart : AggregateRoot
             throw new DomainException($"You can order at most {MaxQuantityPerLine} of one item.");
         }
 
-        var line = Find(merchItemId, variant)
+        var line = Find(item.Id, variant)
             ?? throw new DomainException("That item is not in your cart.");
 
+        // Removing is always allowed. Refusing it would strand a guilder with a line they
+        // cannot check out and cannot delete, which is the one state worth avoiding here.
         if (quantity == 0)
         {
             _lines.Remove(line);
-        }
-        else
-        {
-            line.SetQuantity(quantity);
+            Touch();
+            return;
         }
 
+        if (!item.CanFulfil(variant, quantity))
+        {
+            throw new DomainException(item.ShortfallMessage(variant));
+        }
+
+        line.SetQuantity(quantity);
         Touch();
     }
 

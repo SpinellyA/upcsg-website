@@ -162,6 +162,30 @@ public class MerchItem : AggregateRoot
     public bool CanFulfil(string? variant, int quantity) =>
         InStock && !IsPreorderClosed && StockFor(variant) >= quantity;
 
+    /// <summary>
+    /// Why this cannot be supplied, phrased for the guilder. Lives next to CanFulfil so the
+    /// cart, the checkout and the cart page all give the same reason for the same refusal
+    /// rather than each inventing wording.
+    /// </summary>
+    public string ShortfallMessage(string? variant)
+    {
+        var label = $"{Name}{(variant is null ? "" : $" ({variant})")}";
+
+        if (!InStock)
+        {
+            return $"{label} is out of stock.";
+        }
+
+        if (IsPreorderClosed)
+        {
+            return $"Preorders for {label} have closed.";
+        }
+
+        var left = StockFor(variant);
+
+        return left == 0 ? $"{label} is sold out." : $"Only {left} of {label} left.";
+    }
+
     public void DeductStock(string? variant, int quantity)
     {
         if (IsPreorder)

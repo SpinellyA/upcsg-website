@@ -10,7 +10,23 @@ public class CartLineDto
     public decimal LineTotal { get; set; }
     public string? ImageUrl { get; set; }
 
+    /// <summary>
+    /// Whether this line can still be ordered at the quantity asked for. Covers the item
+    /// being withdrawn, its variant disappearing, a preorder window closing, and stock
+    /// running down since it went in the cart.
+    /// </summary>
     public bool Available { get; set; } = true;
+
+    /// <summary>
+    /// Why the line cannot be ordered, phrased for the guilder. Null while it is fine.
+    /// </summary>
+    public string? UnavailableReason { get; set; }
+
+    /// <summary>
+    /// How many are still to be had. Null for a preorder, which has no ceiling, or when the
+    /// item has been withdrawn altogether.
+    /// </summary>
+    public int? StockLeft { get; set; }
 }
 
 public class CartDto

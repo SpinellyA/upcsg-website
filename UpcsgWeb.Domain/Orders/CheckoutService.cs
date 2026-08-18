@@ -16,16 +16,47 @@ public static class CheckoutService
             throw new DomainException("Your cart is empty.");
         }
 
-        var order = Order.Create(cart.UserId, note);
+        // Availability is re-checked here, against the items as they are right now, not as
+        // they were when they went in the cart. A cart can sit for days, and in that time an
+        // item can sell out, be taken off sale, or have its preorder window close. Every
+        // problem is collected rather than thrown on the first one, so the guilder fixes the
+        // cart in one pass instead of discovering the next fault on each retry.
+        var problems = new List<string>();
 
         foreach (var line in cart.Lines)
         {
             if (!availableItems.TryGetValue(line.MerchItemId, out var item))
             {
-                throw new DomainException("An item in your cart is no longer available. Please review your cart.");
+                // The cart line holds only an id, so a deleted item cannot be named here.
+                problems.Add("An item in your cart is no longer available.");
+                continue;
             }
 
-            order.AddLine(item, line.Variant, line.Quantity);
+            if (line.Variant is not null && !item.HasVariant(line.Variant))
+            {
+                problems.Add($"{item.Name} no longer comes in '{line.Variant}'.");
+                continue;
+            }
+
+            if (!item.CanFulfil(line.Variant, line.Quantity))
+            {
+                problems.Add(item.ShortfallMessage(line.Variant));
+            }
+        }
+
+        if (problems.Count > 0)
+        {
+            throw new DomainException(
+                "Your cart has changed since you added these. "
+                + string.Join(" ", problems)
+                + " Please update your cart and try again.");
+        }
+
+        var order = Order.Create(cart.UserId, note);
+
+        foreach (var line in cart.Lines)
+        {
+            order.AddLine(availableItems[line.MerchItemId], line.Variant, line.Quantity);
         }
 
         cart.Clear();

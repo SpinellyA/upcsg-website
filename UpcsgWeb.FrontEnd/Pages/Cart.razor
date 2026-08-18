@@ -65,7 +65,23 @@
                             }
                             @if (!line.Available)
                             {
-                                <p class="upcsg-cartline__warn">No longer available. Remove it to check out.</p>
+                                @* The specific reason, not a blanket "unavailable": running
+                                   down to fewer than you asked for is fixable by lowering the
+                                   quantity, and the guilder can only know that if we say so. *@
+                                <p class="upcsg-cartline__warn">
+                                    @(line.UnavailableReason ?? "No longer available.")
+                                    @* Razor eats the whitespace between the expression above
+                                       and this block, so the space is explicit. *@
+                                    @((MarkupString)"&#32;")
+                                    @if (line.StockLeft is > 0 && line.StockLeft < line.Quantity)
+                                    {
+                                        <text>Lower it to @line.StockLeft to check out.</text>
+                                    }
+                                    else
+                                    {
+                                        <text>Remove it to check out.</text>
+                                    }
+                                </p>
                             }
                             else
                             {
@@ -79,9 +95,12 @@
                                            Disabled="_busy"
                                            OnClick="() => AdjustAsync(line, line.Quantity - 1)" />
                             <span class="upcsg-cartline__count">@line.Quantity</span>
+                            @* Also disabled at the ceiling, where the line is still valid at
+                               its current quantity but one more than stock allows. Letting it
+                               be pressed would round-trip only to come back refused. *@
                             <MudIconButton Icon="@Icons.Material.Filled.Add"
                                            Size="Size.Small"
-                                           Disabled="_busy || !line.Available"
+                                           Disabled="@(_busy || !line.Available || AtStockCeiling(line))"
                                            OnClick="() => AdjustAsync(line, line.Quantity + 1)" />
                         </div>
 
@@ -168,6 +187,10 @@
             _loading = false;
         }
     }
+
+    // StockLeft is null for a preorder, which has no ceiling to hit.
+    private static bool AtStockCeiling(CartLineDto line) =>
+        line.StockLeft is { } left && line.Quantity >= left;
 
     private async Task AdjustAsync(CartLineDto line, int quantity)
     {

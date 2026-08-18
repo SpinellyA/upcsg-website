@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-17T16:49:16.9717094Z",
+  "generatedAt": "2026-08-18T16:52:40.0015794Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -378,6 +378,26 @@
       "hasActiveSale": true,
       "isPreorderClosed": false,
       "imageUrl": "offline-media/a5c25bbab5fad4c8.webp"
+    },
+    {
+      "id": "01a014e7-42c3-7b78-9c81-a0f25f3fab02",
+      "name": "ZZ TEST stock item (delete me)",
+      "description": "Temporary, for cart revalidation checks.",
+      "price": 100.0,
+      "stock": 3,
+      "photoUrls": [],
+      "variants": [],
+      "inStock": true,
+      "salePercentage": 0.0,
+      "isOnSale": false,
+      "isPreorder": false,
+      "preorderClosesAt": null,
+      "priceFrom": 100.0,
+      "listPriceFrom": 100.0,
+      "hasPriceRange": false,
+      "hasActiveSale": false,
+      "isPreorderClosed": false,
+      "imageUrl": null
     }
   ],
   "opportunities": [
@@ -392,12 +412,12 @@
       "closesAt": "2026-08-21T15:59:59+00:00",
       "happensAt": "2026-08-06T16:00:00+00:00",
       "url": "https://gcash.com/imagnation",
-      "posterUrl": "http://localhost:5027/media/events/2026/08/01373ecfc9d6-6a7985de23dfc305ac96670d-seo-imagnation.webp",
+      "posterUrl": "offline-media/509eafc2d00546ef.webp",
       "isFeatured": false,
       "createdAt": "2026-08-17T15:45:50.733545+00:00",
       "isClosed": false,
       "hasDeadline": true,
-      "daysLeft": 4
+      "daysLeft": 3
     }
   ],
   "settings": {

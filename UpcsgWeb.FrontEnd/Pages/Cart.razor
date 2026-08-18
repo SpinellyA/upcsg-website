@@ -129,6 +129,28 @@
                     <span class="upcsg-gradient-text">&#8369;@_cart.Total.ToString("0.00")</span>
                 </div>
 
+                <div class="upcsg-paychoice">
+                    <p class="upcsg-paychoice__title">How are you paying?</p>
+
+                    <MudRadioGroup T="PaymentMethodDto" @bind-Value="_method">
+                        <MudRadio T="PaymentMethodDto" Value="PaymentMethodDto.GCash" Dense="true">
+                            <span class="upcsg-paychoice__label">GCash</span>
+                            <span class="upcsg-paychoice__hint">
+                                Send the payment, then give us the reference on the next step.
+                                Your items are set aside as soon as you do.
+                            </span>
+                        </MudRadio>
+
+                        <MudRadio T="PaymentMethodDto" Value="PaymentMethodDto.Cash" Dense="true">
+                            <span class="upcsg-paychoice__label">Cash, in person</span>
+                            <span class="upcsg-paychoice__hint">
+                                Pay an officer and they will record it. Nothing is set aside until
+                                then, so an online order can take the last of something first.
+                            </span>
+                        </MudRadio>
+                    </MudRadioGroup>
+                </div>
+
                 <MudTextField @bind-Value="_note"
                               Label="Note for the officers (optional)"
                               Variant="Variant.Outlined"
@@ -152,8 +174,20 @@
                 </MudButton>
 
                 <p class="upcsg-checkout__fineprint">
-                    Checking out reserves your items. You'll send your GCash receipt on the next
-                    step. The order only reaches the officers once that's in.
+                    @if (_method == PaymentMethodDto.Cash)
+                    {
+                        <text>
+                            Your order goes to the officers to be paid for in person. Nothing is
+                            held for it until one of them records your payment.
+                        </text>
+                    }
+                    else
+                    {
+                        <text>
+                            You'll send your GCash reference on the next step. Your items are
+                            set aside as soon as that's in.
+                        </text>
+                    }
                 </p>
             </aside>
         </section>
@@ -163,6 +197,11 @@
 @code {
     private CartDto _cart = new();
     private string? _note;
+
+    // GCash by default: it is the faster route and the only one that holds stock, so it is
+    // the better outcome for a guilder who does not read the options.
+    private PaymentMethodDto _method = PaymentMethodDto.GCash;
+
     private bool _loading = true;
     private bool _busy;
     private string? _error;
@@ -221,7 +260,7 @@
 
         try
         {
-            var order = await CartService.CheckoutAsync(_note);
+            var order = await CartService.CheckoutAsync(_note, _method);
 
             Navigation.NavigateTo($"orders/{order.Id}");
         }

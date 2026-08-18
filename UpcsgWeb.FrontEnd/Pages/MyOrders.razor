@@ -63,7 +63,7 @@
                 <MudTd DataLabel="Total" Class="upcsg-num">&#8369;@context.Total.ToString("N2")</MudTd>
                 <MudTd DataLabel="Status">
                     <span class="upcsg-statuspill upcsg-statuspill--@OrderStatusDisplay.Slug(context.Status)">
-                        @OrderStatusDisplay.Label(context.Status)
+                        @OrderStatusDisplay.Label(context)
                     </span>
 
                     @if (context.Status == OrderStatusDto.AwaitingPayment)

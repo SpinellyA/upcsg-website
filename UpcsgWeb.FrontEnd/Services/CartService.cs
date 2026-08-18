@@ -10,7 +10,7 @@ public interface ICartService
     Task<CartDto> AddAsync(Guid merchItemId, string? variant, int quantity);
     Task<CartDto> SetQuantityAsync(Guid merchItemId, string? variant, int quantity);
     Task ClearAsync();
-    Task<OrderDto> CheckoutAsync(string? note);
+    Task<OrderDto> CheckoutAsync(string? note, PaymentMethodDto method = PaymentMethodDto.GCash);
 
     Task<int> GetItemCountAsync();
 
@@ -77,11 +77,15 @@ public class CartService(HttpClient http, ApiOptions options) : ICartService
         Changed?.Invoke();
     }
 
-    public async Task<OrderDto> CheckoutAsync(string? note)
+    public async Task<OrderDto> CheckoutAsync(
+        string? note, PaymentMethodDto method = PaymentMethodDto.GCash)
     {
         EnsureConfigured();
 
-        var response = await http.PostAsJsonAsync("api/cart/checkout", new CheckoutRequest { Note = note }, UpcsgJson.Options);
+        var response = await http.PostAsJsonAsync(
+            "api/cart/checkout",
+            new CheckoutRequest { Note = note, PaymentMethod = method },
+            UpcsgJson.Options);
 
         if (!response.IsSuccessStatusCode)
         {

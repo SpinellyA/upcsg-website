@@ -169,8 +169,15 @@
                 </MudTd>
                 <MudTd DataLabel="Status">
                     <span class="upcsg-statuspill upcsg-statuspill--@OrderStatusDisplay.Slug(context.Status)">
-                        @OrderStatusDisplay.Label(context.Status)
+                        @OrderStatusDisplay.Label(context)
                     </span>
+
+                    @* Cash is worth calling out in the list: it is the one an officer has to
+                       collect money for, and the one holding no stock while it waits. *@
+                    @if (context.IsCash)
+                    {
+                        <span class="upcsg-paytag upcsg-paytag--cash">Cash</span>
+                    }
 
                     @if (context.HasRefundDue)
                     {

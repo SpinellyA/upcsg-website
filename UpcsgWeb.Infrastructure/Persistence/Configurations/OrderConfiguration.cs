@@ -19,6 +19,15 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(30)
             .IsRequired();
 
+        // Stored as text like Status, so the column reads plainly in the database rather than
+        // as an integer whose meaning shifts if the enum is ever reordered. Existing rows all
+        // predate cash, so GCash is the correct default for them.
+        builder.Property(o => o.PaymentMethod)
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(PaymentMethod.GCash)
+            .IsRequired();
+
         builder.Property(o => o.Note).HasMaxLength(1000);
         builder.Property(o => o.CancellationReason).HasMaxLength(500);
         builder.Property(o => o.ReceiptRejectionReason).HasMaxLength(500);

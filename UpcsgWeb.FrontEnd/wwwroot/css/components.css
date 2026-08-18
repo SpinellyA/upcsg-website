@@ -1318,6 +1318,66 @@
     box-shadow: var(--upcsg-shadow-lg);
 }
 
+/* Marks a cash order in the officers' list. Deliberately quiet: it is a fact about the
+   order, not a warning, and the status pill next to it is what carries urgency. */
+.upcsg-paytag {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.upcsg-paytag--cash {
+    color: var(--upcsg-liquid-chrome-gold);
+    background: rgba(252, 230, 138, 0.12);
+    border: 1px solid rgba(252, 230, 138, 0.32);
+}
+
+/* Payment choice in the checkout panel. The hint under each label carries the part that
+   actually matters (whether stock is held), so it is styled to be read, not skimmed past. */
+.upcsg-paychoice {
+    margin: 1.25rem 0 0.25rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--upcsg-ink-rule);
+    border-radius: 12px;
+    background: var(--upcsg-ink-panel);
+}
+
+.upcsg-paychoice__title {
+    margin: 0 0 0.5rem;
+    font-family: var(--upcsg-font-heading);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--upcsg-text-muted);
+}
+
+.upcsg-paychoice__label {
+    display: block;
+    font-weight: 600;
+}
+
+.upcsg-paychoice__hint {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--upcsg-text-muted);
+}
+
+/* The radio's own label is centred against a single line of text, which leaves the dot
+   floating beside a three-line block. Top-aligning keeps it next to the name. */
+.upcsg-paychoice .mud-radio .mud-button-root {
+    align-items: flex-start;
+}
+
 /* Officer switcher on the home page. The stage is the positioning context for the
    outgoing plate, which is taken out of flow so the incoming plate sizes the column. */
 .upcsg-officerstage {

@@ -27,7 +27,7 @@
                 <p class="upcsg-kicker">Placed @_order.PlacedAt.ToLocalTime().ToString("MMMM d, yyyy")</p>
                 <h1 class="upcsg-title-xl">Order #@_order.Reference</h1>
             </div>
-            <span class="upcsg-chip">@OrderStatusDisplay.Label(_order.Status)</span>
+            <span class="upcsg-chip">@OrderStatusDisplay.Label(_order)</span>
         </div>
 
         <OrderStatusTrail Status="_order.Status" />
@@ -133,12 +133,27 @@
             </MudPaper>
 
             <aside class="upcsg-panel upcsg-checkout">
-                @if (_order.Status == OrderStatusDto.AwaitingPayment)
+                @* A cash order has no reference to send, so it gets instructions instead of an
+                   upload box. It reaches the officers on its own and waits there. *@
+                @if (_order.AwaitsCashCollection)
                 {
-                    <h2 class="upcsg-checkout__title">Send your GCash receipt</h2>
+                    <h2 class="upcsg-checkout__title">Pay at the office</h2>
+                    <p class="upcsg-checkout__fineprint mb-4">
+                        Bring &#8369;@_order.Total.ToString("0.00") to an officer and mention
+                        <strong>@_order.Reference</strong>. They will record the payment here, and
+                        that is when your items are set aside.
+                    </p>
+                    <MudAlert Severity="Severity.Info" Dense="true" Square="true" Elevation="0">
+                        Nothing is held for a cash order until it is paid, so anything ordered
+                        online in the meantime is filled first.
+                    </MudAlert>
+                }
+                else if (_order.Status == OrderStatusDto.AwaitingPayment)
+                {
+                    <h2 class="upcsg-checkout__title">Send your GCash reference</h2>
                     <p class="upcsg-checkout__fineprint mb-4">
                         Pay &#8369;@_order.Total.ToString("0.00") to the guild's GCash number, then send
-                        the screenshot. Officers only see your order once this is in.
+                        the screenshot. Your items are set aside as soon as this is in.
                     </p>
 
                     <div class="upcsg-receiptdrop">
@@ -307,7 +322,15 @@
         try
         {
             _order = await OrderService.SubmitReceiptAsync(Id, _screenshotUrl!, _reference);
-            Snackbar.Add("Receipt submitted. An officer will verify it shortly.", Severity.Success);
+
+            // Confirmed on submission now, so promising a review would be wrong. Where stock
+            // ran out first the order stays pending and an officer picks it up, which is the
+            // one case the second message covers.
+            Snackbar.Add(
+                _order.Status == OrderStatusDto.Acknowledged
+                    ? "Payment recorded. Your items are set aside."
+                    : "Reference received. An officer will be in touch about this order.",
+                Severity.Success);
         }
         catch (Exception ex)
         {

@@ -10,6 +10,15 @@ public enum OrderStatusDto
     Cancelled,
 }
 
+public enum PaymentMethodDto
+{
+    /// <summary>Handed over in person and recorded by an officer. Holds no stock until then.</summary>
+    Cash,
+
+    /// <summary>Paid online; the reference is taken at face value and confirmed at once.</summary>
+    GCash,
+}
+
 public enum OrderLineStatusDto
 {
     ToFulfil,
@@ -45,6 +54,18 @@ public class OrderDto
     public string Reference => OrderReference.For(Id);
 
     public OrderStatusDto Status { get; set; }
+
+    public PaymentMethodDto PaymentMethod { get; set; }
+
+    public bool IsCash => PaymentMethod == PaymentMethodDto.Cash;
+
+    /// <summary>
+    /// A cash order sitting in the queue: paid for in person, or about to be, and waiting for
+    /// an officer to record it. Nothing is held for it until they do.
+    /// </summary>
+    public bool AwaitsCashCollection =>
+        IsCash && Status == OrderStatusDto.Pending;
+
     public DateTimeOffset PlacedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
     public string? Note { get; set; }

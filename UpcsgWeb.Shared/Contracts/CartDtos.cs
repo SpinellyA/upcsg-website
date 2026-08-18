@@ -56,6 +56,12 @@ public class UpdateCartLineRequest
 public class CheckoutRequest
 {
     public string? Note { get; set; }
+
+    /// <summary>
+    /// Defaults to GCash so an older client that does not send one keeps the behaviour it
+    /// had before cash existed, rather than silently placing cash orders.
+    /// </summary>
+    public PaymentMethodDto PaymentMethod { get; set; } = PaymentMethodDto.GCash;
 }
 
 public class SubmitReceiptRequest

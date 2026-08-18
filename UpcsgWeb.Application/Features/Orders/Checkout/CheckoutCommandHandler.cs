@@ -20,7 +20,11 @@ public class CheckoutCommandHandler(IUnitOfWork uow) : ICommandHandler<CheckoutC
         var items = await uow.Merch.GetManyAsync(
             cart.Lines.Select(l => l.MerchItemId), cancellationToken);
 
-        var order = CheckoutService.Checkout(cart, items.ToDictionary(i => i.Id), command.Note);
+        var order = CheckoutService.Checkout(
+            cart,
+            items.ToDictionary(i => i.Id),
+            Enum.Parse<PaymentMethod>(command.PaymentMethod.ToString()),
+            command.Note);
 
         uow.Orders.Add(order);
         await uow.SaveChangesAsync(cancellationToken);

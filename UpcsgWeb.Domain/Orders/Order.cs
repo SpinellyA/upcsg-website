@@ -24,7 +24,7 @@ public class Order : AggregateRoot
 
     private Order() { }
 
-    private Order(Guid userId)
+    private Order(Guid userId, PaymentMethod paymentMethod)
     {
         if (userId == Guid.Empty)
         {
@@ -32,13 +32,22 @@ public class Order : AggregateRoot
         }
 
         UserId = userId;
+        PaymentMethod = paymentMethod;
 
+        // Every order starts editable so its lines can be added, whatever it will be paid
+        // with. A cash order is moved into the officers' queue by QueueForCashPayment once
+        // it is complete.
         Status = OrderStatus.AwaitingPayment;
+
         PlacedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
     }
 
     public Guid UserId { get; private set; }
+
+    public PaymentMethod PaymentMethod { get; private set; }
+
+    public bool IsCash => PaymentMethod == PaymentMethod.Cash;
 
     public OrderStatus Status { get; private set; }
     public DateTime PlacedAt { get; private set; }
@@ -82,9 +91,12 @@ public class Order : AggregateRoot
 
     public bool IsOpen => Status is not (OrderStatus.Received or OrderStatus.Cancelled);
 
-    public static Order Create(Guid userId, string? note = null)
+    public static Order Create(
+        Guid userId,
+        PaymentMethod paymentMethod = PaymentMethod.GCash,
+        string? note = null)
     {
-        var order = new Order(userId) { Id = Guid.CreateVersion7(), Note = note };
+        var order = new Order(userId, paymentMethod) { Id = Guid.CreateVersion7(), Note = note };
         order.Raise(new OrderPlacedEvent(order.Id, userId));
         return order;
     }
@@ -127,11 +139,40 @@ public class Order : AggregateRoot
         Touch();
     }
 
+    /// <summary>
+    /// Hands a finished cash order to the officers. There is nothing for the guilder to
+    /// submit, so this is the cash counterpart of sending a payment reference: it closes the
+    /// order to further edits and puts it in the queue to be paid in person and recorded.
+    /// No stock is committed here, which is what leaves a cash order behind an online one
+    /// when both want the last of something.
+    /// </summary>
+    public void QueueForCashPayment()
+    {
+        if (!IsCash)
+        {
+            throw new DomainException("Only a cash order waits to be paid in person.");
+        }
+
+        if (_lines.Count == 0)
+        {
+            throw new DomainException("An empty order cannot be paid for.");
+        }
+
+        TransitionTo(OrderStatus.Pending);
+    }
+
     public void SubmitReceipt(PaymentReceipt receipt)
     {
         if (_lines.Count == 0)
         {
             throw new DomainException("An empty order cannot be paid for.");
+        }
+
+        if (IsCash)
+        {
+            throw new DomainException(
+                "This is a cash order. Pay an officer in person and they will record it; "
+                + "there is no reference to submit.");
         }
 
         TransitionTo(OrderStatus.Pending);
@@ -140,6 +181,50 @@ public class Order : AggregateRoot
         Receipt = receipt;
         ReceiptRejectionReason = null;
     }
+
+    /// <summary>
+    /// Confirms an online payment without anyone checking it, because there is no payment
+    /// provider wired up to check it against. Stock comes off straight away, and officers
+    /// cancel the ones that turn out to be bad, which puts it back.
+    /// <para>
+    /// Kept apart from <see cref="SubmitReceipt"/> deliberately. This is a stopgap for having
+    /// no payment API, not a rule about what an order is: when one is wired up, the caller
+    /// stops invoking this and the order waits for a real verification instead, with nothing
+    /// else in the aggregate needing to change.
+    /// </para>
+    /// </summary>
+    /// <returns>
+    /// Lines that could not be filled and are owed a refund. Empty when everything was filled,
+    /// and also when nothing could be, in which case the order is left for an officer.
+    /// </returns>
+    public IReadOnlyList<OrderLine> ConfirmOnlinePaymentUnchecked(
+        IReadOnlyDictionary<Guid, MerchItem> items)
+    {
+        if (IsCash)
+        {
+            throw new DomainException("A cash order is confirmed by an officer, not automatically.");
+        }
+
+        if (Status != OrderStatus.Pending)
+        {
+            throw new DomainException("Only an order awaiting confirmation can be confirmed.");
+        }
+
+        // The money has already moved, so a shortfall must not throw the reference away. Where
+        // nothing at all can be filled, the order stays in the queue for an officer to cancel
+        // and refund in full: AcknowledgeWithShortfall would refuse it outright.
+        if (!CanFillAnything(items))
+        {
+            return [];
+        }
+
+        return AcknowledgeWithShortfall(items);
+    }
+
+    /// <summary>Whether at least one line can still be filled from the given stock.</summary>
+    public bool CanFillAnything(IReadOnlyDictionary<Guid, MerchItem> items) =>
+        _lines.Any(l => items.TryGetValue(l.MerchItemId, out var item)
+                     && item.CanFulfil(l.Variant, l.Quantity));
 
     public void RejectReceipt(string reason)
     {

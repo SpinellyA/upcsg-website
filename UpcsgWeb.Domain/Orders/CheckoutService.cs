@@ -9,6 +9,7 @@ public static class CheckoutService
     public static Order Checkout(
         Cart cart,
         IReadOnlyDictionary<Guid, MerchItem> availableItems,
+        PaymentMethod paymentMethod = PaymentMethod.GCash,
         string? note = null)
     {
         if (cart.IsEmpty)
@@ -52,11 +53,18 @@ public static class CheckoutService
                 + " Please update your cart and try again.");
         }
 
-        var order = Order.Create(cart.UserId, note);
+        var order = Order.Create(cart.UserId, paymentMethod, note);
 
         foreach (var line in cart.Lines)
         {
             order.AddLine(availableItems[line.MerchItemId], line.Variant, line.Quantity);
+        }
+
+        // Cash goes to the officers now that the lines are on it. Online payment stays with
+        // the guilder until they send a reference.
+        if (paymentMethod == PaymentMethod.Cash)
+        {
+            order.QueueForCashPayment();
         }
 
         cart.Clear();

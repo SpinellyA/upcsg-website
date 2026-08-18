@@ -141,6 +141,7 @@ public static class DtoMapping
         GuilderName = guilder?.Name,
         GuilderEmail = guilder?.Email,
         Status = Enum.Parse<OrderStatusDto>(o.Status.ToString()),
+        PaymentMethod = Enum.Parse<PaymentMethodDto>(o.PaymentMethod.ToString()),
         PlacedAt = o.PlacedAt,
         UpdatedAt = o.UpdatedAt,
         Note = o.Note,

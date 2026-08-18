@@ -46,7 +46,7 @@
                 }
             </div>
             <span class="upcsg-statuspill upcsg-statuspill--@OrderStatusDisplay.Slug(_order.Status)">
-                @OrderStatusDisplay.Label(_order.Status)
+                @OrderStatusDisplay.Label(_order)
             </span>
         </div>
 
@@ -138,13 +138,34 @@
                 </MudPaper>
 
                 <MudPaper Square="true" Elevation="0" Class="upcsg-panel mt-4">
-                    <MudText Typo="Typo.overline" Class="upcsg-panel__title">GCash receipt</MudText>
+                    <MudText Typo="Typo.overline" Class="upcsg-panel__title">
+                        @(_order.IsCash ? "Cash payment" : "GCash receipt")
+                    </MudText>
 
-                    @if (_order.Receipt is null)
+                    @* A cash order has no receipt by design, so the panel explains what to do
+                       rather than reporting a missing one. *@
+                    @if (_order.IsCash)
+                    {
+                        <MudText Typo="Typo.body2">
+                            Paid in person. Take
+                            <strong>&#8369;@_order.Total.ToString("N2")</strong>
+                            from the guilder, then confirm below.
+                        </MudText>
+
+                        @if (_order.AwaitsCashCollection)
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true" Square="true"
+                                      Elevation="0" Class="mt-3">
+                                Nothing is held for this order yet. Stock comes off when you
+                                confirm, so check it is still there before taking any money.
+                            </MudAlert>
+                        }
+                    }
+                    else if (_order.Receipt is null)
                     {
                         <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
-                            No receipt yet. The guilder submits one from their order page, which is
-                            what moves this into your queue.
+                            No reference yet. The guilder sends one from their order page, and the
+                            order confirms itself at that point.
                         </MudText>
                     }
                     else
@@ -302,7 +323,7 @@
                     }
 
                     <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
-                        @OrderStatusDisplay.OfficerHint(_order.Status)
+                        @OrderStatusDisplay.OfficerHint(_order)
                     </MudText>
                 </MudPaper>
             </aside>

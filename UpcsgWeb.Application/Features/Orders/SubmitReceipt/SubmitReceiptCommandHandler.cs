@@ -23,6 +23,15 @@ public class SubmitReceiptCommandHandler(IUnitOfWork uow)
         order.SubmitReceipt(
             PaymentReceipt.FromScreenshot(command.ScreenshotUrl, command.ReferenceNumber));
 
+        // Confirmed on the spot, because there is no payment provider to verify the reference
+        // against and leaving guilders queued behind a review the guild cannot perform helps
+        // nobody. This call is the whole of that policy: delete it once a payment API exists
+        // and the order simply waits in Pending for a real check instead.
+        var items = await uow.Merch.GetManyAsync(
+            order.Lines.Select(l => l.MerchItemId), cancellationToken);
+
+        order.ConfirmOnlinePaymentUnchecked(items.ToDictionary(i => i.Id));
+
         await uow.SaveChangesAsync(cancellationToken);
 
         return order.ToDto();

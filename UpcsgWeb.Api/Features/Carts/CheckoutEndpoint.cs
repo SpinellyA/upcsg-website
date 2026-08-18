@@ -11,7 +11,9 @@ public class CheckoutEndpoint(ISender sender) : Endpoint<CheckoutRequest, OrderD
     public override void Configure()
     {
         Post("/cart/checkout");
-        Summary(s => s.Summary = "Check out the cart. Creates an order awaiting a GCash receipt.");
+        Summary(s => s.Summary =
+            "Check out the cart. A GCash order waits for the guilder to send a reference; "
+            + "a cash order goes straight to the officers to be paid in person and recorded.");
     }
 
     public override async Task HandleAsync(CheckoutRequest req, CancellationToken ct)
@@ -23,6 +25,9 @@ public class CheckoutEndpoint(ISender sender) : Endpoint<CheckoutRequest, OrderD
             return;
         }
 
-        await Send.OkAsync(await sender.Send(new CheckoutCommand(userId.Value, req.Note), ct), ct);
+        await Send.OkAsync(
+            await sender.Send(
+                new CheckoutCommand(userId.Value, req.Note, req.PaymentMethod), ct),
+            ct);
     }
 }

@@ -45,7 +45,8 @@ public class CreateOpportunityCommandHandler(IUnitOfWork uow)
             dto.ClosesAt?.UtcDateTime,
             dto.HappensAt?.UtcDateTime,
             dto.Url,
-            dto.PosterUrl);
+            dto.PosterUrl,
+            dto.IsDateTentative);
 
         opportunity.Feature(dto.IsFeatured);
 
@@ -76,7 +77,8 @@ public class UpdateOpportunityCommandHandler(IUnitOfWork uow)
             dto.ClosesAt?.UtcDateTime,
             dto.HappensAt?.UtcDateTime,
             dto.Url,
-            dto.PosterUrl);
+            dto.PosterUrl,
+            dto.IsDateTentative);
 
         opportunity.Feature(dto.IsFeatured);
 

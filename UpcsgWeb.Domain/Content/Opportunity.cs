@@ -33,10 +33,23 @@ public class Opportunity : AggregateRoot
 
     public bool IsFeatured { get; private set; }
 
+    /// <summary>
+    /// The dates on this entry are a best guess, not an announcement. Set when the ExeCom
+    /// wants to post something before the organiser has confirmed when it runs.
+    /// </summary>
+    public bool IsDateTentative { get; private set; }
+
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; private set; } = DateTime.UtcNow;
 
-    public bool IsClosed => ClosesAt is not null && ClosesAt < DateTime.UtcNow;
+    // A tentative entry never counts as closed. Its ClosesAt is a placeholder, so letting it
+    // elapse would archive something that has not actually happened yet.
+    public bool IsClosed => !IsDateTentative && ClosesAt is not null && ClosesAt < DateTime.UtcNow;
+
+    /// <summary>
+    /// Nothing firm to show: it is flagged tentative and carries no date at all.
+    /// </summary>
+    public bool IsDateUnannounced => IsDateTentative && ClosesAt is null && HappensAt is null;
 
     public static Opportunity Create(
         string title,
@@ -48,13 +61,14 @@ public class Opportunity : AggregateRoot
         DateTime? closesAt,
         DateTime? happensAt,
         string? url,
-        string? posterUrl = null)
+        string? posterUrl = null,
+        bool isDateTentative = false)
     {
         var opportunity = new Opportunity { Id = Guid.CreateVersion7() };
 
         opportunity.Update(
             title, description, kind, organiser, location,
-            opensAt, closesAt, happensAt, url, posterUrl);
+            opensAt, closesAt, happensAt, url, posterUrl, isDateTentative);
 
         return opportunity;
     }
@@ -69,7 +83,8 @@ public class Opportunity : AggregateRoot
         DateTime? closesAt,
         DateTime? happensAt,
         string? url,
-        string? posterUrl)
+        string? posterUrl,
+        bool isDateTentative = false)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
@@ -104,6 +119,7 @@ public class Opportunity : AggregateRoot
 
         Url = Blank(url);
         PosterUrl = Blank(posterUrl);
+        IsDateTentative = isDateTentative;
 
         UpdatedAt = DateTime.UtcNow;
     }

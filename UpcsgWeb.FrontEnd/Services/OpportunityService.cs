@@ -5,7 +5,12 @@ namespace UpcsgWeb.FrontEnd.Services;
 
 public interface IOpportunityService
 {
-    Task<List<OpportunityDto>> GetOpenAsync();
+    /// <summary>
+    /// Every opportunity, open and closed. Callers that only want live entries filter on
+    /// <see cref="OpportunityDto.IsClosed"/>; the opportunities page shows both, in
+    /// separate sections.
+    /// </summary>
+    Task<List<OpportunityDto>> GetAllAsync();
 
     Task<OpportunityDto?> GetAsync(Guid id);
 }
@@ -13,20 +18,20 @@ public interface IOpportunityService
 public class OpportunityService(HttpClient http, ApiOptions options, ISnapshotService snapshots)
     : IOpportunityService
 {
-    public Task<List<OpportunityDto>> GetOpenAsync() =>
+    public Task<List<OpportunityDto>> GetAllAsync() =>
         LiveOrSnapshot.ReadAsync(
             options,
             snapshots,
             async () => await http.GetFromJsonAsync<List<OpportunityDto>>(
                 "api/opportunities", UpcsgJson.Options) ?? [],
-            snapshot => snapshot.Opportunities.Where(o => !o.IsClosed).ToList(),
+            snapshot => snapshot.Opportunities,
             () => []);
 
     public async Task<OpportunityDto?> GetAsync(Guid id)
     {
         if (!options.IsConfigured)
         {
-            return (await GetOpenAsync()).FirstOrDefault(o => o.Id == id);
+            return (await GetAllAsync()).FirstOrDefault(o => o.Id == id);
         }
 
         try

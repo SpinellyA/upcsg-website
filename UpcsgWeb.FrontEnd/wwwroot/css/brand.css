@@ -2970,6 +2970,21 @@ h4, h5, h6, .upcsg-heading {
     color: var(--upcsg-liquid-chrome-gold);
 }
 
+/* Something posted before its dates are settled. Warmer than the default chip so it reads
+   as anticipation, but kept off gold, which is reserved for Featured. */
+.upcsg-chip--soon {
+    border-color: rgba(162, 83, 184, 0.5);
+    background: rgba(162, 83, 184, 0.16);
+    color: var(--upcsg-honeydew-white);
+}
+
+/* Deliberately the quietest chip on the card: it marks the end of something. */
+.upcsg-chip--closed {
+    border-color: rgba(204, 174, 222, 0.22);
+    background: rgba(204, 174, 222, 0.05);
+    color: var(--upcsg-text-muted);
+}
+
 /* --- Ordering steps --- */
 
 .upcsg-steps {

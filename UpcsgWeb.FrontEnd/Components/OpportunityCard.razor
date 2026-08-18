@@ -17,6 +17,17 @@
             {
                 <span class="upcsg-chip upcsg-chip--gold">Featured</span>
             }
+
+            @* State reads before the title, because whether this is still enterable is the
+               first thing worth knowing about an entry in a mixed list. *@
+            @if (Opportunity.IsDateTentative)
+            {
+                <span class="upcsg-chip upcsg-chip--soon">Coming soon</span>
+            }
+            else if (Opportunity.IsClosed)
+            {
+                <span class="upcsg-chip upcsg-chip--closed">Closed</span>
+            }
         </span>
 
         <span class="upcsg-oppcard__title">@Opportunity.Title</span>

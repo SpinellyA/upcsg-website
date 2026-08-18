@@ -39,10 +39,16 @@
     }
     else if (_open.Count == 0)
     {
+        @* Nothing to enter, but the archive below may still have entries, so this is a
+           notice rather than the whole page. It only takes over the page when there is
+           genuinely nothing on record at all. *@
         <section class="upcsg-section">
             <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty upcsg-empty--tall">
-                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                <div class="@(_past.Count == 0 ? "upcsg-empty upcsg-empty--tall" : "upcsg-empty")">
+                    @if (_past.Count == 0)
+                    {
+                        <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    }
                     <h2 class="upcsg-title-xl">Nothing open right now</h2>
                     <p>
                         The ExeCom posts hackathons, competitions and calls here as they come
@@ -187,6 +193,26 @@
         </section>
     }
 
+    @* Kept below everything actionable, and visually quietened by --past, so the archive is
+       reachable without competing with what is still open. *@
+    @if (!_loading && _past.Count > 0)
+    {
+        <section class="upcsg-section upcsg-pastboard">
+            <SectionHeading Kicker="@($"{_past.Count} closed")" Title="Past" />
+
+            <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                @foreach (var (item, i) in _past.Select((o, i) => (o, i)))
+                {
+                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
+                        <div id="@($"opportunity-{item.Id}")" class="upcsg-pastcard">
+                            <OpportunityCard Opportunity="item" />
+                        </div>
+                    </Reveal>
+                }
+            </div>
+        </section>
+    }
+
     <section class="upcsg-section upcsg-closing">
         <div class="upcsg-flare upcsg-closing__flare"></div>
 
@@ -215,7 +241,11 @@
         "Internships", "Calls for papers", "Conferences", "Deadlines",
     ];
 
+    // Split on arrival and kept apart from there. Everything on this page above the Past
+    // section - the calendar, its month range, the counts - is about what a reader can still
+    // act on, so only _open feeds any of it.
     private List<OpportunityDto> _open = [];
+    private List<OpportunityDto> _past = [];
     private bool _loading = true;
 
     private DateTime _month = FirstOf(DateTime.Today);
@@ -226,8 +256,8 @@
     private int LeadingBlanks => (int)FirstOfMonth.DayOfWeek;
 
     // The reachable range is this month through the furthest date anything is pencilled in for.
-    // Past months hold nothing - closed entries never reach this page - and months beyond the
-    // last deadline are empty grids nobody needs to page through.
+    // Past months hold nothing, because the calendar is built from _open alone, and months
+    // beyond the last deadline are empty grids nobody needs to page through.
     private DateTime EarliestMonth => FirstOf(DateTime.Today);
 
     private DateTime LatestMonth => _open
@@ -282,7 +312,13 @@
     {
         try
         {
-            _open = await OpportunityFeed.GetOpenAsync();
+            var all = await OpportunityFeed.GetAllAsync();
+
+            _open = [.. all.Where(o => !o.IsClosed)];
+
+            // Most recently closed first: what just ended is the part still worth reading,
+            // which is the reverse of how the open list is ordered.
+            _past = [.. all.Where(o => o.IsClosed).OrderByDescending(o => o.ClosesAt)];
         }
         finally
         {

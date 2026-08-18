@@ -18,7 +18,10 @@ public class OpportunityRepository(UpcsgDbContext db)
     {
         var now = DateTime.UtcNow;
 
-        return await ApplyDefaultOrder(ReadQuery.Where(o => o.ClosesAt == null || o.ClosesAt >= now))
+        // Mirrors Opportunity.IsClosed. Repeated as an expression rather than reused because
+        // EF has to translate this into SQL, and it cannot see into the property.
+        return await ApplyDefaultOrder(
+                ReadQuery.Where(o => o.IsDateTentative || o.ClosesAt == null || o.ClosesAt >= now))
             .ToListAsync(ct);
     }
 }

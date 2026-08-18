@@ -105,6 +105,7 @@ public static class DtoMapping
         Url = o.Url,
         PosterUrl = o.PosterUrl,
         IsFeatured = o.IsFeatured,
+        IsDateTentative = o.IsDateTentative,
         CreatedAt = o.CreatedAt,
     };
 

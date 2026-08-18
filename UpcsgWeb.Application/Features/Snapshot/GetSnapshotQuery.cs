@@ -31,7 +31,9 @@ public class GetSnapshotQueryHandler(IApplicationDbContext context, IUnitOfWork 
 
         var merch = await uow.Merch.GetAllAsync(cancellationToken);
 
-        var opportunities = await uow.Opportunities.GetOpenAsync(cancellationToken);
+        // All of them, not just the open ones: the public page lists closed entries under
+        // Past, and this snapshot is what that page reads when the API is asleep.
+        var opportunities = await uow.Opportunities.GetAllAsync(cancellationToken);
 
         var settings = await uow.SiteSettings.GetAsync(cancellationToken);
 

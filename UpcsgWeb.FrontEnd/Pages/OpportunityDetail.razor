@@ -235,8 +235,10 @@ else
 
             if (_item is not null)
             {
-                _others = (await OpportunityFeed.GetOpenAsync())
-                    .Where(o => o.Id != Id)
+                // "More like this" points at things the reader can still enter, so closed
+                // entries stay out of it even though this page will happily show one.
+                _others = (await OpportunityFeed.GetAllAsync())
+                    .Where(o => o.Id != Id && !o.IsClosed)
                     .ToList();
             }
         }

@@ -12,8 +12,19 @@ public static class OpportunityText
         _ => kind.ToString(),
     };
 
+    // Every method below checks IsDateTentative before touching DaysLeft, which is null for a
+    // tentative entry. Falling through to `?? 0` would read it as "closes today".
     public static string Deadline(OpportunityDto item)
     {
+        if (item.IsDateTentative)
+        {
+            var pencilled = item.ClosesAt ?? item.HappensAt;
+
+            return pencilled is null
+                ? "Date to be announced"
+                : $"Around {pencilled.Value.ToLocalTime():MMMM yyyy}";
+        }
+
         if (item.ClosesAt is null)
         {
             return item.HappensAt is null
@@ -35,6 +46,11 @@ public static class OpportunityText
 
     public static string Countdown(OpportunityDto item)
     {
+        if (item.IsDateTentative)
+        {
+            return "Soon";
+        }
+
         if (item.ClosesAt is null)
         {
             return "Open";
@@ -52,6 +68,15 @@ public static class OpportunityText
 
     public static string CountdownUnit(OpportunityDto item)
     {
+        if (item.IsDateTentative)
+        {
+            var pencilled = item.ClosesAt ?? item.HappensAt;
+
+            return pencilled is null
+                ? "Date to be announced"
+                : $"Pencilled in for {pencilled.Value.ToLocalTime():MMMM yyyy}";
+        }
+
         if (item.ClosesAt is null)
         {
             return "No deadline given";
@@ -70,6 +95,11 @@ public static class OpportunityText
 
     public static string Urgency(OpportunityDto item)
     {
+        if (item.IsDateTentative)
+        {
+            return "tentative";
+        }
+
         if (item.ClosesAt is null)
         {
             return "open";

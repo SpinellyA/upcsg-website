@@ -118,9 +118,19 @@
                 </MudGrid>
 
                 <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
-                    The closing date drives the ordering and the "closes in N days" label, and is
-                    what removes an entry from the public page once it passes. Leave it empty for
-                    a standing opportunity with no deadline.
+                    The closing date drives the ordering and the "closes in N days" label. Once it
+                    passes, the entry moves down into Past on the public page rather than
+                    disappearing. Leave it empty for a standing opportunity with no deadline.
+                </MudText>
+
+                <MudSwitch T="bool" @bind-Value="_item.IsDateTentative" Color="Color.Warning"
+                           Label="Dates are not final yet (show as Coming soon)" Class="mt-4" />
+
+                <MudText Typo="Typo.caption" Class="upcsg-panel__hint">
+                    For posting something before the organiser has confirmed when it runs. The
+                    dates above are then shown as a rough month rather than an announcement, and
+                    the entry never drops into Past on its own. With no dates at all it reads
+                    "Date to be announced".
                 </MudText>
 
                 <MudSwitch T="bool" @bind-Value="_item.IsFeatured" Color="Color.Success"

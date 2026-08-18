@@ -25,6 +25,10 @@ public class OpportunityConfiguration : IEntityTypeConfiguration<Opportunity>
             .HasMaxLength(40)
             .IsRequired();
 
+        // Explicit default so the column can be added to a table that already has rows:
+        // everything published before this existed had a firm date by definition.
+        builder.Property(o => o.IsDateTentative).HasDefaultValue(false);
+
         builder.HasIndex(o => o.ClosesAt);
         builder.HasIndex(o => o.Kind);
     }

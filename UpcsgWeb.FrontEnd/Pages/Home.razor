@@ -333,7 +333,9 @@
 
         _merch = await MerchService.GetMerchAsync();
 
-        _opportunities = await OpportunityFeed.GetOpenAsync();
+        // Open ones only. The home strip is a call to action, and something whose deadline
+        // has passed is not one; the archive lives on the opportunities page.
+        _opportunities = [.. (await OpportunityFeed.GetAllAsync()).Where(o => !o.IsClosed)];
 
         _achievements = await AchievementService.GetAchievementsAsync();
         _latestAchievement = _achievements

@@ -477,6 +477,25 @@
         border-color 0.35s ease;
 }
 
+/* The archive sits under everything actionable, so its cards are muted to keep the eye on
+   what is still open. Full opacity returns on hover: dimmed is a ranking cue, not a
+   statement that the content matters less once you have chosen to look at it. */
+.upcsg-pastcard {
+    opacity: 0.62;
+    filter: saturate(0.75);
+    transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.upcsg-pastcard:hover,
+.upcsg-pastcard:focus-within {
+    opacity: 1;
+    filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-pastcard { transition: none; }
+}
+
 .upcsg-oppcard:hover,
 .upcsg-oppcard:focus-visible {
     transform: translateY(-6px);

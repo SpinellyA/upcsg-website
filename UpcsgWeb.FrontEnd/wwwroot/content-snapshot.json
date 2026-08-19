@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-16T16:45:44.0649551Z",
+  "generatedAt": "2026-08-18T16:52:40.0015794Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -12,28 +12,41 @@
       "quote": "du bist gut genug",
       "bio": "Chriscia leads the guild: she sets the direction for the year, chairs the Executive Committee, and answers for everything UPCSG puts its name on.",
       "profile": "I'm Chriscia, I'm the director of the upcsg ofapokadofkjaogsw Chriscia leads the guild: she sets the direction for the year, chairs the Executive Committee, and answers for everything UPCSG puts its name on.",
-      "achievements": [],
+      "achievements": [
+        {
+          "title": "GOAT of the YEAR",
+          "year": 2026
+        },
+        {
+          "title": "GOAT of the SEASON",
+          "year": 2025
+        },
+        {
+          "title": "Im running out of ideas y'all should setup your own profiles",
+          "year": 2027
+        }
+      ],
       "links": [
         {
           "kind": "Email",
-          "value": "xanelle@up.edu.ph",
-          "href": "mailto:xanelle@up.edu.ph",
+          "value": "cmllamas@up.edu.ph",
+          "href": "mailto:cmllamas@up.edu.ph",
           "isEmail": true,
-          "display": "xanelle@up.edu.ph"
+          "display": "cmllamas@up.edu.ph"
         },
         {
           "kind": "Facebook",
-          "value": "https://www.facebook.com/",
-          "href": "https://www.facebook.com/",
+          "value": "https://www.facebook.com/chrisciaxanelle.llamas",
+          "href": "https://www.facebook.com/chrisciaxanelle.llamas",
           "isEmail": false,
-          "display": "facebook.com"
+          "display": "facebook.com/chrisciaxanelle.llamas"
         },
         {
           "kind": "Instagram",
-          "value": "https://instagram.com",
-          "href": "https://instagram.com",
+          "value": "https://www.instagram.com/chrisciaxanelle/",
+          "href": "https://www.instagram.com/chrisciaxanelle/",
           "isEmail": false,
-          "display": "instagram.com"
+          "display": "instagram.com/chrisciaxanelle"
         }
       ],
       "displayOrder": 1,
@@ -248,7 +261,7 @@
           "name": "Small",
           "description": "",
           "price": 320.0,
-          "stock": 0,
+          "stock": 2,
           "photoUrls": []
         },
         {
@@ -279,7 +292,7 @@
       "inStock": true,
       "salePercentage": 0.0,
       "isOnSale": false,
-      "isPreorder": true,
+      "isPreorder": false,
       "preorderClosesAt": null,
       "priceFrom": 320.0,
       "listPriceFrom": 320.0,
@@ -365,26 +378,46 @@
       "hasActiveSale": true,
       "isPreorderClosed": false,
       "imageUrl": "offline-media/a5c25bbab5fad4c8.webp"
+    },
+    {
+      "id": "01a014e7-42c3-7b78-9c81-a0f25f3fab02",
+      "name": "ZZ TEST stock item (delete me)",
+      "description": "Temporary, for cart revalidation checks.",
+      "price": 100.0,
+      "stock": 3,
+      "photoUrls": [],
+      "variants": [],
+      "inStock": true,
+      "salePercentage": 0.0,
+      "isOnSale": false,
+      "isPreorder": false,
+      "preorderClosesAt": null,
+      "priceFrom": 100.0,
+      "listPriceFrom": 100.0,
+      "hasPriceRange": false,
+      "hasActiveSale": false,
+      "isPreorderClosed": false,
+      "imageUrl": null
     }
   ],
   "opportunities": [
     {
-      "id": "019ff95f-a9c5-7570-a123-a004a1e77b47",
-      "title": "2026 Gawr Gura Hackathon",
-      "description": "The inaugural 2026 Gawr Gura Hackathon has officially launched, drawing thousands of programmers, designers, and VTuber enthusiasts globally to build open-source community tools. Organized by independent fan developers, the virtual event focuses on creating interactive widgets, chat integrations, and fan games dedicated to the legacy of the former Hololive English star Gawr Gura.\n\nKey Event Details\nFormat: 100% Virtual global hackathon\nDuration: 48-hour continuous coding session\nTotal Prize Pool: $5,000 USD funded via community crowdfunding\nPrimary Track: Open-source web tools and interactive streaming extensions\nCompetition TracksStreamer Tooling: Interactive widgets designed for Twitch and YouTube overlays.Fan Games: Lightweight, browser-playable mini-games built using HTML5 or Unity.\nAI & Voice: Responsible AI applications for soundboards and chat moderation assistants.Accessibility: Closed-captioning and screen-reading tools tailored for live virtual content.\nRules and Submission Guidelines\n\nOpen Source: All project code must be made public on GitHub.Fresh Code: Teams cannot use pre-existing software frameworks unique to their specific project.Team Size: Maximum of 5 members per participating team.Deadlines: Final project repositories must be submitted before Sunday at 11:59 PM UTC.",
+      "id": "01a01066-8a8d-7e9c-8e67-829829d60748",
+      "title": "#ImaGnation2026: The GCash Innovation Challenge",
+      "description": "A 3-day hackathon and case competition challenging student innovators to build real-world fintech solutions that help Filipino entrepreneurs and the #NegosyoNation succeed.",
       "kind": "Hackathon",
-      "organiser": "Hololive LLC",
-      "location": "Atlantis",
-      "opensAt": "2026-08-30T16:00:00+00:00",
-      "closesAt": "2026-09-01T15:59:59+00:00",
-      "happensAt": "2026-09-15T16:00:00+00:00",
-      "url": null,
-      "posterUrl": null,
+      "organiser": "GCash",
+      "location": "GCash Office, Bonifacio Global City, Taguig, Metro Manila (onsite attendance required for top teams).",
+      "opensAt": "2026-08-06T16:00:00+00:00",
+      "closesAt": "2026-08-21T15:59:59+00:00",
+      "happensAt": "2026-08-06T16:00:00+00:00",
+      "url": "https://gcash.com/imagnation",
+      "posterUrl": "offline-media/509eafc2d00546ef.webp",
       "isFeatured": false,
-      "createdAt": "2026-08-13T04:27:04.005357+00:00",
+      "createdAt": "2026-08-17T15:45:50.733545+00:00",
       "isClosed": false,
       "hasDeadline": true,
-      "daysLeft": 16
+      "daysLeft": 3
     }
   ],
   "settings": {

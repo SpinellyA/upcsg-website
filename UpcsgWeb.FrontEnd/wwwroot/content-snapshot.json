@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-20T16:55:38.2603531Z",
+  "generatedAt": "2026-08-21T16:55:45.5285438Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -402,11 +402,11 @@
       "isFeatured": false,
       "isDateTentative": false,
       "createdAt": "2026-08-17T15:45:50.733545+00:00",
-      "isClosed": false,
+      "isClosed": true,
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": 1
+      "daysLeft": 0
     }
   ],
   "settings": {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-22T16:43:56.3649073Z",
+  "generatedAt": "2026-08-23T16:45:56.1567355Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -113,21 +113,6 @@
       "hasProfile": false
     },
     {
-      "id": "019fcda6-de9b-7edf-93a2-619b1a4cae1a",
-      "name": "Emman Esperanza",
-      "role": "Marketing Director",
-      "category": "ExeCom",
-      "committee": "Directorates",
-      "photoUrl": "offline-media/decceb4f535ea97a.webp",
-      "quote": "Good work deserves to be seen.",
-      "bio": "Emman runs the guild's promotion: campaigns for events and merch drops, and making sure the things guilders build actually reach an audience.",
-      "profile": null,
-      "achievements": [],
-      "links": [],
-      "displayOrder": 6,
-      "hasProfile": false
-    },
-    {
       "id": "019fcda6-df11-700f-91a6-1b48ac46df3f",
       "name": "Jasmine Monteroso",
       "role": "Creatives Director",
@@ -143,21 +128,6 @@
       "hasProfile": false
     },
     {
-      "id": "019fcda6-df89-7d19-8cd7-01eb99b17b5d",
-      "name": "Sylvia Staheli",
-      "role": "Partnerships & Linkages Director",
-      "category": "ExeCom",
-      "committee": "Directorates",
-      "photoUrl": "offline-media/9294a1f398b5bd42.webp",
-      "quote": "Nobody builds anything alone.",
-      "bio": "Sylvia builds the guild's relationships outside the org: sponsors, partner organizations, and the industry contacts behind our talks and events.",
-      "profile": null,
-      "achievements": [],
-      "links": [],
-      "displayOrder": 8,
-      "hasProfile": false
-    },
-    {
       "id": "019fcda6-e018-7716-bd59-cd5453845e12",
       "name": "June Abadia",
       "role": "Education & Development Director",
@@ -170,21 +140,6 @@
       "achievements": [],
       "links": [],
       "displayOrder": 9,
-      "hasProfile": false
-    },
-    {
-      "id": "019fcda6-e092-7f62-afc0-cee471ee048d",
-      "name": "Erik James M. Caliskis",
-      "role": "Communications & Logistics Director",
-      "category": "ExeCom",
-      "committee": "Directorates",
-      "photoUrl": "offline-media/a45ce7fd682bbbc1.webp",
-      "quote": "The venue, the schedule, and the group chat.",
-      "bio": "Erik keeps events standing up: booking, equipment, timelines, and the internal communication that gets everyone to the right place.",
-      "profile": null,
-      "achievements": [],
-      "links": [],
-      "displayOrder": 10,
       "hasProfile": false
     },
     {
@@ -219,14 +174,62 @@
     {
       "id": "019fd218-6b41-74ab-8ebd-a379667bf19d",
       "title": "UPCSG General Assembly",
-      "description": "The UP Cebu Student Government (UPCSG or UPC USC) general assembly serves as the supreme deliberative gathering of the student body, uniting students to review council accomplishments, debate pressing academic and national policies, and vote on progressive student-led resolutions and welfare initiatives.",
+      "description": "The UP Cebu Computer Science Guild (UPCSG) general assembly serves is the general meeting of all the members of the Guild, where the constitution and by-laws, roadmap, and the plans of the Guild for the current academic year are discussed. It includes a freshman orientation segment aimed at welcoming new members and familiarizing them with the organization's structure and goals. This event is pivotal for fostering unity, transparency, and active engagement among members, creating a sense of belonging and shared purpose.",
       "startDateTime": "2026-08-18T05:00:00Z",
-      "endDateTime": null,
+      "endDateTime": "2026-08-18T09:00:00Z",
       "location": "Peformance Arts Hall",
-      "posterUrl": "offline-media/c4ee45ee7d5b3be5.webp",
+      "posterUrl": "offline-media/2c3a0b5da4fb9438.webp",
       "isDateTentative": false,
       "isScheduled": true,
       "isComingSoon": false
+    },
+    {
+      "id": "01a02db1-0056-7a64-a404-7bc8af3498eb",
+      "title": "AWS Student Community Day 2026",
+      "description": "𝗔𝗪𝗦 𝗦𝘁𝘂𝗱𝗲𝗻𝘁 𝗖𝗼𝗺𝗺𝘂𝗻𝗶𝘁𝘆 𝗗𝗮𝘆 𝟮𝟬𝟮𝟲 is officially here! With this year's theme, 𝗕𝘂𝗶𝗹𝘁 𝘁𝗼 𝗕𝘂𝗶𝗹𝗱, we're bringing the best of the cloud straight to you.\n\nCebuano students, are you ready to innovate, connect, and build the future? 🚀\n\nStay tuned for more details!\n\n#AWSStudentCommunityDay #BuiltToBuild",
+      "startDateTime": "2026-08-30T05:00:00Z",
+      "endDateTime": "2026-08-30T11:00:00Z",
+      "location": "Performing Arts Hall",
+      "posterUrl": "offline-media/392a98e90c0a23ae.webp",
+      "isDateTentative": false,
+      "isScheduled": true,
+      "isComingSoon": false
+    },
+    {
+      "id": "01a02e55-5194-71ba-b2ff-747be8cd9511",
+      "title": "UpSkilling",
+      "description": "The UPCSG UpSkilling is an educational activity initiative where Guilders are given the opportunity to learn and grow along with their peers. The UPCSG will invite and coordinate with professionals in the industry who will impart their knowledge to the students through different UpSkilling sessions, each tackling different topics with different speakers. The event will be held for 1 month, with one session held per week, given that there are morning and afternoon sessions.",
+      "startDateTime": "2026-09-16T10:00:00Z",
+      "endDateTime": null,
+      "location": "",
+      "posterUrl": null,
+      "isDateTentative": true,
+      "isScheduled": false,
+      "isComingSoon": true
+    },
+    {
+      "id": "01a02e5a-0381-7bc0-b4e1-b1f8278c52a8",
+      "title": "Acquaintance Party",
+      "description": "Get to know your fellow members, make new friends, and create lasting memories at our Acquaintance Party! Join us for an exciting time filled with fun activities, games, and meaningful conversations as we welcome everyone into the community.",
+      "startDateTime": "2026-09-27T01:00:00Z",
+      "endDateTime": null,
+      "location": "TBA",
+      "posterUrl": null,
+      "isDateTentative": false,
+      "isScheduled": true,
+      "isComingSoon": false
+    },
+    {
+      "id": "01a02e5e-38e5-72c8-a569-38d8ced2116d",
+      "title": "Code Ta Bai!",
+      "description": "The UPCSG Code Ta Bai! is an educational workshop for Guilders to expand their skills and knowledge by working hands-on and build on the spot. \n\nTopic is soon to be decided and announced. Look forward to it!",
+      "startDateTime": "2026-10-14T10:00:00Z",
+      "endDateTime": null,
+      "location": "",
+      "posterUrl": null,
+      "isDateTentative": true,
+      "isScheduled": false,
+      "isComingSoon": true
     }
   ],
   "achievements": [
@@ -295,7 +298,7 @@
           "photoUrls": []
         }
       ],
-      "inStock": true,
+      "inStock": false,
       "salePercentage": 0.0,
       "isOnSale": false,
       "isPreorder": false,
@@ -351,7 +354,7 @@
           "photoUrls": []
         }
       ],
-      "inStock": true,
+      "inStock": false,
       "salePercentage": 0.0,
       "isOnSale": false,
       "isPreorder": true,
@@ -373,7 +376,7 @@
         "offline-media/a5c25bbab5fad4c8.webp"
       ],
       "variants": [],
-      "inStock": true,
+      "inStock": false,
       "salePercentage": 25.0,
       "isOnSale": true,
       "isPreorder": true,
@@ -406,7 +409,7 @@
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": -1
+      "daysLeft": -2
     }
   ],
   "settings": {

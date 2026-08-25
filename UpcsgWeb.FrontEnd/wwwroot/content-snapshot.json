@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-24T16:58:49.3683486Z",
+  "generatedAt": "2026-08-25T16:59:46.5641375Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -191,6 +191,30 @@
       "endDateTime": "2026-08-30T11:00:00Z",
       "location": "Performing Arts Hall",
       "posterUrl": "offline-media/392a98e90c0a23ae.webp",
+      "isDateTentative": false,
+      "isScheduled": true,
+      "isComingSoon": false
+    },
+    {
+      "id": "01a0392c-663a-7761-a1d9-1923d304930e",
+      "title": "Tudlo: Math Tutoring",
+      "description": "A peer-led tutoring program held by UPCSG to aid freshman students on their upcoming 1st Long Exam on Math 53.",
+      "startDateTime": "2026-09-09T01:00:00Z",
+      "endDateTime": null,
+      "location": "TBA",
+      "posterUrl": null,
+      "isDateTentative": false,
+      "isScheduled": true,
+      "isComingSoon": false
+    },
+    {
+      "id": "01a0392b-28fa-7ccc-9b7e-2ed72c36fbea",
+      "title": "AWS Community Day Cebu 2026",
+      "description": "AWS Comm Day aims to hold a conference that elevates technical rigor with a focus on Server Infrastructure, Cybersecurity & Compliance, and Generative AI & MLOps. \n\nRegistration is now open! 🎟️ Join us on September 12 for AWS Community Day Cebu 2026. Secure your spot here: https://commday2026.awsugcebu.org/\n\nSave the date and get ready for a day of cloud, builders, and community. 🚀",
+      "startDateTime": "2026-09-12T00:00:00Z",
+      "endDateTime": null,
+      "location": "Performing Arts Hall",
+      "posterUrl": "offline-media/ef7c68f763ecc60b.webp",
       "isDateTentative": false,
       "isScheduled": true,
       "isComingSoon": false
@@ -409,7 +433,7 @@
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": -3
+      "daysLeft": -4
     }
   ],
   "settings": {

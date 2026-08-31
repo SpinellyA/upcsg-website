@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-08-30T19:20:57.0558532Z",
+  "generatedAt": "2026-08-31T21:30:40.3182268Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -433,14 +433,14 @@
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": -9
+      "daysLeft": -10
     }
   ],
   "settings": {
     "eventsYear": null,
     "eventsMonth": null,
     "resolvedYear": 2026,
-    "resolvedMonth": 8,
+    "resolvedMonth": 9,
     "followsCurrentMonth": true
   }
 }

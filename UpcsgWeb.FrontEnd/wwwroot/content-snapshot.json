@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-12T18:28:30.9629771Z",
+  "generatedAt": "2026-09-13T18:49:51.0181493Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -198,11 +198,11 @@
     {
       "id": "01a0392c-663a-7761-a1d9-1923d304930e",
       "title": "Tudlo: Math Tutoring",
-      "description": "A peer-led tutoring program held by UPCSG to aid freshman students on their upcoming 1st Long Exam on Math 53.",
+      "description": "A peer-led tutoring program held by UPCSG to aid freshman students on their upcoming 1st Long Exam on Math 53 and CMSC 11.",
       "startDateTime": "2026-09-09T01:00:00Z",
       "endDateTime": null,
       "location": "TBA",
-      "posterUrl": null,
+      "posterUrl": "offline-media/d9ebccbcf61e8c8a.webp",
       "isDateTentative": false,
       "isScheduled": true,
       "isComingSoon": false
@@ -223,13 +223,13 @@
       "id": "01a02e55-5194-71ba-b2ff-747be8cd9511",
       "title": "UpSkilling",
       "description": "The UPCSG UpSkilling is an educational activity initiative where Guilders are given the opportunity to learn and grow along with their peers. The UPCSG will invite and coordinate with professionals in the industry who will impart their knowledge to the students through different UpSkilling sessions, each tackling different topics with different speakers. The event will be held for 1 month, with one session held per week, given that there are morning and afternoon sessions.",
-      "startDateTime": "2026-09-16T10:00:00Z",
-      "endDateTime": null,
-      "location": "",
-      "posterUrl": null,
-      "isDateTentative": true,
-      "isScheduled": false,
-      "isComingSoon": true
+      "startDateTime": "2026-09-23T00:00:00Z",
+      "endDateTime": "2026-09-23T08:00:00Z",
+      "location": "ILC",
+      "posterUrl": "offline-media/0b2d50c0c5ae3a78.webp",
+      "isDateTentative": false,
+      "isScheduled": true,
+      "isComingSoon": false
     },
     {
       "id": "01a02e5a-0381-7bc0-b4e1-b1f8278c52a8",
@@ -238,7 +238,7 @@
       "startDateTime": "2026-09-27T01:00:00Z",
       "endDateTime": null,
       "location": "TBA",
-      "posterUrl": null,
+      "posterUrl": "offline-media/d206fcc959462976.webp",
       "isDateTentative": false,
       "isScheduled": true,
       "isComingSoon": false
@@ -274,6 +274,15 @@
       "imageUrl": "offline-media/225e627d7b108fc5.webp",
       "category": "Competition",
       "createdAt": "2026-08-08T15:47:52.96875+00:00"
+    },
+    {
+      "id": "01a09a7a-0dcc-7add-b311-2be8ab00c797",
+      "title": "Team CULAY: Champion of GCash ImaGnation 2026",
+      "description": "🏆𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐮𝐥𝐚𝐭𝐢𝐨𝐧𝐬, 𝐓𝐞𝐚𝐦 𝐂𝐮𝐥𝐚𝐲!\n\n𝑻𝒂𝒍𝒂𝒈𝒂𝒏𝒈 𝒎𝒂𝒚 𝑪𝒖𝒍𝒂𝒚 𝒂𝒏𝒈 𝒕𝒂𝒈𝒖𝒎𝒑𝒂𝒚! The University of the Philippines Cebu’s very own BS Computer Science students have once again shown us what they can do, as Team Culay took on 400+ registered teams from across Luzon, Visayas, and Mindanao at GCash ImaGnation 2026, held at GCash Headquarters in Bonifacio Global City, and emerged as 𝐭𝐡𝐞 𝐂𝐇𝐀𝐌𝐏𝐈𝐎𝐍!\n\nComposed of Christian Brillos, Joanalyn Cadampog, Berk Stephen Cutamora, Jezreel Chad Lumbab, and Jimmy Eleazar Mijares, Team Culay proudly represents the innovation and entrepreneurial spirit of UP Cebu.\n\nCongratulations, UP Cebu and Team Culay! Your achievement continues to make the UP Cebu community proud. Padayon!\n\n🎨 | Jasmine Monteroso & Nikka Delfin\n🖊️ | Ralph Borbon\n\n#UPCSG\n#PadayonKomsai\n#GCashImaGnation2026",
+      "year": 2026,
+      "imageUrl": "offline-media/137f94f13be3b19a.webp",
+      "category": "Competition",
+      "createdAt": "2026-09-13T11:14:45.32472+00:00"
     }
   ],
   "merch": [
@@ -433,7 +442,7 @@
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": -22
+      "daysLeft": -23
     }
   ],
   "settings": {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-23T19:42:52.7692464Z",
+  "generatedAt": "2026-09-24T20:01:46.6329453Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -155,6 +155,66 @@
       "achievements": [],
       "links": [],
       "displayOrder": 11,
+      "hasProfile": false
+    },
+    {
+      "id": "01a0d2aa-d98a-7e8d-bfc0-42a8b725596d",
+      "name": "Maria Zerika Villareal",
+      "role": "Logistics Director",
+      "category": "ExeCom",
+      "committee": "Directorates",
+      "photoUrl": "offline-media/6c28b44a02bccf3a.webp",
+      "quote": "Turning chaos into order.",
+      "bio": "Oversees the operational planning, equipment, and venue management for all organization events. Coordinates behind-the-scenes execution to ensure every project runs smoothly and stays on schedule.",
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 12,
+      "hasProfile": false
+    },
+    {
+      "id": "01a0d2b0-7980-7ce2-bc35-ebe4c3740f44",
+      "name": "Zachary Paul Matriano",
+      "role": "Communications Director",
+      "category": "ExeCom",
+      "committee": "Directorates",
+      "photoUrl": "offline-media/1a2dc63147237f17.webp",
+      "quote": "The voice behind the vision.",
+      "bio": "Drives the internal and external communication strategies to ensure smooth messaging across all departments. Coordinates campaigns, newsletters, and announcements to keep members informed and our campus community connected.",
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 13,
+      "hasProfile": false
+    },
+    {
+      "id": "01a0d2b3-42de-7d8e-b0dc-a2bdd4c05370",
+      "name": "Adiel Jagdon",
+      "role": "Partnerships and Linkages Director",
+      "category": "ExeCom",
+      "committee": "Directorates",
+      "photoUrl": "offline-media/ec847b4e9890f8ae.webp",
+      "quote": "Building bridges that open doors.",
+      "bio": "Establishes and nurtures strategic relationships with external organizations, sponsors, and campus allies. Secures key sponsorships and collaborative deals to amplify the organization's reach and resources.",
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 14,
+      "hasProfile": false
+    },
+    {
+      "id": "01a0d332-c9db-7d0e-b82a-310e70a81411",
+      "name": "Ralph Christian Borbon",
+      "role": "Marketing Director",
+      "category": "ExeCom",
+      "committee": "Directorates",
+      "photoUrl": "offline-media/2085fef34ed7fed1.webp",
+      "quote": "Making our brand impossible to ignore.",
+      "bio": "Leads the creative vision and promotional strategies to boost organizational visibility and event attendance. Oversees campaign design, audience targeting, and content strategies to keep the brand engaging and dynamic.",
+      "profile": null,
+      "achievements": [],
+      "links": [],
+      "displayOrder": 15,
       "hasProfile": false
     }
   ],
@@ -442,7 +502,7 @@
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": -33
+      "daysLeft": -34
     }
   ],
   "settings": {

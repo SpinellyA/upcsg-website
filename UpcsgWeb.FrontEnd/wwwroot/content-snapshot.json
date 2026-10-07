@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-06T21:02:39.0160132Z",
+  "generatedAt": "2026-10-07T21:22:02.2536668Z",
   "members": [
     {
       "id": "019fcda6-dc06-7270-9fba-0fe8fa3c69fb",
@@ -502,7 +502,7 @@
       "hasDeadline": true,
       "isDateUnannounced": false,
       "showsCountdown": true,
-      "daysLeft": -46
+      "daysLeft": -47
     }
   ],
   "settings": {

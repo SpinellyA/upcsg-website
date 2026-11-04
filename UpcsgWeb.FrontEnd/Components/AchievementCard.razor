@@ -10,6 +10,8 @@
                  Class="upcsg-achcard__media" />
 
     <span class="upcsg-achcard__body">
+
+        <span class="upcsg-achcard__title">@Entry.Title</span>
         <span class="upcsg-achcard__kicker">
             @if (Variant == Density.Lead)
             {
@@ -26,8 +28,6 @@
                 <text>@Entry.Category</text>
             }
         </span>
-
-        <span class="upcsg-achcard__title">@Entry.Title</span>
 
         <span class="upcsg-achcard__standfirst">@Prose.Standfirst(Entry.Description)</span>
 

@@ -1,26 +1,28 @@
-<Reveal Variant="Reveal.RevealMotion.Up" Class="@($"upcsg-sechead {Class}")">
+<div class="upcsg-sechead @Class">
     <div class="upcsg-sechead__text">
-        @if (!string.IsNullOrWhiteSpace(Kicker))
-        {
-            <p class="upcsg-kicker">
-                <span class="upcsg-star upcsg-star--tiny" aria-hidden="true"></span>
-                @Kicker
-            </p>
-        }
-
-        <h2 class="upcsg-title-xl @(Centered ? "upcsg-title-xl--center" : null)">@Title</h2>
+        <Reveal Variant="Reveal.RevealMotion.Up">
+            <h2 class="upcsg-title-xl" id="@Id">@Title</h2>
+        </Reveal>
 
         @if (!string.IsNullOrWhiteSpace(Lede))
         {
-            <p class="upcsg-lede upcsg-sechead__lede">@Lede</p>
+            <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
+                <p class="upcsg-lede upcsg-sechead__lede">@Lede</p>
+            </Reveal>
         }
     </div>
 
-    @if (Action is not null)
+    @if (!string.IsNullOrWhiteSpace(Kicker) || Action is not null)
     {
-        <div class="upcsg-sechead__action">@Action</div>
+        <Reveal Variant="Reveal.RevealMotion.Fade" Delay="140" Class="upcsg-sechead__action">
+            @if (!string.IsNullOrWhiteSpace(Kicker))
+            {
+                <span class="upcsg-sechead__note">@Kicker</span>
+            }
+            @Action
+        </Reveal>
     }
-</Reveal>
+</div>
 
 @code {
     [Parameter] public string? Kicker { get; set; }
@@ -34,4 +36,6 @@
     [Parameter] public bool Centered { get; set; }
 
     [Parameter] public string? Class { get; set; }
+
+    [Parameter] public string? Id { get; set; }
 }

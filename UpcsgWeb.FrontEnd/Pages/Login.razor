@@ -6,26 +6,24 @@
 @inject NavigationManager Navigation
 @inject GoogleAuthOptions Google
 @inject IJSRuntime JS
+@inject IGuildPhotoService GuildPhotos
 @implements IAsyncDisposable
 
 <PageTitle>Sign in - UPCSG</PageTitle>
 
 <PageMasthead Section="Sign in"
-              Meta="@(["Google account", "No password stored"])"
-              Title="Guilder"
-              Accent="access"
-              Horizon="false">
+              Field="night"
+              Title="Sign in to the guild">
     <Lede>
-        Sign in with your Google account. We use it only to identify you. We never see or
-        store your password.
+        Use your Google account. It identifies you to the officers; we never see or store your
+        password.
     </Lede>
 </PageMasthead>
 
-<div class="upcsg-page upcsg-page--after-hero">
+<Chapter Field="paper">
     <AuthorizeView>
         <Authorized>
-            <section class="upcsg-section upcsg-band upcsg-cta-band">
-                <p class="upcsg-kicker">Already signed in</p>
+            <section class="upcsg-cta-band">
                 <h2 class="upcsg-title-xl">Hello, @context.User.Identity?.Name</h2>
                 <p class="upcsg-lede">You're signed in and ready to go.</p>
                 <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="">
@@ -35,9 +33,9 @@
         </Authorized>
 
         <NotAuthorized>
-            <section class="upcsg-section upcsg-auth">
-                <div class="upcsg-auth__panel upcsg-panel">
-                    <h2 class="upcsg-auth__title">Continue with Google</h2>
+            <section class="upcsg-auth">
+                <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-auth__panel">
+                    <h3 class="upcsg-auth__title">Continue with Google</h3>
                     <p class="upcsg-auth__text">
                         Signing in creates a guilder account using your name, email address, and
                         profile picture. Nothing else is collected.
@@ -88,20 +86,29 @@
                         Signing in identifies you to the guild. Editing the site is limited to
                         executive committee accounts.
                     </p>
-                </div>
+                </Reveal>
 
                 <aside class="upcsg-auth__aside">
-                    <p class="upcsg-kicker">What you get</p>
+                    <h2>What signing in gives you</h2>
                     <ul class="upcsg-auth__list">
-                        <li>A guilder account tied to your Google identity</li>
-                        <li>Your name and photo on anything you post</li>
-                        <li>Officers additionally get access to edit site content</li>
+                        <li><Reveal Variant="Reveal.RevealMotion.Up">A guilder account tied to your Google identity</Reveal></li>
+                        <li><Reveal Variant="Reveal.RevealMotion.Up">Your name and photo on anything you post</Reveal></li>
+                        <li><Reveal Variant="Reveal.RevealMotion.Up">Officers additionally get access to edit site content</Reveal></li>
                     </ul>
+                    @if (_photos.Count > 0)
+                    {
+                        <div class="upcsg-pile">
+                            @foreach (var photo in _photos.Take(3))
+                            {
+                                <figure><img src="@photo.File" alt="Guilders at a UPCSG event" width="600" height="800" loading="lazy" /></figure>
+                            }
+                        </div>
+                    }
                 </aside>
             </section>
         </NotAuthorized>
     </AuthorizeView>
-</div>
+</Chapter>
 
 @code {
     [SupplyParameterFromQuery(Name = "returnUrl")]
@@ -111,6 +118,10 @@
     private string? _error;
     private IJSObjectReference? _module;
     private DotNetObjectReference<Login>? _self;
+    private List<GuildPhoto> _photos = [];
+
+    protected override async Task OnInitializedAsync() =>
+        _photos = await GuildPhotos.GetAsync();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

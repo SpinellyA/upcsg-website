@@ -8,356 +8,6 @@
     padding-top: 7rem;
 }
 
-.upcsg-product {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
-    gap: clamp(1.5rem, 4vw, 3rem);
-    align-items: start;
-    margin-bottom: clamp(3rem, 7vw, 5rem);
-}
-
-.upcsg-gallery__main {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 20px;
-    overflow: hidden;
-    border: var(--upcsg-hairline);
-    display: grid;
-    place-items: center;
-    background:
-        radial-gradient(65% 60% at 35% 30%, rgba(204, 174, 222, 0.4) 0%, transparent 68%),
-        linear-gradient(150deg, rgba(82, 38, 87, 0.8), rgba(22, 17, 58, 0.92));
-}
-
-.upcsg-gallery__main img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.upcsg-gallery__main .upcsg-merch-placeholder {
-    width: 45%;
-    height: auto;
-    object-fit: contain;
-    opacity: 0.4;
-}
-
-.upcsg-gallery__broken {
-    display: none;
-    margin: 0;
-    padding: 1rem;
-    font-size: 0.82rem;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-gallery__main--broken .upcsg-gallery__broken {
-    display: block;
-}
-
-.upcsg-buy__was {
-    font-family: var(--upcsg-font-body);
-    font-size: 0.85rem;
-    color: var(--upcsg-text-muted);
-    text-decoration: line-through;
-    opacity: 0.75;
-}
-
-.upcsg-gallery__badge {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-.upcsg-gallery__badge--sale,
-.upcsg-merch-card__badge--sale {
-    background: var(--upcsg-highlight);
-    border: 1px solid var(--upcsg-highlight);
-    color: #221A57;
-}
-
-.upcsg-gallery__badge--preorder,
-.upcsg-merch-card__badge--preorder {
-    background: rgba(9, 6, 32, 0.85);
-    border: 1px solid rgba(204, 174, 222, 0.6);
-    color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-variant--gone {
-    opacity: 0.45;
-    cursor: not-allowed;
-    text-decoration: line-through;
-}
-
-.upcsg-variant__note {
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #ff8fa3;
-    text-decoration: none;
-}
-
-.upcsg-gallery__soldout {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    background: rgba(9, 6, 32, 0.85);
-    border: 1px solid rgba(255, 63, 95, 0.5);
-    color: #ff8fa3;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-.upcsg-gallery__strip {
-    display: flex;
-    gap: 0.6rem;
-    margin-top: 0.75rem;
-    overflow-x: auto;
-    padding-bottom: 0.35rem;
-    scrollbar-width: thin;
-}
-
-.upcsg-gallery__thumb {
-    flex: none;
-    width: 4.5rem;
-    height: 4.5rem;
-    padding: 0;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid rgba(204, 174, 222, 0.25);
-    background: rgba(9, 6, 32, 0.5);
-    cursor: pointer;
-    transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.upcsg-gallery__thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.upcsg-gallery__thumb:hover {
-    transform: translateY(-2px);
-}
-
-.upcsg-gallery__thumb--on {
-    border-color: var(--upcsg-highlight);
-    border-width: 2px;
-}
-
-.upcsg-buy {
-    position: sticky;
-    top: 6rem;
-}
-
-.upcsg-buy__name {
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.6rem, 3vw, 2.25rem);
-    line-height: 1.2;
-    margin: 0 0 0.6rem;
-}
-
-.upcsg-buy__price {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.7rem, 3.2vw, 2.4rem);
-    margin: 0 0 1rem;
-}
-
-.upcsg-buy__from,
-.upcsg-merch-card__from {
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-buy__desc {
-    margin: 0 0 1.5rem;
-    font-size: 0.95rem;
-    line-height: 1.7;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-buy__block {
-    margin-bottom: 1.5rem;
-}
-
-.upcsg-buy__label {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin: 0 0 0.6rem;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-buy__required {
-    color: var(--upcsg-highlight);
-    letter-spacing: 0.06em;
-    text-transform: none;
-}
-
-.upcsg-variants {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.upcsg-variant {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.1rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 10px;
-    border: 1px solid rgba(204, 174, 222, 0.32);
-    background: rgba(246, 255, 233, 0.04);
-    color: var(--upcsg-text);
-    font-family: var(--upcsg-font-body);
-    cursor: pointer;
-    transition: border-color 0.2s ease, background 0.2s ease;
-}
-
-.upcsg-variant:hover {
-    border-color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-variant--on {
-    border-color: var(--upcsg-highlight);
-    border-width: 2px;
-    background: rgba(252, 230, 138, 0.12);
-}
-
-.upcsg-variant__name {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.upcsg-variant__price {
-    font-size: 0.72rem;
-    color: var(--upcsg-text-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.upcsg-variant--on .upcsg-variant__price {
-    color: var(--upcsg-highlight);
-}
-
-.upcsg-qty {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.upcsg-qty__step {
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 10px;
-    border: 1px solid rgba(204, 174, 222, 0.32);
-    background: rgba(246, 255, 233, 0.04);
-    color: var(--upcsg-text);
-    font-size: 1.15rem;
-    line-height: 1;
-    cursor: pointer;
-}
-
-.upcsg-qty__step:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-}
-
-.upcsg-qty__value {
-    width: 4rem;
-    height: 2.4rem;
-    text-align: center;
-    border-radius: 10px;
-    border: 1px solid rgba(204, 174, 222, 0.32);
-    background: rgba(9, 6, 32, 0.4);
-    color: var(--upcsg-text);
-    font-family: var(--upcsg-font-body);
-    font-size: 0.95rem;
-    font-variant-numeric: tabular-nums;
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
-
-.upcsg-qty__value::-webkit-outer-spin-button,
-.upcsg-qty__value::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-.upcsg-qty__cap {
-    font-size: 0.72rem;
-    color: var(--upcsg-text-muted);
-    opacity: 0.75;
-}
-
-.upcsg-buy__total {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding: 0.9rem 0;
-    margin-bottom: 1.15rem;
-    border-top: var(--upcsg-hairline);
-    border-bottom: var(--upcsg-hairline);
-    font-family: var(--upcsg-font-body);
-    font-size: 0.95rem;
-}
-
-.upcsg-buy__actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.6rem;
-}
-
-.upcsg-buy__note {
-    margin: 0.85rem 0 0;
-    font-size: 0.78rem;
-    line-height: 1.6;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-product__about {
-    padding: clamp(1.4rem, 3vw, 2rem);
-}
-
-.upcsg-product__para {
-    margin: 0.9rem 0 0;
-    line-height: 1.8;
-    color: var(--upcsg-text-muted);
-    max-width: 68ch;
-}
-
-.upcsg-merch-card--link {
-    text-decoration: none;
-    color: inherit;
-}
-
 .upcsg-merchform {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -505,12 +155,10 @@
     border-radius: 2px;
     background: var(--upcsg-highlight);
     color: #221A57;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.6rem;
     font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
 }
 
 .upcsg-photoslot__tools {
@@ -660,20 +308,18 @@
 }
 
 .upcsg-useravatar.mud-avatar {
-    background: linear-gradient(150deg, var(--upcsg-primary), var(--upcsg-primary-dark));
-    color: var(--upcsg-text);
+    background: var(--upcsg-liquid-chrome-gold);
+    color: var(--upcsg-midnight-indigo);
     font-family: var(--upcsg-font-body);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    border: 1px solid rgba(204, 174, 222, 0.32);
+    font-size: 0.875rem;
+    font-weight: 800;
+    border: 0;
     cursor: pointer;
     transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .upcsg-useravatar.mud-avatar:hover {
-    border-color: var(--upcsg-cosmic-lavender);
-    box-shadow: 0 0 0 3px rgba(204, 174, 222, 0.16);
+    background: var(--upcsg-starlight-core);
 }
 
 .upcsg-usermenu.mud-paper {
@@ -700,11 +346,9 @@
 .upcsg-usermenu__role {
     display: block;
     margin-top: 0.1rem;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-highlight);
 }
 
@@ -764,7 +408,7 @@
     aspect-ratio: 1;
     border-radius: 0;
     overflow: hidden;
-    background: linear-gradient(150deg, rgba(83, 37, 126, 0.6), rgba(22, 17, 58, 0.9));
+    background: var(--upcsg-periwinkle);
 }
 
 .upcsg-cartline__thumb img {
@@ -887,7 +531,7 @@
     gap: 0.45rem;
     font-family: var(--upcsg-font-body);
     font-size: 0.76rem;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
     opacity: 0.5;
 }
@@ -950,11 +594,9 @@
 }
 
 .upcsg-adminnav__group {
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-cosmic-lavender);
 }
 
@@ -1066,12 +708,10 @@
 .upcsg-datatable .mud-table-head .mud-table-cell {
     background: var(--upcsg-ink-head);
     border-bottom: 1px solid var(--upcsg-ink-rule);
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
     padding: 0.75rem 1rem;
 }
@@ -1204,12 +844,10 @@
 .upcsg-line__refunded {
     display: block;
     margin-top: 0.2rem;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.66rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
 }
 
@@ -1244,7 +882,7 @@
     font-family: var(--upcsg-font-body);
     font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     color: var(--upcsg-highlight);
 }
 
@@ -1254,12 +892,10 @@
     padding: 0.2rem 0.55rem;
     border-radius: 2px;
     border: 1px solid transparent;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     white-space: nowrap;
 }
 
@@ -1314,7 +950,7 @@
     font-family: var(--upcsg-font-body);
     font-size: 0.72rem;
     font-weight: 600;
-    letter-spacing: 0.16em;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
 }
 
@@ -1350,12 +986,10 @@
 
 .upcsg-recordtable .mud-table-head .mud-table-cell {
     text-align: left;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.66rem;
     font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
     padding: 0 0.6rem 0.55rem;
     border-bottom: 1px solid var(--upcsg-ink-rule);
@@ -1396,7 +1030,7 @@
     font-family: var(--upcsg-font-body);
     font-size: 0.64rem;
     font-weight: 600;
-    letter-spacing: 0.14em;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
     margin-bottom: 0.15rem;
 }
@@ -1428,7 +1062,7 @@
     position: absolute;
     inset: auto 0 0 0;
     padding: 0.5rem 0.75rem;
-    background: linear-gradient(180deg, transparent, rgba(9, 6, 32, 0.92));
+    background: rgba(9, 6, 32, 0.85);
     font-family: var(--upcsg-font-body);
     font-size: 0.72rem;
     color: var(--upcsg-text);
@@ -1691,7 +1325,7 @@
     padding: 0.08rem 0.35rem;
     border-radius: 3px;
     background: rgba(246, 255, 233, 0.1);
-    font-family: var(--upcsg-font-mono);
+    font-family: var(--upcsg-font);
     font-size: 0.66rem;
     font-variant-numeric: tabular-nums;
     text-align: center;
@@ -1744,11 +1378,9 @@
     padding: 0.15rem 0.45rem;
     border: 1px solid var(--upcsg-line-gold);
     border-radius: 3px;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.58rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     vertical-align: middle;
     color: var(--upcsg-cta);
 }
@@ -1763,11 +1395,9 @@
 
 .upcsg-paychoice__title {
     margin: 0 0 0.6rem;
-    font-family: var(--upcsg-font-mono);
-    font-stretch: 87.5%;
+    font-family: var(--upcsg-font);
     font-size: 0.64rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-faint);
 }
 
@@ -1790,4 +1420,45 @@
 
 .upcsg-paychoice .mud-radio {
     margin-bottom: 0.5rem;
+}
+
+/* ------------------------------------------------------------------ *
+   App-screen rules for the CMS and the store's records: a noun title at
+   working size, the product named in the nav, quiet tables.
+ * ------------------------------------------------------------------ */
+
+.upcsg-section-head .upcsg-title-xl,
+.upcsg-page .upcsg-title-xl {
+    font-size: clamp(1.75rem, 1.4rem + 1vw, 2.25rem);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+}
+
+.upcsg-subline {
+    margin: 0.5rem 0 0;
+    color: var(--soft);
+}
+
+.upcsg-adminnav__mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-right: 1rem;
+    padding: 0.7rem 0;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+.upcsg-kicker {
+    margin: 0 0 0.5rem;
+    color: var(--soft);
+}
+
+.upcsg-datatable.mud-table .mud-table-head .mud-table-cell,
+.upcsg-datatable .mud-table-head th {
+    font-size: var(--step-small) !important;
+    font-weight: 600 !important;
+    color: var(--soft) !important;
+    background: transparent !important;
 }

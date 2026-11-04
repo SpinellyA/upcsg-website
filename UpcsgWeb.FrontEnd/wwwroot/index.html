@@ -10,18 +10,13 @@
     <link rel="preload" id="webassembly" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..800&family=Hanken+Grotesk:ital,wght@0,300..800;1,300..800&family=Martian+Mono:wdth,wght@75..112.5,300..600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="_content/MudBlazor/MudBlazor.min.css" />
     <link rel="stylesheet" href="css/brand.css" />
     <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/ledger.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="img/favicon-crest.png" />
-
-    <!-- The splash's crest. Preloaded so it is requested alongside the runtime
-         rather than after the stylesheet has been parsed; without this the
-         loading screen's own centrepiece can arrive last. -->
-    <link rel="preload" as="image" href="img/upcsg-crest.png" />
     <link href="UpcsgWeb.FrontEnd.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
 
@@ -70,25 +65,30 @@
     -->
     <div id="app">
         <div class="upcsg-splash" role="status">
-            <div class="upcsg-splash__glow" aria-hidden="true"></div>
-
-            <!-- Decorative: the wordmark below already carries the name, so
-                 announcing the crest as well would just repeat it. -->
-            <img class="upcsg-splash__crest" src="img/upcsg-crest.png" alt="" />
-
-            <p class="upcsg-splash__word">UP Computer Science Guild</p>
-
-            <div class="upcsg-splash__track" aria-hidden="true">
-                <div class="upcsg-splash__bar"></div>
+            <div class="upcsg-splash__top">
+                <span class="upcsg-splash__brand">
+                    <img src="img/upcsg-crest.png" alt="" width="26" height="32" />
+                    UPCSG
+                </span>
             </div>
+            <div class="upcsg-splash__bottom"></div>
 
-            <p class="upcsg-splash__pct"></p>
+            <h1 class="upcsg-splash__title">
+                <span>UP Computer</span>
+                <span>Science Guild</span>
+            </h1>
 
-            <p class="upcsg-splash__slow">
-                This is taking longer than usual. If the site was updated recently your
-                browser may be holding an old copy. Try a
-                <a href=".">reload</a>, or hard-refresh with Ctrl+Shift+R.
-            </p>
+            <div class="upcsg-splash__foot">
+                <div class="upcsg-splash__track" aria-hidden="true">
+                    <div class="upcsg-splash__bar"></div>
+                </div>
+                <p class="upcsg-splash__pct"></p>
+                <p class="upcsg-splash__slow">
+                    This is taking longer than usual. If the site was updated recently your
+                    browser may be holding an old copy. Try a
+                    <a href=".">reload</a>, or hard-refresh with Ctrl+Shift+R.
+                </p>
+            </div>
         </div>
     </div>
 

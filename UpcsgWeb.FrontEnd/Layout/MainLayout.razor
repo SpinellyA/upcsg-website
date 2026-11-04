@@ -2,6 +2,7 @@
 @using UpcsgWeb.Shared.Contracts
 @inject UpcsgAuthenticationStateProvider AuthState
 @inject NavigationManager Navigation
+@inject UpcsgWeb.FrontEnd.Services.MotionInterop Motion
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="true" />
 <MudPopoverProvider />
@@ -12,16 +13,13 @@
     <MudAppBar Elevation="0" Class="upcsg-appbar">
         <a href="" class="upcsg-brand" aria-label="UPCSG home">
             <img class="upcsg-brand__mark" src="img/upcsg-crest.png" alt="" />
-            <span class="upcsg-brand__text">
-                UPCSG
-                <small>Computer Science Guild</small>
-            </span>
+            <span class="upcsg-brand__text">UPCSG</span>
         </a>
 
         <MudSpacer />
 
         <nav class="upcsg-desktop-nav" aria-label="Site">
-            @foreach (var (href, label) in NavMenu.Links)
+            @foreach (var (href, label) in NavMenu.Links.Skip(1))
             {
                 <NavLink class="upcsg-navlink" href="@href"
                          Match="@(href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">@label</NavLink>
@@ -145,55 +143,63 @@
     <MudMainContent Class="upcsg-main">
         @Body
 
-        <footer class="upcsg-footer">
-            <div class="upcsg-footer__inner">
-                <div class="upcsg-footer__brand">
-                    <div class="upcsg-footer__mark">
-                        <img src="img/upcsg-crest.png" alt="" />
-                        <div>
-                            <p class="upcsg-footer__name">UP Computer Science <em>Guild</em></p>
-                            <p class="upcsg-footer__where">
-                                The student organization for Computer Science majors at the
-                                University of the Philippines Cebu.
-                            </p>
+        <footer class="upcsg-footer upcsg-field--night @(IsWorkScreen ? "upcsg-footer--work" : null)">
+            <div class="upcsg-wrap">
+                @if (!IsWorkScreen)
+                {
+                <svg class="upcsg-blockmark" viewBox="0 0 1000 300" role="img" aria-label="UPCSG">
+                    @foreach (var (letter, i) in "UPCSG".Select((c, i) => (c, i)))
+                    {
+                        var h = BlockHeights[i];
+                        var x = i * 200.8;
+                        <g class="upcsg-blockmark__cell upcsg-blockmark__cell--@i">
+                            <rect x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="@(300 - h)" width="196.8" height="@h" />
+                            <text x="@((x + 98.4).ToString(System.Globalization.CultureInfo.InvariantCulture))" y="290" text-anchor="middle">@letter</text>
+                        </g>
+                    }
+                </svg>
+                }
+
+                <div class="upcsg-footer__cols">
+                    <div class="upcsg-footer__col upcsg-footer__col--wide">
+                        <h2>UP Computer Science Guild</h2>
+                        <p>
+                            The student organization for Computer Science majors at the
+                            University of the Philippines Cebu, Lahug, Cebu City.
+                        </p>
+                    </div>
+
+                    <div class="upcsg-footer__col">
+                        <h2>The guild</h2>
+                        <ul>
+                            <li><a href="about">About</a></li>
+                            <li><a href="events">Events</a></li>
+                            <li><a href="opportunities">Opportunities</a></li>
+                            <li><a href="hall-of-fame">Hall of Fame</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="upcsg-footer__col">
+                        <h2>Store</h2>
+                        <ul>
+                            <li><a href="merch">Merch</a></li>
+                            <li><a href="cart">Cart</a></li>
+                            <li><a href="orders">My orders</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="upcsg-footer__col upcsg-footer__col--end">
+                        <h2>Reach us</h2>
+                        <div class="upcsg-footer__contact">
+                            <a href="mailto:upcsg.upcebu@gmail.com">upcsg.upcebu@gmail.com</a>
+                            <a href="https://facebook.com/upcsg" target="_blank" rel="noopener">facebook.com/upcsg</a>
+                            <a href="https://instagram.com/upcsg" target="_blank" rel="noopener">instagram.com/upcsg</a>
                         </div>
                     </div>
                 </div>
 
-                <div class="upcsg-footer__col">
-                    <h2>The guild</h2>
-                    <ul>
-                        <li><a href="about">About</a></li>
-                        <li><a href="events">Events</a></li>
-                        <li><a href="opportunities">Opportunities</a></li>
-                        <li><a href="hall-of-fame">Hall of Fame</a></li>
-                    </ul>
-                </div>
-
-                <div class="upcsg-footer__col">
-                    <h2>Store</h2>
-                    <ul>
-                        <li><a href="merch">Merch</a></li>
-                        <li><a href="cart">Cart</a></li>
-                        <li><a href="orders">My orders</a></li>
-                    </ul>
-                </div>
-
-                <div class="upcsg-footer__col">
-                    <h2>Reach us</h2>
-                    <ul>
-                        <li><a href="https://facebook.com/upcsg" target="_blank" rel="noopener">Facebook</a></li>
-                        <li><a href="https://instagram.com/upcsg" target="_blank" rel="noopener">Instagram</a></li>
-                        <li><a href="contact">All channels</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="upcsg-footer__base">
-                <span>&copy; @DateTime.Now.Year UP Computer Science Guild &middot; UP Cebu</span>
-                <span class="upcsg-footer__contact">
-                    <a href="mailto:upcsg.upcebu@gmail.com">upcsg.upcebu@gmail.com</a>
-
+                <div class="upcsg-footer__base">
+                    <span>&copy; @DateTime.Now.Year UP Computer Science Guild</span>
                     <a class="upcsg-madeby"
                        href="https://spinelly.net"
                        target="_blank"
@@ -201,7 +207,8 @@
                        aria-label="Site by spinelly (opens spinelly.net in a new tab)">
                         <SpinellyMark />
                     </a>
-                </span>
+                    <a class="upcsg-footer__top" href="contact">Get in touch</a>
+                </div>
             </div>
         </footer>
     </MudMainContent>
@@ -214,24 +221,25 @@
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        Navigation.LocationChanged += (_, _) => InvokeAsync(StateHasChanged);
 
         _theme = new()
         {
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
-            LayoutProperties = new LayoutProperties { DefaultBorderRadius = "8px" },
+            LayoutProperties = new LayoutProperties { DefaultBorderRadius = "0px" },
             Typography = new Typography
             {
-                Default = new DefaultTypography { FontFamily = ["Hanken Grotesk", "Helvetica Now", "sans-serif"] },
-                H1 = new H1Typography { FontFamily = ["Bodoni Moda", "Noto Serif", "serif"] },
-                H2 = new H2Typography { FontFamily = ["Bodoni Moda", "Noto Serif", "serif"] },
-                H3 = new H3Typography { FontFamily = ["Bodoni Moda", "Noto Serif", "serif"] },
-                H4 = new H4Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
-                H5 = new H5Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
-                H6 = new H6Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
-                Subtitle1 = new Subtitle1Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
-                Subtitle2 = new Subtitle2Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
-                Button = new ButtonTypography { FontFamily = ["Hanken Grotesk", "sans-serif"], TextTransform = "none", FontWeight = "600" },
+                Default = new DefaultTypography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                H1 = new H1Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                H2 = new H2Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                H3 = new H3Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                H4 = new H4Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                H5 = new H5Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                H6 = new H6Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                Subtitle1 = new Subtitle1Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                Subtitle2 = new Subtitle2Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
+                Button = new ButtonTypography { FontFamily = ["Schibsted Grotesk", "sans-serif"], TextTransform = "none", FontWeight = "600" },
             }
         };
     }
@@ -240,6 +248,25 @@
     {
         _drawerOpen = !_drawerOpen;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Motion.TrackChaptersAsync(".upcsg-appbar");
+        }
+    }
+
+    private bool IsWorkScreen
+    {
+        get
+        {
+            var path = Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
+            return path.StartsWith("admin") || path.StartsWith("cart") || path.StartsWith("orders");
+        }
+    }
+
+    private static readonly int[] BlockHeights = [300, 234, 276, 198, 252];
 
     private void CloseDrawer()
     {

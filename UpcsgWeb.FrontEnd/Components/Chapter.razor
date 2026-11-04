@@ -1,0 +1,22 @@
+<section class="upcsg-chapter upcsg-field--@Field @(Tall ? "upcsg-chapter--tall" : null) @Class"
+         data-field="@Field"
+         id="@Id"
+         aria-labelledby="@LabelledBy">
+    <div class="upcsg-chapter__inner">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    [Parameter] public string Field { get; set; } = "night";
+
+    [Parameter] public bool Tall { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public string? LabelledBy { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

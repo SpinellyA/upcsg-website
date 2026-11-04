@@ -1,0 +1,36 @@
+@using UpcsgWeb.Shared.Contracts
+@using UpcsgWeb.FrontEnd.Services
+
+<MenuRow Href="@($"events/{Event.Id}")"
+         Id="@Id"
+         Title="@Event.Title"
+         ImageSrc="@Event.PosterUrl"
+         Aside="@When"
+         Description="@Where"
+         Note="@(ShowStatus ? EventTiming.Countdown(Event) : null)"
+         Muted="@EventTiming.HasEnded(Event)"
+         Hit="Hit" />
+
+@code {
+    [Parameter, EditorRequired] public EventDto Event { get; set; } = default!;
+
+    [Parameter] public bool ShowStatus { get; set; } = true;
+
+    [Parameter] public bool Hit { get; set; }
+
+    [Parameter] public string? Id { get; set; }
+
+    private string When => Event.IsComingSoon
+        ? EventTiming.PencilledIn(Event) ?? "Date to be announced"
+        : EventTiming.Starts(Event)?.ToString("ddd, MMM d") ?? string.Empty;
+
+    private string Where
+    {
+        get
+        {
+            var time = Event.IsComingSoon ? null : EventTiming.TimeRange(Event);
+            var parts = new[] { time, Event.Location }.Where(p => !string.IsNullOrWhiteSpace(p));
+            return string.Join(" · ", parts);
+        }
+    }
+}

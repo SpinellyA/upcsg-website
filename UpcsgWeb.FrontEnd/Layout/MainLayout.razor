@@ -147,17 +147,14 @@
             <div class="upcsg-wrap">
                 @if (!IsWorkScreen)
                 {
-                <svg class="upcsg-blockmark" viewBox="0 0 1000 300" role="img" aria-label="UPCSG">
-                    @foreach (var (letter, i) in "UPCSG".Select((c, i) => (c, i)))
-                    {
-                        var h = BlockHeights[i];
-                        var x = i * 200.8;
-                        <g class="upcsg-blockmark__cell upcsg-blockmark__cell--@i">
-                            <rect x="@x.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="@(300 - h)" width="196.8" height="@h" />
-                            <text x="@((x + 98.4).ToString(System.Globalization.CultureInfo.InvariantCulture))" y="290" text-anchor="middle">@letter</text>
-                        </g>
-                    }
-                </svg>
+                    <div class="upcsg-footer__banner">
+                        <img src="img/upcsg-crest.png" alt="" width="72" height="88" />
+                        <div>
+                            <p class="upcsg-footer__uni">University of the Philippines Cebu</p>
+                            <p class="upcsg-footer__name">Computer Science Guild</p>
+                            <p class="upcsg-footer__year">a.y. 2026&ndash;2027</p>
+                        </div>
+                    </div>
                 }
 
                 <div class="upcsg-footer__cols">
@@ -227,19 +224,19 @@
         {
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
-            LayoutProperties = new LayoutProperties { DefaultBorderRadius = "0px" },
+            LayoutProperties = new LayoutProperties { DefaultBorderRadius = "12px" },
             Typography = new Typography
             {
-                Default = new DefaultTypography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                H1 = new H1Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                H2 = new H2Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                H3 = new H3Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                H4 = new H4Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                H5 = new H5Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                H6 = new H6Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                Subtitle1 = new Subtitle1Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                Subtitle2 = new Subtitle2Typography { FontFamily = ["Schibsted Grotesk", "sans-serif"] },
-                Button = new ButtonTypography { FontFamily = ["Schibsted Grotesk", "sans-serif"], TextTransform = "none", FontWeight = "600" },
+                Default = new DefaultTypography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"] },
+                H1 = new H1Typography { FontFamily = ["Aileron", "Inter", "sans-serif"] },
+                H2 = new H2Typography { FontFamily = ["Aileron", "Inter", "sans-serif"] },
+                H3 = new H3Typography { FontFamily = ["Aileron", "Inter", "sans-serif"] },
+                H4 = new H4Typography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"] },
+                H5 = new H5Typography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"] },
+                H6 = new H6Typography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"] },
+                Subtitle1 = new Subtitle1Typography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"] },
+                Subtitle2 = new Subtitle2Typography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"] },
+                Button = new ButtonTypography { FontFamily = ["Inter", "Helvetica Now", "sans-serif"], TextTransform = "none", FontWeight = "600" },
             }
         };
     }
@@ -265,8 +262,6 @@
             return path.StartsWith("admin") || path.StartsWith("cart") || path.StartsWith("orders");
         }
     }
-
-    private static readonly int[] BlockHeights = [300, 234, 276, 198, 252];
 
     private void CloseDrawer()
     {

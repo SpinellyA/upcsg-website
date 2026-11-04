@@ -11,31 +11,32 @@
 
 <PageTitle>UPCSG · UP Computer Science Guild</PageTitle>
 
-<section class="upcsg-hero" @ref="_hero">
-    <div class="upcsg-hero__stage">
-        <div class="upcsg-hero__paper" data-field="paper"></div>
-        <div class="upcsg-hero__ultra" data-field="ultra"></div>
+<section class="upcsg-hero upcsg-field--ultra" data-field="ultra" @ref="_hero">
+    <span class="upcsg-hero__flare" aria-hidden="true"></span>
+    <span class="upcsg-hero__star upcsg-hero__star--a" aria-hidden="true"></span>
+    <span class="upcsg-hero__star upcsg-hero__star--b" aria-hidden="true"></span>
+    <span class="upcsg-hero__star upcsg-hero__star--c" aria-hidden="true"></span>
 
-        <h1 class="upcsg-hero__title">
-            <span class="upcsg-hero__line"><span style="--i: 0">UP Computer</span></span>
-            <span class="upcsg-hero__line"><span style="--i: 1">Science Guild</span></span>
-        </h1>
-        <div class="upcsg-hero__title upcsg-hero__title--under" aria-hidden="true">
-            <span class="upcsg-hero__line"><span style="--i: 0" data-text="UP Computer"></span></span>
-            <span class="upcsg-hero__line"><span style="--i: 1" data-text="Science Guild"></span></span>
-        </div>
+    <div class="upcsg-hero__banner">
+        <img class="upcsg-hero__crest" src="img/upcsg-crest.png" alt="" width="120" height="146" />
+        <p class="upcsg-hero__uni">University of the Philippines Cebu</p>
+        <h1 class="upcsg-hero__title">Computer Science Guild</h1>
+        <p class="upcsg-hero__year">a.y. 2026&ndash;2027</p>
 
-        <div class="upcsg-hero__foot">
-            <p class="upcsg-hero__lede">
-                The student organization every Computer Science major at UP Cebu belongs to.
-            </p>
+        <p class="upcsg-hero__lede">
+            The student organization every Computer Science major at UP Cebu belongs to.
+        </p>
+        <div class="upcsg-hero__actions">
             <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="events">
                 See what's on this month
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button" Href="about">
+                Meet the guild
             </MudButton>
         </div>
     </div>
 
-    <div class="upcsg-hero__sky upcsg-field--ultra" data-field="ultra">
+    <div class="upcsg-hero__sky">
         <div class="upcsg-chapter__inner">
             <div class="upcsg-sechead">
                 <div class="upcsg-sechead__text">

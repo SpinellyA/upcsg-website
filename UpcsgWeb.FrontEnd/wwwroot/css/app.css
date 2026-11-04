@@ -68,80 +68,55 @@
     position: fixed;
     inset: 0;
     z-index: 3000;
-    font-family: 'Schibsted Grotesk', system-ui, sans-serif;
-}
-
-.upcsg-splash__top,
-.upcsg-splash__bottom {
-    position: absolute;
-    inset-inline: 0;
-    height: 50%;
-}
-
-.upcsg-splash__top {
-    top: 0;
-    background: #F6FFE9;
-}
-
-.upcsg-splash__bottom {
-    bottom: 0;
-    background: #290087;
-}
-
-.upcsg-splash__brand {
-    position: absolute;
-    top: 20px;
-    left: clamp(16px, 2.5vw, 32px);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    color: #16113A;
-}
-
-.upcsg-splash__title {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    margin: 0;
-    width: 100%;
-    font-size: clamp(3.5rem, 9.5vw, 9.375rem);
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    line-height: 0.86;
-    text-align: center;
-    color: #16113A;
-    transform: translate(-50%, -66%);
-}
-
-.upcsg-splash__title span {
-    display: block;
-}
-
-.upcsg-splash__title span:last-child {
-    color: #F6FFE9;
-}
-
-.upcsg-splash__foot {
-    position: absolute;
-    left: 50%;
-    bottom: 56px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-    width: min(90vw, 30rem);
-    transform: translateX(-50%);
-    color: #F6FFE9;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 2rem;
     text-align: center;
+    color: #F6FFE9;
+    font-family: 'Inter', system-ui, sans-serif;
+    background:
+        radial-gradient(45% 55% at 92% 8%, rgba(246, 200, 117, 0.22), transparent 70%),
+        radial-gradient(60% 60% at 0% 100%, rgba(162, 83, 184, 0.4), transparent 70%),
+        linear-gradient(160deg, #290087 0%, #35108a 50%, #53257E 100%);
+}
+
+.upcsg-splash__crest {
+    width: clamp(80px, 9vw, 110px);
+    height: auto;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 24px rgba(204, 174, 222, 0.6));
+}
+
+.upcsg-splash__uni {
+    margin: 0;
+    font-family: 'Noto Serif', Georgia, serif;
+    font-size: clamp(1.1rem, 1rem + 1vw, 1.75rem);
+}
+
+.upcsg-splash__title {
+    margin: 0;
+    font-family: 'Aileron', 'Inter', sans-serif;
+    font-size: clamp(2.2rem, 1rem + 5vw, 5rem);
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.upcsg-splash__year {
+    margin: 0.4rem 0 1.5rem;
+    font-family: 'Noto Serif', Georgia, serif;
+    font-style: italic;
+    color: #FCE68A;
 }
 
 .upcsg-splash__track {
     width: min(60vw, 260px);
     height: 4px;
-    background: #3510A2;
+    border-radius: 99px;
+    background: rgba(246, 255, 233, 0.15);
     overflow: hidden;
 }
 

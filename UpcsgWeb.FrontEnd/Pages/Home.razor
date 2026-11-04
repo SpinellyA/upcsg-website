@@ -6,296 +6,239 @@
 @inject IMemberService MemberService
 @inject IAchievementService AchievementService
 @inject IOpportunityService OpportunityFeed
+@inject IGuildPhotoService GuildPhotos
 @inject MotionInterop Motion
 
-<PageTitle>UPCSG</PageTitle>
+<PageTitle>UPCSG · UP Computer Science Guild</PageTitle>
 
-<section class="upcsg-hero" @ref="_hero">
-    <div class="upcsg-flare upcsg-hero__flare--orchid"></div>
-    <img class="upcsg-hero__burst" src="img/starburst.png" alt="" aria-hidden="true" />
+<section class="upcsg-hero upcsg-field--ultra" data-field="ultra" @ref="_hero">
+    <span class="upcsg-hero__flare" aria-hidden="true"></span>
+    <span class="upcsg-hero__star upcsg-hero__star--a" aria-hidden="true"></span>
+    <span class="upcsg-hero__star upcsg-hero__star--b" aria-hidden="true"></span>
+    <span class="upcsg-hero__star upcsg-hero__star--c" aria-hidden="true"></span>
 
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 18%; right: 14%;"><span class="upcsg-star" style="width: 1.5rem; height: 1.5rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--delay-1" style="top: 38%; right: 28%;"><span class="upcsg-star" style="width: 0.7rem; height: 0.7rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 26%; right: 20%;"><span class="upcsg-star" style="width: 1.1rem; height: 1.1rem;"></span></span>
+    <div class="upcsg-hero__banner">
+        <img class="upcsg-hero__crest" src="img/upcsg-crest.png" alt="" width="120" height="146" />
+        <p class="upcsg-hero__uni">University of the Philippines Cebu</p>
+        <h1 class="upcsg-hero__title">Computer Science Guild</h1>
+        <p class="upcsg-hero__year">a.y. 2026&ndash;2027</p>
 
-    <div class="upcsg-hero__inner">
-        <div class="upcsg-hero__content">
-            <p class="upcsg-eyebrow"><span class="upcsg-star"></span> A.Y. 2026&ndash;2027</p>
-            <h1 class="upcsg-hero__title">
-                UP Computer<br />Science <span class="upcsg-gradient-text">Guild</span>
-            </h1>
-            <p class="upcsg-hero__lede">
-                A diverse and dynamic community at UP Cebu nurturing the next generation of
-                trailblazing technology leaders.
-            </p>
-            <div class="upcsg-hero__actions">
-                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="about">
-                    Learn More
-                </MudButton>
-                <MudButton Variant="Variant.Outlined" Size="Size.Large" Class="upcsg-ghost-button px-8" Href="events">
-                    See Events
-                </MudButton>
-            </div>
+        <p class="upcsg-hero__lede">
+            The student organization every Computer Science major at UP Cebu belongs to.
+        </p>
+        <div class="upcsg-hero__actions">
+            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="events">
+                See what's on this month
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button" Href="about">
+                Meet the guild
+            </MudButton>
         </div>
     </div>
 
-    <a class="upcsg-hero__scroll" href="#explore">
-        <span>Explore</span>
-        <span>&darr;</span>
-    </a>
+    <div class="upcsg-hero__sky">
+        <div class="upcsg-chapter__inner">
+            <div class="upcsg-sechead">
+                <div class="upcsg-sechead__text">
+                    <h2 class="upcsg-title-xl">The next 60 days</h2>
+                </div>
+                <div class="upcsg-sechead__action">
+                    <span class="upcsg-sechead__note">Pick a star to open it</span>
+                </div>
+            </div>
+            <SkyChart Points="_sky" />
+        </div>
+    </div>
 </section>
 
-<Marquee Items="@Ticker" DurationSeconds="46" Class="upcsg-marquee--hero" />
+<Chapter Field="night" Id="explore">
+    <SectionHeading Title="@($"On in {_month:MMMM}")"
+                    Kicker="@(_loading ? null : MonthNote)">
+        <Action>
+            <a class="upcsg-textlink" href="events">The full calendar <span aria-hidden="true">&rarr;</span></a>
+        </Action>
+    </SectionHeading>
 
-<div class="upcsg-page upcsg-page--after-hero">
-
-    <section id="explore" class="upcsg-section">
-        <SectionHeading Kicker="@_month.ToString("MMMM yyyy")"
-                        Title="What's on this month">
-            <Action>
-                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="events">
-                    All events
-                </MudButton>
-            </Action>
-        </SectionHeading>
-
-        @if (_loading)
-        {
-            <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                @for (var i = 0; i < 3; i++)
-                {
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="260px"
-                                 Class="upcsg-skeleton" />
-                }
-            </div>
-        }
-        else if (_events.Count == 0)
-        {
-            <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty">
-                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-                    <p>This month's lineup hasn't been posted yet. Check back soon.</p>
-                </div>
-            </Reveal>
-        }
-        else
-        {
-            <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                @foreach (var (evt, i) in _events.Take(3).Select((e, i) => (e, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 80)">
-                        <EventCard Event="evt" />
-                    </Reveal>
-                }
-            </div>
-        }
-    </section>
-
-    @if (_opportunities.Count > 0)
+    @if (_loading)
     {
-        <section class="upcsg-section">
-            <SectionHeading Kicker="@DeadlineKicker" Title="Worth your time">
-                <Action>
-                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="opportunities">
-                        All opportunities
-                    </MudButton>
-                </Action>
-            </SectionHeading>
-
-            <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                @foreach (var (item, i) in _opportunities.Take(3).Select((o, i) => (o, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 80)">
-                        <OpportunityCard Opportunity="item" />
-                    </Reveal>
-                }
-            </div>
-        </section>
+        <div class="upcsg-menu">
+            @for (var i = 0; i < 4; i++)
+            {
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="64px" Class="upcsg-skeleton" />
+            }
+        </div>
     }
-
-    <section class="upcsg-section upcsg-feature">
-        <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__body">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Know your officers</p>
-            <h2 class="upcsg-title-xl">The people running it</h2>
-            <p class="upcsg-lede">
-                @_execCount elected guilders lead the org this year alongside our faculty advisers
-                from the Department of Computer Science. They represent the membership, run the
-                committees, and keep the guild's programs moving.
-            </p>
-
-            <FacePile Members="_members" Selected="_selected" SelectedChanged="SelectOfficer" />
-
-            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-6" Href="about">
-                Meet the ExeCom
-            </MudButton>
-        </Reveal>
-
-        <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual" Delay="120">
-            @* Both officers are on the stage during a switch: the outgoing one is lifted out
-               of flow and slides off to the right while the incoming one fades in from the
-               left. The incoming plate stays in flow so it alone sizes the column. *@
-            <div class="upcsg-officerstage">
-                @if (_leaving is not null)
-                {
-                    <CosmicImage @key="@("leaving-" + _leaving.Name)"
-                                 Src="@_leaving.PhotoUrl"
-                                 Alt=""
-                                 Seed="@_leaving.Name"
-                                 ShowInitials="true"
-                                 Class="upcsg-feature__plate upcsg-officerstage__leaving">
-                        <Overlay>
-                            <p class="upcsg-feature__plate-role">@_leaving.Role</p>
-                            <p class="upcsg-feature__plate-name">@_leaving.Name</p>
-                        </Overlay>
-                    </CosmicImage>
-                }
-
-                @if (_selected is not null)
-                {
-                    <CosmicImage @key="@("current-" + _selected.Name)"
-                                 Src="@_selected.PhotoUrl"
-                                 Alt="@_selected.Name"
-                                 Seed="@_selected.Name"
-                                 ShowInitials="true"
-                                 Class="upcsg-feature__plate upcsg-officerstage__current">
-                        <Overlay>
-                            <p class="upcsg-feature__plate-role">@_selected.Role</p>
-                            <p class="upcsg-feature__plate-name">@_selected.Name</p>
-                        </Overlay>
-                    </CosmicImage>
-                }
-            </div>
-        </Reveal>
-    </section>
-
-    <section class="upcsg-section upcsg-band">
-        <SectionHeading Kicker="Guild store" Title="Wear the crest">
-            <Action>
-                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="merch">
-                    Shop all
-                </MudButton>
-            </Action>
-        </SectionHeading>
-
-        @if (_merch.Count == 0)
-        {
-            <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty">
-                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-                    <p>Nothing in the store right now. The next drop gets announced on our socials.</p>
-                </div>
-            </Reveal>
-        }
-        else
-        {
-            <div class="upcsg-cardgrid upcsg-cardgrid--4">
-                @foreach (var (item, i) in _merch.Take(4).Select((m, i) => (m, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
-                        <MerchCard Item="item" />
-                    </Reveal>
-                }
-            </div>
-        }
-    </section>
-
-    @if (_latestAchievement is not null)
+    else
     {
-        <section class="upcsg-section upcsg-feature upcsg-feature--reverse">
-            <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual">
-                <CosmicImage Src="@_latestAchievement.ImageUrl"
-                             Alt="@_latestAchievement.Title"
-                             Seed="@_latestAchievement.Title"
-                             Badge="@_latestAchievement.Year.ToString()"
-                             Class="upcsg-feature__plate" />
-            </Reveal>
-
-            <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__body" Delay="120">
-                <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Hall of fame</p>
-                <h2 class="upcsg-title-xl">@_latestAchievement.Title</h2>
-
-                <p class="upcsg-lede">@FirstParagraph(_latestAchievement.Description)</p>
-
-                <div class="upcsg-statrow">
-                    <StatCounter Value="_achievements.Count" Label="Wins logged" />
-                    <StatCounter Value="_execCount" Label="Officers serving" />
-                    <StatCounter Value="_events.Count" Label="Events this month" />
-                </div>
-
-                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-6"
-                           Href="@($"hall-of-fame/{_latestAchievement.Id}")">
-                    Read the story
-                </MudButton>
-            </Reveal>
-        </section>
-    }
-
-    <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
-
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Already one of us</p>
-            <h2 class="upcsg-title-xl">You're a guilder from day one</h2>
-            <p class="upcsg-lede">
-                Every Computer Science student at UP Cebu is part of the guild. Nothing to
-                sign, nothing to pay. What's up to you is how far in you go: a committee, a
-                competition, or just turning up to the next thing on the calendar.
-            </p>
-            <div class="upcsg-closing__actions">
-                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="events">
-                    See what's on
-                </MudButton>
-                <MudButton Variant="Variant.Outlined" Size="Size.Large" Class="upcsg-ghost-button px-8" Href="contact">
-                    Get in Touch
-                </MudButton>
+        <div class="upcsg-menu-group">
+            <div class="upcsg-menu-group__head">
+                <h3>Events</h3>
+                <span>@Count(_events.Count, "event")</span>
             </div>
-        </Reveal>
-    </section>
 
-</div>
+            @if (_events.Count == 0)
+            {
+                <p class="upcsg-menu-group__none">
+                    @_month.ToString("MMMM")'s lineup hasn't been posted yet. It goes up on our
+                    socials first and lands here once it's official.
+                </p>
+            }
+            else
+            {
+                <div class="upcsg-menu">
+                    @foreach (var (evt, i) in _events.Select((e, i) => (e, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 70)">
+                            <EventRow Event="evt" />
+                        </Reveal>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="upcsg-menu-group">
+            <div class="upcsg-menu-group__head">
+                <h3>Competitions and calls</h3>
+                <span>@Count(_opportunities.Count, "open", "open")</span>
+            </div>
+
+            @if (_opportunities.Count == 0)
+            {
+                <p class="upcsg-menu-group__none">
+                    Nothing open right now. Hackathons, quizbowls and scholarship calls go up here
+                    as the ExeCom hears about them.
+                </p>
+            }
+            else
+            {
+                <div class="upcsg-menu">
+                    @foreach (var (item, i) in _opportunities.Take(6).Select((o, i) => (o, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 70)">
+                            <OpportunityRow Opportunity="item" />
+                        </Reveal>
+                    }
+                </div>
+            }
+        </div>
+    }
+</Chapter>
+
+<Chapter Field="gold" Tall="true" Class="upcsg-prints">
+    <div class="upcsg-prints__stage">
+        <h2 class="upcsg-prints__title">
+            <span>Run by</span>
+            <span>students</span>
+        </h2>
+
+        <div class="upcsg-prints__pile">
+            @foreach (var (photo, i) in _photos.Take(3).Select((p, i) => (p, i)))
+            {
+                <figure class="upcsg-prints__print upcsg-prints__print--@i">
+                    <img src="@photo.File" alt="@(string.IsNullOrWhiteSpace(photo.Caption) ? "Guilders at a UPCSG event" : photo.Caption)"
+                         width="900" height="1200" loading="lazy" />
+                </figure>
+            }
+        </div>
+    </div>
+
+    <div class="upcsg-prints__foot">
+        <p>
+            Every program here is organised by guilders carrying the same problem sets and
+            deadlines as the people they organise it for. There is no staff behind us.
+        </p>
+        <a class="upcsg-textlink" href="about">About the guild <span aria-hidden="true">&rarr;</span></a>
+    </div>
+</Chapter>
+
+<Chapter Field="paper">
+    <SectionHeading Title="The ExeCom"
+                    Kicker="@(_execs.Count > 0 ? $"{_execs.Count} officers, A.Y. 2026–2027" : null)">
+        <Action>
+            <a class="upcsg-textlink" href="about">Every profile <span aria-hidden="true">&rarr;</span></a>
+        </Action>
+    </SectionHeading>
+
+    @if (_execs.Count == 0 && !_loading)
+    {
+        <div class="upcsg-empty">
+            <p>This year's officers haven't been published yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="upcsg-team">
+            @foreach (var (member, i) in _execs.Select((m, i) => (m, i)))
+            {
+                <Reveal Variant="Reveal.RevealMotion.Up" Delay="@((i % 6) * 60)">
+                    <MemberCard Member="member" Roster="_execs" Tint="i" />
+                </Reveal>
+            }
+        </div>
+    }
+</Chapter>
+
+@foreach (var (item, i) in _merch.Take(3).Select((m, i) => (m, i)))
+{
+    <MerchChapter Item="item" Field="@MerchFields[i % MerchFields.Length]" />
+}
+
+@if (_achievements.Count > 0)
+{
+    <Chapter Field="peri">
+        <div class="upcsg-board">
+            <div class="upcsg-board__head">
+                <h2>Wins on the record</h2>
+                <a class="upcsg-textlink" href="hall-of-fame">The Hall of Fame <span aria-hidden="true">&rarr;</span></a>
+            </div>
+
+            @foreach (var (win, i) in _achievements.OrderByDescending(a => a.Year).ThenByDescending(a => a.CreatedAt).Take(7).Select((a, i) => (a, i)))
+            {
+                <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)" Class="upcsg-board__cell">
+                    <a class="upcsg-board__tile" href="@($"hall-of-fame/{win.Id}")">
+                        <span class="upcsg-board__name">@win.Title</span>
+                        <span class="upcsg-board__meta">@win.Year@(string.IsNullOrWhiteSpace(win.Category) ? null : $" · {win.Category}")</span>
+                    </a>
+                </Reveal>
+            }
+        </div>
+    </Chapter>
+}
+
+<Chapter Field="night" Class="upcsg-close">
+    <h2 class="upcsg-close__title">
+        <span>Already in.</span>
+        <span>Go further.</span>
+    </h2>
+    <div class="upcsg-close__foot">
+        <p>
+            Every CS student at UP Cebu is a guilder from day one: nothing to sign, nothing to
+            pay. How far in you go is up to you: a committee, a competition, or the next thing
+            on the calendar.
+        </p>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="contact">
+            Tell us what you'd like to help with
+        </MudButton>
+    </div>
+</Chapter>
 
 @code {
     private ElementReference _hero;
+
+    private static readonly string[] MerchFields = ["amethyst", "gold", "plum"];
 
     private List<EventDto> _events = [];
     private List<MerchItemDto> _merch = [];
     private List<AchievementDto> _achievements = [];
     private List<OpportunityDto> _opportunities = [];
-    private List<MemberDto> _members = [];
-    private AchievementDto? _latestAchievement;
-    private MemberDto? _lead;
-
-    private MemberDto? _selected;
-    private MemberDto? _leaving;
-    private int _transition;
-
-    private int _execCount;
-    private bool _loading = true;
-
-    private async Task SelectOfficer(MemberDto member) {
-        if (_selected?.Name == member.Name) {
-            return;
-        }
-
-        _leaving = _selected;
-        _selected = member;
-        var mine = ++_transition;
-        StateHasChanged();
-
-        // Hold the outgoing plate on the stage for the length of the animation, then drop
-        // it. The transition id guards against a rapid second click clearing the plate that
-        // a later switch is still animating out.
-        await Task.Delay(450);
-        if (mine == _transition) {
-            _leaving = null;
-            StateHasChanged();
-        }
-    }
+    private List<MemberDto> _execs = [];
+    private List<GuildPhoto> _photos = [];
+    private List<SkyChart.SkyPoint> _sky = [];
 
     private DateTime _month = DateTime.Now;
+    private bool _loading = true;
 
-    // The kicker earns its place by saying how urgent the list is, not by repeating the heading.
-    private string DeadlineKicker
+    private string MonthNote
     {
         get
         {
@@ -307,20 +250,17 @@
 
             return soonest switch
             {
-                int.MaxValue => "Get involved",
-                <= 0 => "Closing today",
-                1 => "Closing tomorrow",
+                int.MaxValue => _month.ToString("MMMM yyyy"),
+                <= 0 => "A deadline closes today",
+                1 => "A deadline closes tomorrow",
                 <= 7 => $"Next deadline in {soonest} days",
-                _ => $"{_opportunities.Count} open right now",
+                _ => _month.ToString("MMMM yyyy"),
             };
         }
     }
 
-    private static readonly string[] Ticker =
-    [
-        "Academic support", "Competitive programming", "Industry nights", "General assemblies",
-        "Merch drops", "Study groups", "Hackathons", "UP Cebu",
-    ];
+    private static string Count(int n, string one, string? many = null) =>
+        $"{n} {(n == 1 ? one : many ?? one + "s")}";
 
     protected override async Task OnInitializedAsync()
     {
@@ -333,25 +273,19 @@
 
         _merch = await MerchService.GetMerchAsync();
 
-        // Open ones only. The home strip is a call to action, and something whose deadline
-        // has passed is not one; the archive lives on the opportunities page.
-        _opportunities = [.. (await OpportunityFeed.GetAllAsync()).Where(o => !o.IsClosed)];
+        _opportunities = [.. (await OpportunityFeed.GetAllAsync())
+            .Where(o => !o.IsClosed)
+            .OrderBy(o => o.ClosesAt ?? DateTimeOffset.MaxValue)];
+
+        _sky = BuildSky();
 
         _achievements = await AchievementService.GetAchievementsAsync();
-        _latestAchievement = _achievements
-            .OrderByDescending(a => a.Year)
-            .ThenByDescending(a => a.CreatedAt)
-            .FirstOrDefault();
 
-        _members = await MemberService.GetMembersAsync();
-        _execCount = _members.Count(m => m.Category == MemberCategory.ExeCom);
-
-        _lead = _members
+        _execs = [.. (await MemberService.GetMembersAsync())
             .Where(m => m.Category == MemberCategory.ExeCom)
-            .OrderBy(m => m.DisplayOrder)
-            .FirstOrDefault();
+            .OrderBy(m => m.DisplayOrder)];
 
-        _selected = _lead;
+        _photos = await GuildPhotos.GetAsync();
 
         _loading = false;
     }
@@ -364,14 +298,33 @@
         }
     }
 
-    private static string FirstParagraph(string? text)
+    private List<SkyChart.SkyPoint> BuildSky()
     {
-        if (string.IsNullOrWhiteSpace(text))
+        var points = new List<SkyChart.SkyPoint>();
+
+        foreach (var evt in _events.Where(e => e.IsScheduled))
         {
-            return string.Empty;
+            if (EventTiming.Starts(evt) is { } starts)
+            {
+                points.Add(new(starts.Date, evt.Title, $"events/{evt.Id}", SkyChart.SkyKind.Event));
+            }
         }
 
-        var end = text.IndexOf("\n\n", StringComparison.Ordinal);
-        return end > 0 ? text[..end].Trim() : text.Trim();
+        foreach (var item in _opportunities.Where(o => !o.IsDateTentative))
+        {
+            if (item.ClosesAt is { } closes)
+            {
+                points.Add(new(closes.ToLocalTime().Date, item.Title, $"opportunities/{item.Id}",
+                    SkyChart.SkyKind.Deadline, item.DaysLeft is <= 7));
+            }
+
+            if (item.HappensAt is { } happens)
+            {
+                points.Add(new(happens.ToLocalTime().Date, item.Title, $"opportunities/{item.Id}",
+                    SkyChart.SkyKind.Happens));
+            }
+        }
+
+        return points;
     }
 }

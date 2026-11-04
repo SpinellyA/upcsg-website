@@ -44,7 +44,9 @@ public class OpportunityService(HttpClient http, ApiOptions options, ISnapshotSe
         }
         catch (HttpRequestException)
         {
-            return null;
+            snapshots.NoteApiFailure();
+            var snapshot = await snapshots.GetAsync();
+            return snapshot?.Opportunities.FirstOrDefault(o => o.Id == id);
         }
     }
 }

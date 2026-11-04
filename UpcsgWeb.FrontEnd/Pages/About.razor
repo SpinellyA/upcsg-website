@@ -6,131 +6,113 @@
 
 <PageTitle>About - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 34%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 30%; right: 44%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
+<PageMasthead Section="About"
+              Field="paper"
+              Meta="@(["UP Cebu, Lahug", "A.Y. 2026–2027", _allOfficers.Count > 0 ? $"{_allOfficers.Count} officers" : null])"
+              Title="The guild, run by students">
+    <Lede>
+        The official student organization for Computer Science majors at the University of the
+        Philippines Cebu. Every CS student is a member from their first day.
+    </Lede>
+    <Actions>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="about#execom">Meet the ExeCom</MudButton>
+    </Actions>
+</PageMasthead>
 
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> About</p>
-        <h1 class="upcsg-banner__title">The Guild</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            The official student organization for Computer Science majors at the
-            University of the Philippines Cebu.
-        </p>
-    </div>
-</section>
-
-<Marquee Items="@Ticker" DurationSeconds="52" Class="upcsg-marquee--hero" />
-
-<div class="upcsg-page upcsg-page--after-hero">
-
-    <section class="upcsg-section upcsg-identity">
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-identity__statement">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Our identity</p>
-            <h2 class="upcsg-identity__title">Students run all of it</h2>
-            @* The closing sentence points at the rail, so it only belongs here when
-               there are photos to point at. *@
-            <p class="upcsg-lede upcsg-identity__lede">
+<Chapter Field="gold">
+    <div class="upcsg-identity">
+        <Reveal Variant="Reveal.RevealMotion.Up">
+            <h2 class="upcsg-identity__title">There is no staff behind us</h2>
+        </Reveal>
+        <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
+            <p class="upcsg-identity__lede">
                 The academic support, the competitions, the industry nights, the socials that hold
-                a year together: every one of them is organised by guilders carrying the
-                same problem sets and deadlines as the people they organise it for. There is no
-                staff behind us.@(_photos.Count > 0 ? " This is what that looks like." : string.Empty)
+                a year together: every one of them is organised by guilders carrying the same
+                problem sets and deadlines as the people they organise it for.
             </p>
         </Reveal>
+    </div>
 
-        @if (_photos.Count > 0)
-        {
-            <PhotoRail Photos="_photos" Label="Photos from the guild's year" />
-        }
+    @if (_photos.Count > 0)
+    {
+        <PhotoRail Photos="_photos" Label="Photos from the guild's year" />
+    }
 
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-identity__creed">
-            <img class="upcsg-identity__burst" src="img/starburst.png" alt="" aria-hidden="true" />
-
-            <blockquote class="upcsg-identity__quote">
+    <Reveal Variant="Reveal.RevealMotion.Up">
+        <figure class="upcsg-creed">
+            <blockquote>
                 Computer science is not just an industry of machines, but a canvas of endless
                 creative expression.
             </blockquote>
-            <p class="upcsg-identity__source">UPCSG Brandbook, A.Y. 2026&ndash;2027</p>
-        </Reveal>
-    </section>
+            <figcaption>From the UPCSG brandbook, A.Y. 2026–2027</figcaption>
+        </figure>
+    </Reveal>
+</Chapter>
 
-    @if (_faculty.Count > 0)
-    {
-        <section class="upcsg-section">
-            <SectionHeading Kicker="Your guiding light" Title="Faculty" />
+@if (_faculty.Count > 0)
+{
+    <Chapter Field="peri">
+        <SectionHeading Title="Faculty advisers" Kicker="From the Department of Computer Science" />
 
-            <div class="upcsg-memberpile">
-                @foreach (var (member, i) in _faculty.Select((m, i) => (m, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
-                        <MemberCard Member="member" Roster="_faculty" />
-                    </Reveal>
-                }
-            </div>
-        </section>
-    }
-
-    <section class="upcsg-section">
-        <SectionHeading Kicker="Know your officers"
-                        Title="Executive Committee"
-                        Lede="Elected guilders who represent the membership, run the committees, and keep the guild's programs moving. Open anyone's card for their full profile." />
-
-        @if (_loading)
-        {
-            <div class="upcsg-memberpile">
-                @for (var i = 0; i < 6; i++)
-                {
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="320px" Class="upcsg-skeleton" />
-                }
-            </div>
-        }
-        else if (_committees.Count == 0)
-        {
-            <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty">
-                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-                    <p>This year's officers haven't been published yet.</p>
-                </div>
-            </Reveal>
-        }
-        else
-        {
-            @foreach (var committee in _committees)
+        <div class="upcsg-memberpile">
+            @foreach (var (member, i) in _faculty.Select((m, i) => (m, i)))
             {
-                <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-committee-rule">
-                    <span>@committee.Name</span>
-                    <span class="upcsg-committee-rule__count">@committee.Count</span>
+                <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 70)">
+                    <MemberCard Member="member" Roster="_faculty" Tint="@(i + 2)" />
                 </Reveal>
+            }
+        </div>
+    </Chapter>
+}
 
-                @foreach (var row in committee.Rows)
-                {
-                    <Reveal Variant="@(row.Flip ? Reveal.RevealMotion.Right : Reveal.RevealMotion.Left)">
-                        <OfficerBand Member="row.Member" Flip="row.Flip" Roster="_allOfficers" />
-                    </Reveal>
-                }
+<Chapter Field="night" Id="execom">
+    <SectionHeading Title="The Executive Committee"
+                    Lede="Elected guilders who represent the membership, run the committees, and keep the guild's programs moving." />
+
+    @if (_loading)
+    {
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="360px" Class="upcsg-skeleton" />
+    }
+    else if (_committees.Count == 0)
+    {
+        <div class="upcsg-empty">
+            <p>This year's officers haven't been published yet.</p>
+        </div>
+    }
+    else
+    {
+        @foreach (var committee in _committees)
+        {
+            <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-committee-rule">
+                <h3>
+                    @committee.Name
+                    <span class="upcsg-committee-rule__count">@committee.Count @(committee.Count == 1 ? "officer" : "officers")</span>
+                </h3>
+            </Reveal>
+
+            @foreach (var row in committee.Rows)
+            {
+                <Reveal Variant="@(row.Flip ? Reveal.RevealMotion.Right : Reveal.RevealMotion.Left)">
+                    <OfficerBand Member="row.Member" Flip="row.Flip" Roster="_allOfficers" />
+                </Reveal>
             }
         }
-    </section>
+    }
+</Chapter>
 
-    <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
-
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Fancy a hand in it?</p>
-            <h2 class="upcsg-title-xl">Run something with us</h2>
-            <p class="upcsg-lede">
-                Every Computer Science student here is already a guilder. The committees above are
-                where the work actually happens, and they take on people through the year.
-                Tell us what you'd like to help with.
-            </p>
-            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
-                Get in Touch
-            </MudButton>
-        </Reveal>
-    </section>
-
-</div>
+<Chapter Field="amethyst" Class="upcsg-close">
+    <h2 class="upcsg-close__title">
+        <span>Fancy a hand</span>
+        <span>in it?</span>
+    </h2>
+    <div class="upcsg-close__foot">
+        <p>
+            The committees above take people on through the year, not just at the start of one.
+            Tell us what you'd like to help with.
+        </p>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="contact">Tell us what you'd like to do</MudButton>
+    </div>
+</Chapter>
 
 @code {
     private sealed record ProfileRow(MemberDto Member, bool Flip, bool IsLead);
@@ -146,11 +128,6 @@
     private List<GuildPhoto> _photos = [];
     private bool _loading = true;
 
-    private static readonly string[] Ticker =
-    [
-        "Academic support", "Competitions", "Industry nights", "Committees",
-        "Socials", "Mentoring", "UP Cebu", "Computer Science",
-    ];
 
     protected override async Task OnInitializedAsync()
     {

@@ -1,0 +1,71 @@
+@using UpcsgWeb.Shared.Contracts
+
+<section class="upcsg-chapter upcsg-chapter--tall upcsg-showcase upcsg-field--@Field" data-field="@Field">
+    <div class="upcsg-chapter__inner upcsg-showcase__inner">
+        <h2 class="upcsg-showcase__title">@Item.Name</h2>
+
+        <Reveal Variant="Reveal.RevealMotion.Scale" Class="upcsg-showcase__plate">
+            <a href="@($"merch/{Item.Id}")" tabindex="-1" aria-hidden="true">
+                <CosmicImage Src="@Photo" Alt="@Item.Name" Seed="@Item.Name" Class="upcsg-showcase__img" />
+            </a>
+        </Reveal>
+
+        @if (Second is not null)
+        {
+            <Reveal Variant="Reveal.RevealMotion.Up" Delay="160" Class="upcsg-showcase__second">
+                <CosmicImage Src="@Second" Alt="@($"{Item.Name}, another view")" Seed="@Item.Name" />
+            </Reveal>
+        }
+
+        <div class="upcsg-showcase__price">
+            @if (!Item.InStock && !Item.IsPreorder)
+            {
+                <span>Sold out</span>
+            }
+            else
+            {
+                <span>@(Item.HasPriceRange ? "From " : null)&#8369;@Item.PriceFrom.ToString("N2")</span>
+                @if (Item.HasActiveSale && Item.ListPriceFrom > Item.PriceFrom)
+                {
+                    <s>&#8369;@Item.ListPriceFrom.ToString("N2")</s>
+                }
+            }
+            @if (Item.IsPreorder)
+            {
+                <span class="upcsg-showcase__flag">Preorder</span>
+            }
+        </div>
+
+        <p class="upcsg-showcase__line">@Line</p>
+
+        <a class="upcsg-textlink upcsg-showcase__link" href="@($"merch/{Item.Id}")">
+            @(Item.InStock || Item.IsPreorder ? "Choose a size" : "See details") <span aria-hidden="true">&rarr;</span>
+        </a>
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public MerchItemDto Item { get; set; } = default!;
+
+    [Parameter] public string Field { get; set; } = "amethyst";
+
+    private string? Photo => Item.PhotoUrls.FirstOrDefault() ?? Item.ImageUrl;
+
+    private string? Second => Item.PhotoUrls.Skip(1).FirstOrDefault(u => !string.IsNullOrWhiteSpace(u));
+
+    private string Line
+    {
+        get
+        {
+            var first = Prose.Standfirst(Item.Description);
+            if (!string.IsNullOrWhiteSpace(first))
+            {
+                return first;
+            }
+
+            return Item.Variants.Count > 0
+                ? $"In {string.Join(", ", Item.Variants.Select(v => v.Name))}."
+                : "From the guild store.";
+        }
+    }
+}

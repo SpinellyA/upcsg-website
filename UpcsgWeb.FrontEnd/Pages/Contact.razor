@@ -1,30 +1,23 @@
 @page "/contact"
+@using UpcsgWeb.FrontEnd.Services
+@inject IGuildPhotoService GuildPhotos
 
 <PageTitle>Contact - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 26%; right: 32%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 30%; right: 44%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
-
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Reach the guild</p>
-        <h1 class="upcsg-banner__title">Get in Touch</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            Questions about events, merch, or getting involved? Every channel below reaches the
-            same set of officers, so pick whichever you already have open.
-        </p>
-    </div>
-</section>
-
-<Marquee Items="@Ticker" DurationSeconds="48" Class="upcsg-marquee--hero" />
-
-<div class="upcsg-page upcsg-page--after-hero">
-
-    <section class="upcsg-section">
-        <SectionHeading Kicker="Where to reach us" Title="Pick a channel" />
-
-        <div class="upcsg-cardgrid upcsg-cardgrid--3 upcsg-recordgrid">
+<PageMasthead Section="Contact"
+              Field="ultra"
+              Meta="@(["Three channels", "The same officers read each one"])"
+              Title="Get in touch">
+    <Lede>
+        Questions about events, merch, or getting involved? Pick whichever channel you already
+        have open; they all reach the same officers.
+    </Lede>
+    <Actions>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="mailto:upcsg.upcebu@gmail.com">Email the guild</MudButton>
+    </Actions>
+    <ChildContent>
+        <h2 class="upcsg-visually-hidden">Channels</h2>
+        <div class="upcsg-channels">
             <Reveal Variant="Reveal.RevealMotion.Scale">
                 <ChannelCard Href="https://facebook.com/upcsg"
                              Icon="@Icons.Custom.Brands.Facebook"
@@ -60,18 +53,19 @@
                 </ChannelCard>
             </Reveal>
         </div>
-    </section>
+    </ChildContent>
+</PageMasthead>
 
-    <section class="upcsg-section upcsg-feature">
+<Chapter Field="paper">
+    <div class="upcsg-feature">
         <Reveal Variant="Reveal.RevealMotion.Left" Class="upcsg-feature__body">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Membership</p>
-            <h2 class="upcsg-title-xl">You're already a guilder</h2>
-            <p class="upcsg-lede">
+                        <h2 class="upcsg-title-xl">You're already a guilder</h2>
+            <p>
                 Every Computer Science student at UP Cebu is part of the guild from day one.
                 There is no form to fill in and nothing to pay for. If you're taking the
                 degree, you're in.
             </p>
-            <p class="upcsg-lede">
+            <p>
                 What's up to you is how involved you get. Message us on any channel above and
                 we'll point you at whoever is organising what.
             </p>
@@ -87,13 +81,9 @@
                 </div>
             </dl>
         </Reveal>
-
-        @* Was a purple slab carrying a quote that said the same thing as the heading
-           beside it. The paragraph says involvement is up to you; this is the list of
-           what "involved" actually means, which is the useful half of that sentence. *@
         <Reveal Variant="Reveal.RevealMotion.Right" Class="upcsg-feature__visual" Delay="120">
             <div class="upcsg-waysin">
-                <p class="upcsg-waysin__title">Ways in</p>
+                <h3 class="upcsg-waysin__title">Ways in</h3>
 
                 <ul class="upcsg-waysin__list">
                     <li>
@@ -124,13 +114,17 @@
                 </ul>
             </div>
         </Reveal>
-    </section>
+    </div>
+    @if (_photos.Count > 0)
+    {
+        <PhotoRail Photos="_photos" Label="Guilders at the guild's events" />
+    }
+</Chapter>
 
-    <section class="upcsg-section">
-        <SectionHeading Kicker="Before you message" Title="Asked a lot" />
-
-        <Reveal Variant="Reveal.RevealMotion.Up">
-            <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="upcsg-faq">
+<Chapter Field="night">
+    <SectionHeading Title="Asked a lot" Kicker="Before you message" />
+    <Reveal Variant="Reveal.RevealMotion.Up">
+        <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="upcsg-faq">
                 <MudExpansionPanel Text="Do I need to sign up to be a guilder?">
                     No. Every Computer Science student at UP Cebu is a guilder automatically.
                     There's no drive, no form and no fee. Signing in here just links your UP
@@ -168,32 +162,29 @@
                     fix it.
                 </MudExpansionPanel>
             </MudExpansionPanels>
-        </Reveal>
-    </section>
+    </Reveal>
+</Chapter>
 
-    <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
-
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Still stuck?</p>
-            <h2 class="upcsg-title-xl">Just message us</h2>
-            <p class="upcsg-lede">
-                No question is too small. If you're not sure who to ask, ask us anyway. We'll
-                route it to whoever handles it.
-            </p>
-            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8"
-                       Href="https://facebook.com/upcsg" Target="_blank">
-                Message on Facebook
-            </MudButton>
-        </Reveal>
-    </section>
-
-</div>
+<Chapter Field="gold" Class="upcsg-close">
+    <h2 class="upcsg-close__title">
+        <span>Still stuck?</span>
+        <span>Just ask.</span>
+    </h2>
+    <div class="upcsg-close__foot">
+        <p>
+            No question is too small. If you're not sure who to ask, ask us anyway and we'll route
+            it to whoever handles it.
+        </p>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button"
+                   Href="https://facebook.com/upcsg" Target="_blank">
+            Message us on Facebook
+        </MudButton>
+    </div>
+</Chapter>
 
 @code {
-    private static readonly string[] Ticker =
-    [
-        "Announcements", "Event changes", "Merch drops", "Partnerships",
-        "Sponsorships", "Committee sign-ups", "Questions", "UP Cebu",
-    ];
+    private List<GuildPhoto> _photos = [];
+
+    protected override async Task OnInitializedAsync() =>
+        _photos = await GuildPhotos.GetAsync();
 }

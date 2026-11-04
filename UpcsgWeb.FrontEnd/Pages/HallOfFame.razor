@@ -5,141 +5,110 @@
 
 <PageTitle>Hall of Fame - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 28%; right: 34%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 32%; right: 46%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
+<PageMasthead Section="Hall of Fame"
+              Field="gold"
+              Meta="@([_loading ? null : $"{_all.Count} win{(_all.Count == 1 ? "" : "s")} on the record", "Each one verified by the ExeCom"])"
+              Title="Wins on the record">
+    <Lede>
+        The awards and milestones UP Cebu's CS students have brought home, each one written up
+        properly rather than just listed.
+    </Lede>
+    <Actions>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="contact">Tell us about a win</MudButton>
+    </Actions>
+    <ChildContent>
+        @if (Lead is not null)
+        {
+            <div class="upcsg-mast__body">
+                <h2 class="upcsg-visually-hidden">The latest win</h2>
+                <Reveal Variant="Reveal.RevealMotion.Up">
+                    <AchievementCard Entry="Lead" Variant="AchievementCard.Density.Lead" />
+                </Reveal>
+            </div>
+        }
+    </ChildContent>
+</PageMasthead>
 
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Hall of fame</p>
-        <h1 class="upcsg-banner__title">What We've Won</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            The wins, awards, and milestones our members and the guild have collected over the
-            years, each one written up properly, not just listed.
-        </p>
-    </div>
-</section>
-
-<Marquee Items="@Ticker" DurationSeconds="46" Class="upcsg-marquee--hero" />
-
-<div class="upcsg-page upcsg-page--after-hero">
-
+<Chapter Field="night">
     @if (_loading)
     {
-        <section class="upcsg-section">
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="280px" Class="upcsg-skeleton mb-6" />
-            <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                @for (var i = 0; i < 3; i++)
-                {
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="upcsg-skeleton" />
-                }
-            </div>
-        </section>
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="360px" Class="upcsg-skeleton" />
     }
     else if (_all.Count == 0)
     {
-        <section class="upcsg-section">
-            <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="upcsg-empty upcsg-empty--tall">
-                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-                    <h2 class="upcsg-title-xl">The record is empty</h2>
-                    <p>
-                        Nothing has been verified for the record yet. If you brought something home
-                        for the guild, we'd rather hear about it than miss it.
-                    </p>
-                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="contact">
-                        Tell us about a win
-                    </MudButton>
-                </div>
-            </Reveal>
-        </section>
+        <SectionHeading Title="The record is empty" />
+        <div class="upcsg-empty">
+            <p>
+                Nothing has been verified for the record yet. If you brought something home for
+                the guild, we'd rather hear about it than miss it.
+            </p>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button" Href="contact">Tell us about a win</MudButton>
+        </div>
     }
     else
     {
-        @if (Lead is not null)
+        <SectionHeading Title="The whole record"
+                        Kicker="@(_activeCategory is null ? "All categories" : $"Showing {_activeCategory}")"
+                        Lede="We only list wins the ExeCom can verify. Earlier years are being confirmed and added as we go." />
+
+        @if (_categories.Count > 1)
         {
-            <section class="upcsg-section">
-                <Reveal Variant="Reveal.RevealMotion.Scale">
-                    <AchievementCard Entry="Lead" Variant="AchievementCard.Density.Lead" />
-                </Reveal>
-            </section>
+            <div class="upcsg-filterrow">
+                <MudChipSet T="string"
+                            SelectionMode="SelectionMode.SingleSelection"
+                            SelectedValue="@(_activeCategory ?? AllFilter)"
+                            SelectedValueChanged="SetCategory">
+                    <MudChip T="string" Value="@AllFilter">All (@_all.Count)</MudChip>
+                    @foreach (var category in _categories)
+                    {
+                        <MudChip T="string" Value="@category">@category (@_all.Count(a => a.Category == category))</MudChip>
+                    }
+                </MudChipSet>
+            </div>
         }
 
-        <section class="upcsg-section">
-            <SectionHeading Kicker="@(_activeCategory is null ? "All categories" : $"Filtered by {_activeCategory}")"
-                            Title="The Record"
-                            Lede="We only list achievements the ExeCom can verify. Wins from earlier years are being confirmed and added as we go. If one is missing, tell us and we'll chase the record down." />
-
-            @if (_categories.Count > 1)
+        @if (Visible.Count == 0)
+        {
+            <div class="upcsg-empty">
+                <p>Nothing else recorded under this category yet.</p>
+            </div>
+        }
+        else
+        {
+            @foreach (var group in Visible.GroupBy(a => a.Year).OrderByDescending(g => g.Key))
             {
-                <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-filterrow">
-                    <MudChipSet T="string"
-                                SelectionMode="SelectionMode.SingleSelection"
-                                SelectedValue="@(_activeCategory ?? AllFilter)"
-                                SelectedValueChanged="SetCategory"
-                                CheckMark="true">
-                        <MudChip T="string" Value="@AllFilter" Variant="Variant.Outlined">
-                            All (@_all.Count)
-                        </MudChip>
-
-                        @foreach (var category in _categories)
-                        {
-                            <MudChip T="string" Value="@category" Variant="Variant.Outlined">
-                                @category (@_all.Count(a => a.Category == category))
-                            </MudChip>
-                        }
-                    </MudChipSet>
-                </Reveal>
-            }
-
-            @if (Visible.Count == 0)
-            {
-                <Reveal Variant="Reveal.RevealMotion.Fade">
-                    <div class="upcsg-empty">
-                        <p>Nothing else recorded under this category yet.</p>
-                    </div>
-                </Reveal>
-            }
-            else
-            {
-                @foreach (var group in Visible.GroupBy(a => a.Year).OrderByDescending(g => g.Key))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-yearrule">
+                <div class="upcsg-yeargroup">
+                    <div class="upcsg-yearrule">
                         <h3 class="upcsg-yearrule__year">@group.Key</h3>
-                        <span class="upcsg-yearrule__line"></span>
                         <span class="upcsg-yearrule__count">@group.Count() entr@(group.Count() == 1 ? "y" : "ies")</span>
-                    </Reveal>
-
-                    <div class="upcsg-cardgrid upcsg-cardgrid--3 upcsg-recordgrid">
+                    </div>
+                    <div class="upcsg-wins">
                         @foreach (var (entry, i) in group.OrderBy(a => a.Title).Select((a, i) => (a, i)))
                         {
-                            <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                            <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 70)">
                                 <AchievementCard Entry="entry" />
                             </Reveal>
                         }
                     </div>
-                }
+                </div>
             }
-        </section>
+        }
     }
+</Chapter>
 
-    <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
-
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Missing something?</p>
-            <h2 class="upcsg-title-xl">Tell us about a win</h2>
-            <p class="upcsg-lede">
-                If you or a batchmate brought something home for the guild and it isn't here,
-                send it our way and we'll add it to the record.
-            </p>
-            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
-                Get in Touch
-            </MudButton>
-        </Reveal>
-    </section>
-
-</div>
+<Chapter Field="peri" Class="upcsg-close">
+    <h2 class="upcsg-close__title">
+        <span>Won it?</span>
+        <span>Tell us.</span>
+    </h2>
+    <div class="upcsg-close__foot">
+        <p>
+            If you or a batchmate brought something home for the guild and it isn't here, send it
+            our way and we'll add it to the record.
+        </p>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="contact">Tell us about a win</MudButton>
+    </div>
+</Chapter>
 
 @code {
     private const string AllFilter = "all";
@@ -148,13 +117,6 @@
     private List<string> _categories = [];
     private string? _activeCategory;
     private bool _loading = true;
-
-    private IReadOnlyList<string> Ticker =>
-        _all.Count == 0
-            ? ["Competitions", "Milestones", "Recognition", "Verified by the ExeCom"]
-            : [.. _categories
-                .Concat(_all.Select(a => a.Year.ToString()).Distinct().OrderByDescending(y => y))
-                .Append("Verified by the ExeCom")];
 
     private AchievementDto? Lead => _all
         .OrderByDescending(a => a.Year)

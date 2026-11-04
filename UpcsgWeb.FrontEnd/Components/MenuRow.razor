@@ -1,0 +1,50 @@
+<a class="upcsg-menurow @(Muted ? "upcsg-menurow--muted" : null) @(Hit ? "upcsg-menurow--hit" : null)" href="@Href" id="@Id">
+    <CosmicImage Src="@ImageSrc" Alt="" Seed="@Title" Class="upcsg-menurow__pic" />
+
+    <span class="upcsg-menurow__body">
+        <span class="upcsg-menurow__top">
+            <span class="upcsg-menurow__name">@Title</span>
+            @if (!string.IsNullOrWhiteSpace(Aside))
+            {
+                <span class="upcsg-menurow__aside">@Aside</span>
+            }
+        </span>
+
+        @if (!string.IsNullOrWhiteSpace(Description))
+        {
+            <span class="upcsg-menurow__desc">@Description</span>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Extra))
+        {
+            <span class="upcsg-menurow__extra">@Extra</span>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(Note))
+        {
+            <span class="upcsg-menurow__note">@Note</span>
+        }
+    </span>
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    [Parameter] public string? ImageSrc { get; set; }
+
+    [Parameter] public string? Aside { get; set; }
+
+    [Parameter] public string? Description { get; set; }
+
+    [Parameter] public string? Note { get; set; }
+
+    [Parameter] public string? Extra { get; set; }
+
+    [Parameter] public bool Muted { get; set; }
+
+    [Parameter] public bool Hit { get; set; }
+
+    [Parameter] public string? Id { get; set; }
+}

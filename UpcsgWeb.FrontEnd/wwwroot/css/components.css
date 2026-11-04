@@ -1,70 +1,1013 @@
-/* ==========================================================================
-   Reusable presentation kit
-   --------------------------------------------------------------------------
-   Styles for the components under Components/ that any public page can reuse.
-   Kept out of brand.css, which is already 4,000 lines of page-specific rules
-   and is where this would immediately get lost.
+/*
+  Public chapters and components. Tokens, fields and the shell live in
+  brand.css; the store's working parts and the CMS live in ledger.css.
+*/
 
-   Everything here reads tokens from brand.css :root and defines no colours of
-   its own, so a palette change still happens in exactly one place.
-   ========================================================================== */
+/* ------------------------------------------------------------------ *
+   Reveal: entrances, only when motion is welcome
+ * ------------------------------------------------------------------ */
 
-/* --- Reveal: scroll-triggered entrances ---------------------------------- */
-
-/* The hidden starting state is deliberately scoped to .upcsg-motion, which the
-   inline script in index.html sets only when the browser supports the observer,
-   and removes again if the module fails to load. Unscoped, a blocked script would
-   leave every section below the hero permanently invisible â€” the animation is
-   decoration, so its absence must cost nothing. */
-.upcsg-motion .upcsg-reveal {
-    opacity: 0;
-    transition:
-        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-    transition-delay: var(--reveal-delay, 0ms);
-    will-change: opacity, transform;
-}
-
-.upcsg-motion .upcsg-reveal--up { transform: translateY(28px); }
-.upcsg-motion .upcsg-reveal--fade { transform: none; }
-.upcsg-motion .upcsg-reveal--scale { transform: scale(0.95); }
-.upcsg-motion .upcsg-reveal--left { transform: translateX(-32px); }
-.upcsg-motion .upcsg-reveal--right { transform: translateX(32px); }
-
-.upcsg-motion .upcsg-reveal.is-revealed {
-    opacity: 1;
-    transform: none;
-}
-
-/* The --left and --right entrances start 32px outside their column, which pushes the
-   document 16px wider than the viewport. That is not a flicker: an element only loses
-   the offset once it has been scrolled to, so the horizontal scrollbar sits there from
-   load until the reader has reached the last one.
-
-   clip, not hidden: hidden would make this a scroll container and break position:sticky
-   for every descendant. */
-.upcsg-main,
-.upcsg-page {
-    overflow-x: clip;
-}
-
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: no-preference) {
     .upcsg-motion .upcsg-reveal {
+        opacity: 0;
+        transition: opacity 0.7s var(--upcsg-ease), transform 0.8s var(--upcsg-ease);
+        transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .upcsg-motion .upcsg-reveal--up { transform: translateY(24px); }
+    .upcsg-motion .upcsg-reveal--scale { transform: translateY(16px) scale(0.97); }
+    .upcsg-motion .upcsg-reveal--left { transform: translateX(-24px); }
+    .upcsg-motion .upcsg-reveal--right { transform: translateX(24px); }
+
+    .upcsg-motion .upcsg-reveal.is-revealed {
         opacity: 1;
         transform: none;
-        transition: none;
     }
 }
 
-/* --- CosmicImage --------------------------------------------------------- */
+/* ------------------------------------------------------------------ *
+   Home hero: the brandbook banner on a violet night sky
+ * ------------------------------------------------------------------ */
+
+.upcsg-hero {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    padding-top: clamp(7rem, 12vw, 9.5rem);
+}
+
+.upcsg-hero__flare {
+    position: absolute;
+    top: -18%;
+    right: -8%;
+    z-index: -1;
+    width: 62vw;
+    height: 62vw;
+    max-width: 900px;
+    max-height: 900px;
+    background: radial-gradient(closest-side, rgba(250, 236, 166, 0.45), rgba(246, 200, 117, 0.16) 40%, transparent 72%);
+    pointer-events: none;
+}
+
+.upcsg-hero__star {
+    position: absolute;
+    z-index: -1;
+    width: 22px;
+    height: 22px;
+    background: var(--upcsg-honeydew-white);
+    clip-path: polygon(50% 0%, 59% 41%, 100% 50%, 59% 59%, 50% 100%, 41% 59%, 0% 50%, 41% 41%);
+    filter: drop-shadow(0 0 8px rgba(252, 230, 138, 0.95));
+    pointer-events: none;
+}
+
+.upcsg-hero__star--a { top: 18%; right: 16%; width: 34px; height: 34px; background: var(--upcsg-starlight-core); }
+.upcsg-hero__star--b { top: 42%; left: 9%; width: 16px; height: 16px; }
+.upcsg-hero__star--c { top: 12%; left: 30%; width: 12px; height: 12px; background: var(--upcsg-cosmic-lavender); }
+
+.upcsg-hero__banner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: calc(var(--upcsg-measure) + 2 * var(--upcsg-gutter));
+    margin: 0 auto;
+    padding: 0 var(--upcsg-gutter) clamp(56px, 7vw, 96px);
+    text-align: center;
+}
+
+.upcsg-hero__crest {
+    width: clamp(84px, 9vw, 124px);
+    height: auto;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 24px rgba(204, 174, 222, 0.6));
+}
+
+.upcsg-hero__uni {
+    margin: 0;
+    font-family: var(--upcsg-font-serif);
+    font-size: clamp(1.25rem, 1rem + 1.4vw, 2.25rem);
+    line-height: 1.2;
+}
+
+.upcsg-hero__title {
+    margin: 0.35rem 0 0;
+    font-family: var(--upcsg-font-head);
+    font-size: clamp(2.6rem, 1rem + 6.4vw, 7rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    text-shadow: 0 0 40px rgba(162, 83, 184, 0.65);
+}
+
+.upcsg-hero__year {
+    margin: 0.75rem 0 0;
+    font-family: var(--upcsg-font-serif);
+    font-style: italic;
+    font-size: var(--step-lead);
+    color: var(--upcsg-starlight-core);
+}
+
+.upcsg-hero__lede {
+    max-width: 40ch;
+    margin: 2rem 0 0;
+    font-size: var(--step-lead);
+    line-height: 1.4;
+}
+
+.upcsg-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+}
+
+.upcsg-hero__sky {
+    padding: clamp(40px, 5vw, 72px) 0 clamp(64px, 8vw, 120px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .upcsg-motion .upcsg-hero__banner > * {
+        animation: upcsg-rise 0.8s var(--upcsg-ease) both;
+    }
+
+    .upcsg-motion .upcsg-hero__banner > :nth-child(2) { animation-delay: 0.08s; }
+    .upcsg-motion .upcsg-hero__banner > :nth-child(3) { animation-delay: 0.16s; }
+    .upcsg-motion .upcsg-hero__banner > :nth-child(4) { animation-delay: 0.24s; }
+    .upcsg-motion .upcsg-hero__banner > :nth-child(5) { animation-delay: 0.32s; }
+    .upcsg-motion .upcsg-hero__banner > :nth-child(6) { animation-delay: 0.4s; }
+
+    .upcsg-motion .upcsg-hero__star {
+        animation: upcsg-twinkle 5s ease-in-out infinite;
+    }
+
+    .upcsg-motion .upcsg-hero__star--b { animation-delay: -1.6s; }
+    .upcsg-motion .upcsg-hero__star--c { animation-delay: -3.2s; }
+
+    .upcsg-motion .upcsg-hero__flare {
+        animation: upcsg-breathe 8s ease-in-out infinite;
+    }
+}
+
+@keyframes upcsg-rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes upcsg-breathe {
+    50% { transform: scale(1.06); opacity: 0.85; }
+}
+
+/* --- Sky chart: the next 60 days as an arc of the sky ------------------ */
+
+.upcsg-sky {
+    margin: 0;
+}
+
+.upcsg-sky__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.upcsg-sky__grid {
+    fill: none;
+    stroke: rgba(246, 255, 233, 0.12);
+    stroke-width: 1;
+    stroke-dasharray: 2 7;
+}
+
+.upcsg-sky__horizon {
+    stroke: rgba(246, 255, 233, 0.5);
+    stroke-width: 1.5;
+}
+
+.upcsg-sky__tick {
+    stroke: rgba(246, 255, 233, 0.35);
+    stroke-width: 1;
+}
+
+.upcsg-sky__tick--week { stroke: rgba(246, 255, 233, 0.6); }
+.upcsg-sky__tick--month { stroke: var(--upcsg-liquid-chrome-gold); stroke-width: 2; }
+
+.upcsg-sky__month,
+.upcsg-sky__today text,
+.upcsg-sky__when {
+    font-family: var(--upcsg-font);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0;
+    fill: #DCD6F5;
+}
+
+.upcsg-sky__month,
+.upcsg-sky__today text { fill: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-sky__today line {
+    stroke: var(--upcsg-liquid-chrome-gold);
+    stroke-width: 2;
+}
+
+.upcsg-sky__arc {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.upcsg-sky__point {
+    cursor: pointer;
+    outline: none;
+}
+
+.upcsg-sky__plumb,
+.upcsg-sky__leader {
+    stroke: rgba(246, 255, 233, 0.35);
+    stroke-width: 1;
+    stroke-dasharray: 1 4;
+}
+
+.upcsg-sky__halo {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 2;
+    transition: stroke 0.3s ease;
+}
+
+.upcsg-sky__star {
+    fill: var(--upcsg-liquid-chrome-gold);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform 0.4s var(--upcsg-ease);
+}
+
+.upcsg-sky__point--deadline .upcsg-sky__star { fill: var(--upcsg-cosmic-lavender); }
+.upcsg-sky__point--happens .upcsg-sky__star { fill: var(--upcsg-honeydew-white); }
+.upcsg-sky__point--urgent .upcsg-sky__star { fill: var(--upcsg-solar-flare); }
+
+.upcsg-sky__title {
+    font-family: var(--upcsg-font);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    fill: var(--upcsg-honeydew-white);
+}
+
+.upcsg-sky__point:hover .upcsg-sky__star,
+.upcsg-sky__point:focus-visible .upcsg-sky__star {
+    transform: scale(1.4) rotate(45deg);
+}
+
+.upcsg-sky__point:hover .upcsg-sky__halo,
+.upcsg-sky__point:focus-visible .upcsg-sky__halo {
+    stroke: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-sky__point:hover .upcsg-sky__title,
+.upcsg-sky__point:focus-visible .upcsg-sky__title {
+    fill: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-sky__none {
+    font-family: var(--upcsg-font);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    fill: var(--upcsg-honeydew-white);
+}
+
+.upcsg-sky__legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1.75rem;
+    margin: 1.25rem 0 0;
+    font-size: var(--step-small);
+    font-weight: 600;
+}
+
+.upcsg-sky__legend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upcsg-sky__span {
+    margin-left: auto;
+}
+
+.upcsg-sky__key {
+    width: 12px;
+    height: 12px;
+    background: var(--upcsg-liquid-chrome-gold);
+    clip-path: polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+}
+
+.upcsg-sky__key--deadline { background: var(--upcsg-cosmic-lavender); }
+.upcsg-sky__key--happens { background: var(--upcsg-honeydew-white); }
+
+.upcsg-sky__list {
+    display: none;
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+}
+
+.upcsg-sky__item {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0.75rem;
+    padding: 0.85rem 0;
+    color: inherit;
+    text-decoration: none;
+}
+
+.upcsg-sky__item-when {
+    font-size: var(--step-small);
+    font-weight: 600;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-sky__item-kind {
+    display: none;
+}
+
+.upcsg-sky__item-title {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .upcsg-motion .upcsg-sky__arc {
+        stroke-dasharray: 1;
+        stroke-dashoffset: 1;
+        animation: upcsg-sky-draw 1.8s 0.3s var(--upcsg-ease) forwards;
+    }
+
+    .upcsg-motion .upcsg-sky__point {
+        opacity: 0;
+        animation: upcsg-sky-appear 0.7s var(--upcsg-ease) forwards;
+        animation-delay: calc(0.9s + var(--i, 0) * 0.14s);
+    }
+}
+
+@keyframes upcsg-sky-draw {
+    to { stroke-dashoffset: 0; }
+}
+
+@keyframes upcsg-sky-appear {
+    to { opacity: 1; }
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-sky__label { display: none; }
+    .upcsg-sky__list { display: block; }
+    .upcsg-sky__span { margin-left: 0; }
+}
+
+/* ------------------------------------------------------------------ *
+   Menu: a two-column list with a picture where the bullet would be
+ * ------------------------------------------------------------------ */
+
+.upcsg-menu-group + .upcsg-menu-group {
+    margin-top: clamp(64px, 7vw, 96px);
+}
+
+.upcsg-menu-group__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 40px;
+}
+
+.upcsg-menu-group__head h3 {
+    margin: 0;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-menu-group__head span {
+    font-weight: 600;
+}
+
+.upcsg-menu-group__none {
+    margin: 0;
+    max-width: 56ch;
+}
+
+.upcsg-menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px 64px;
+}
+
+.upcsg-menu--single {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+}
+
+.upcsg-menu > * {
+    min-width: 0;
+}
+
+.upcsg-menurow {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    align-items: start;
+    gap: 20px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.upcsg-menurow__pic {
+    width: 160px;
+    height: 120px;
+}
+
+.upcsg-menurow__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.upcsg-menurow__top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.upcsg-menurow__name {
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+.upcsg-menurow__aside {
+    flex: none;
+    font-weight: 600;
+    text-align: right;
+}
+
+.upcsg-menurow__desc {
+    max-width: 44ch;
+    line-height: 1.4;
+    color: var(--soft);
+}
+
+.upcsg-menurow__extra {
+    max-width: 52ch;
+    line-height: 1.4;
+}
+
+.upcsg-menurow__note {
+    max-width: 52ch;
+    line-height: 1.4;
+    font-weight: 600;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+
+
+.upcsg-menurow:hover .upcsg-menurow__name,
+.upcsg-menurow:focus-visible .upcsg-menurow__name {
+    text-decoration-line: underline;
+}
+
+.upcsg-menurow:hover .upcsg-cosmic__img {
+    transform: scale(1.08);
+}
+
+.upcsg-menurow--muted .upcsg-menurow__pic {
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.upcsg-menurow--muted .upcsg-menurow__note {
+    color: var(--soft);
+}
+
+.upcsg-menurow--hit {
+    outline: 3px solid var(--upcsg-liquid-chrome-gold);
+    outline-offset: 10px;
+}
+
+@media (max-width: 999.98px) {
+    .upcsg-menu { grid-template-columns: 1fr; gap: 28px; }
+    .upcsg-menurow { grid-template-columns: 96px minmax(0, 1fr); gap: 16px; }
+    .upcsg-menurow__pic { width: 96px; height: 72px; }
+    .upcsg-menurow__top { flex-direction: column; gap: 0.15rem; }
+    .upcsg-menurow__aside { text-align: left; }
+}
+
+/* ------------------------------------------------------------------ *
+   Prints dropped on the headline
+ * ------------------------------------------------------------------ */
+
+.upcsg-prints {
+    padding-top: calc(var(--upcsg-chapter-pad) * 1.5);
+}
+
+.upcsg-prints__stage {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: center;
+    gap: 2rem var(--upcsg-gap);
+    margin: auto 0;
+}
+
+.upcsg-prints__title {
+    margin: 0;
+    font-size: clamp(3.5rem, 8.2vw, 8rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 0.85;
+}
+
+.upcsg-prints__title span {
+    display: block;
+}
+
+.upcsg-prints__pile {
+    position: relative;
+    height: clamp(22rem, 36vw, 34rem);
+}
+
+.upcsg-prints__print {
+    position: absolute;
+    margin: 0;
+    width: 58%;
+    padding: 8px;
+    background: var(--upcsg-honeydew-white);
+    transition: transform 0.25s var(--upcsg-ease);
+}
+
+.upcsg-prints__print img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    height: auto;
+    object-fit: cover;
+}
+
+.upcsg-prints__print--0 { top: 4%; left: 0; transform: rotate(-8deg); }
+.upcsg-prints__print--1 { top: 12%; left: 38%; transform: rotate(6deg); z-index: 1; }
+.upcsg-prints__print--2 { top: 46%; left: 18%; width: 40%; transform: rotate(-3deg); z-index: 2; }
+
+.upcsg-prints__print:hover {
+    z-index: 3;
+    transform: rotate(0deg) scale(1.03);
+}
+
+.upcsg-prints__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-top: 3rem;
+}
+
+.upcsg-prints__foot p {
+    margin: 0;
+    max-width: 46ch;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .upcsg-motion .upcsg-prints__print--0 { animation: upcsg-drift-a 9s ease-in-out infinite alternate; }
+    .upcsg-motion .upcsg-prints__print--1 { animation: upcsg-drift-b 11s ease-in-out infinite alternate; }
+    .upcsg-motion .upcsg-prints__print:hover { animation-play-state: paused; }
+}
+
+@keyframes upcsg-drift-a {
+    from { transform: rotate(-8deg) translateY(0); }
+    to   { transform: rotate(-6deg) translateY(-12px); }
+}
+
+@keyframes upcsg-drift-b {
+    from { transform: rotate(6deg) translateY(0); }
+    to   { transform: rotate(4deg) translateY(10px); }
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-prints__stage { grid-template-columns: 1fr; }
+    .upcsg-prints__title { font-size: 15vw; }
+    .upcsg-prints__pile { height: 92vw; }
+}
+
+/* ------------------------------------------------------------------ *
+   Team on colour tiles
+ * ------------------------------------------------------------------ */
+
+.upcsg-team,
+.upcsg-memberpile {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 36px 12px;
+}
+
+.upcsg-membercard {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.2rem;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.upcsg-membercard__portrait {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    margin-bottom: 10px;
+    background: var(--tint, var(--upcsg-liquid-chrome-gold));
+}
+
+.upcsg-membercard__portrait .upcsg-cosmic__img {
+    filter: grayscale(1) contrast(1.15);
+    mix-blend-mode: multiply;
+}
+
+.upcsg-membercard--tint-0 { --tint: var(--upcsg-liquid-chrome-gold); }
+.upcsg-membercard--tint-1 { --tint: var(--upcsg-periwinkle); }
+.upcsg-membercard--tint-2 { --tint: var(--upcsg-galactic-orchid); }
+.upcsg-membercard--tint-3 { --tint: var(--upcsg-prismatic-peach); }
+
+.upcsg-membercard__portrait.upcsg-cosmic--plate {
+    background: var(--tint);
+}
+
+.upcsg-membercard__portrait .upcsg-cosmic__initials {
+    color: var(--upcsg-midnight-indigo);
+}
+
+.upcsg-membercard__name {
+    font-weight: 600;
+    line-height: 1.25;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+.upcsg-membercard__role {
+    font-size: var(--step-small);
+    line-height: 1.3;
+    color: var(--soft);
+}
+
+.upcsg-membercard__bio {
+    margin-top: 0.5rem;
+    font-size: var(--step-small);
+    line-height: 1.45;
+}
+
+.upcsg-membercard:hover .upcsg-membercard__name,
+.upcsg-membercard:focus-visible .upcsg-membercard__name {
+    text-decoration-line: underline;
+}
+
+.upcsg-membercard:hover .upcsg-cosmic__img {
+    transform: scale(1.04);
+}
+
+@media (max-width: 1099.98px) {
+    .upcsg-team,
+    .upcsg-memberpile { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 599.98px) {
+    .upcsg-team,
+    .upcsg-memberpile { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 8px; }
+}
+
+/* ------------------------------------------------------------------ *
+   Showcase: one merch item per chapter
+ * ------------------------------------------------------------------ */
+
+.upcsg-showcase__inner {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    gap: 1.5rem var(--upcsg-gap);
+}
+
+.upcsg-showcase__title {
+    grid-column: 1;
+    grid-row: 1;
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-showcase__price {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.5rem 1rem;
+    font-size: var(--step-lead);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.upcsg-showcase__price s {
+    font-size: var(--step-body);
+}
+
+.upcsg-showcase__flag {
+    padding: 0.25rem 0.6rem;
+    background: var(--act-bg);
+    color: var(--act-ink);
+    font-size: var(--step-small);
+}
+
+.upcsg-showcase__second {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: center;
+    justify-self: end;
+    width: min(16vw, 220px);
+}
+
+.upcsg-showcase__second .upcsg-cosmic {
+    aspect-ratio: 3 / 4;
+}
+
+.upcsg-showcase__plate {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    align-self: center;
+    display: block;
+    width: min(36vw, 506px);
+}
+
+.upcsg-showcase__img {
+    aspect-ratio: 3 / 4;
+}
+
+.upcsg-showcase__line {
+    grid-column: 1;
+    grid-row: 3;
+    align-self: end;
+    margin: 0;
+    max-width: 32ch;
+}
+
+.upcsg-showcase__link {
+    grid-column: 3;
+    grid-row: 3;
+    align-self: end;
+    justify-self: end;
+}
+
+.upcsg-showcase__plate:hover .upcsg-cosmic__img {
+    transform: scale(1.03);
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-showcase__inner {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+    }
+
+    .upcsg-showcase__title,
+    .upcsg-showcase__price,
+    .upcsg-showcase__plate,
+    .upcsg-showcase__line,
+    .upcsg-showcase__link {
+        grid-column: 1;
+        grid-row: auto;
+        justify-self: start;
+    }
+
+    .upcsg-showcase__plate { width: 100%; justify-self: stretch; }
+    .upcsg-showcase__second { display: none; }
+}
+
+/* ------------------------------------------------------------------ *
+   Board: large names on tiles
+ * ------------------------------------------------------------------ */
+
+.upcsg-board {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.upcsg-board__head {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    min-height: 15rem;
+    padding: 24px;
+    background: var(--upcsg-liquid-chrome-gold);
+    color: var(--upcsg-midnight-indigo);
+}
+
+.upcsg-board__head h2 {
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-board__cell {
+    display: flex;
+}
+
+.upcsg-board__tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    width: 100%;
+    min-height: 15rem;
+    padding: 24px;
+    background: var(--tile);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.upcsg-board__tile:hover {
+    background: var(--tile-2);
+}
+
+.upcsg-board__name {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+}
+
+.upcsg-board__meta {
+    font-weight: 600;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+    .upcsg-board__head { grid-column: 1 / -1; min-height: 0; }
+    .upcsg-board__tile { min-height: 11rem; }
+}
+
+/* ------------------------------------------------------------------ *
+   Close: the idea again, inverted
+ * ------------------------------------------------------------------ */
+
+.upcsg-close {
+    padding-bottom: 72px;
+}
+
+.upcsg-close__title {
+    margin: 0;
+    font-size: clamp(2.75rem, 7vw, 7rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 0.9;
+}
+
+.upcsg-close__title span {
+    display: block;
+}
+
+.upcsg-close__foot {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 1fr) minmax(0, 5fr);
+    align-items: end;
+    gap: 1.5rem var(--upcsg-gap);
+    margin-top: 4rem;
+}
+
+.upcsg-close__foot p {
+    grid-column: 1;
+    margin: 0;
+    font-size: var(--step-lead);
+    line-height: 1.35;
+}
+
+.upcsg-close__foot .mud-button-root {
+    grid-column: 3;
+    justify-self: end;
+    min-height: 56px;
+    white-space: nowrap;
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-close__title { font-size: 10.5vw; }
+    .upcsg-close__foot { grid-template-columns: 1fr; }
+    .upcsg-close__foot p,
+    .upcsg-close__foot .mud-button-root { grid-column: 1; justify-self: stretch; }
+}
+
+/* ------------------------------------------------------------------ *
+   Masthead: the first chapter of every inner page
+ * ------------------------------------------------------------------ */
+
+.upcsg-mast__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    align-items: end;
+    gap: 2rem var(--upcsg-gap);
+}
+
+.upcsg-mast__title {
+    margin: 0;
+    font-size: clamp(2.75rem, 6.2vw, 6.25rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 0.88;
+}
+
+.upcsg-mast__aside {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-bottom: 0.4rem;
+}
+
+.upcsg-mast__lede {
+    margin: 0;
+    font-size: var(--step-lead);
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+}
+
+.upcsg-mast__facts {
+    margin: 0;
+    font-weight: 600;
+}
+
+.upcsg-mast__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.upcsg-mast__body {
+    margin-top: clamp(56px, 7vw, 112px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .upcsg-motion .upcsg-mast__line {
+        display: inline-block;
+        animation: upcsg-mast-in 0.8s var(--upcsg-ease-expo) both;
+    }
+
+    .upcsg-motion .upcsg-mast__aside > * {
+        animation: upcsg-mast-in 0.7s var(--upcsg-ease) both;
+    }
+
+    .upcsg-motion .upcsg-mast__aside > :nth-child(1) { animation-delay: 0.18s; }
+    .upcsg-motion .upcsg-mast__aside > :nth-child(2) { animation-delay: 0.26s; }
+    .upcsg-motion .upcsg-mast__aside > :nth-child(3) { animation-delay: 0.34s; }
+
+    .upcsg-motion .upcsg-pile figure {
+        animation: upcsg-pile-in 0.8s var(--upcsg-ease) both;
+    }
+
+    .upcsg-motion .upcsg-pile figure:nth-child(2) { animation-delay: 0.1s; }
+    .upcsg-motion .upcsg-pile figure:nth-child(3) { animation-delay: 0.2s; }
+}
+
+@keyframes upcsg-pile-in {
+    from { opacity: 0; translate: 0 24px; }
+    to   { opacity: 1; translate: 0 0; }
+}
+
+@keyframes upcsg-mast-in {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-mast__grid { grid-template-columns: 1fr; }
+    .upcsg-mast__title { font-size: 10vw; }
+}
+
+/* ------------------------------------------------------------------ *
+   CosmicImage: a picture, or a flat brand plate with the crest
+ * ------------------------------------------------------------------ */
 
 .upcsg-cosmic {
     position: relative;
     display: block;
     overflow: hidden;
-    border-radius: var(--upcsg-radius);
-    background: rgba(22, 17, 58, 0.6);
-    isolation: isolate;
+    background: var(--tile);
+    container-type: inline-size;
 }
 
 .upcsg-cosmic__img {
@@ -72,32 +1015,11 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.9s var(--upcsg-ease);
 }
 
-/* The generated plate. Two brand hues on an angle, with a soft light source so it
-   reads as depth rather than as a flat swatch. */
 .upcsg-cosmic--plate {
-    background-image:
-        radial-gradient(120% 90% at 22% 18%, rgba(246, 255, 233, 0.22), transparent 55%),
-        linear-gradient(
-            var(--plate-angle, 45deg),
-            var(--plate-a, #53257E),
-            var(--plate-b, #290087));
-}
-
-/* Grain over the gradient. Flat gradients look like placeholders; a little noise
-   reads as a printed plate. Pure CSS so it costs no request. */
-.upcsg-cosmic--plate::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image:
-        repeating-linear-gradient(
-            115deg,
-            rgba(246, 255, 233, 0.05) 0 1px,
-            transparent 1px 4px);
-    opacity: 0.55;
-    pointer-events: none;
+    background: var(--plate-a, var(--upcsg-deep-amethyst));
 }
 
 .upcsg-cosmic__mark {
@@ -108,41 +1030,29 @@
 }
 
 .upcsg-cosmic__crest {
-    width: 42%;
-    max-width: 5.5rem;
-    opacity: 0.75;
-    filter: drop-shadow(0 4px 18px rgba(6, 3, 24, 0.5));
+    width: 34%;
+    max-width: 5rem;
+    opacity: 0.85;
 }
 
 .upcsg-cosmic__initials {
-    font-family: var(--upcsg-font-heading);
-    font-weight: 700;
-    font-size: clamp(1.1rem, 4cqi, 2.4rem);
-    letter-spacing: 0.06em;
+    font-size: clamp(1rem, 26cqi, 5rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
     color: var(--upcsg-honeydew-white);
-    text-shadow: 0 2px 14px rgba(6, 3, 24, 0.55);
 }
-
-/* Sized from the plate's own width, so one component works at 44px in a face pile
-   and at 400px in a hero without a size parameter. */
-.upcsg-cosmic { container-type: inline-size; }
 
 .upcsg-cosmic__badge {
     position: absolute;
-    top: 0.7rem;
-    left: 0.7rem;
+    top: 0;
+    left: 0;
     z-index: 2;
-    padding: 0.25rem 0.6rem;
-    border-radius: 999px;
-    background: rgba(6, 3, 24, 0.72);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(246, 255, 233, 0.16);
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
+    padding: 0.4rem 0.65rem;
+    background: var(--upcsg-liquid-chrome-gold);
+    font-size: var(--step-small);
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--upcsg-liquid-chrome-gold);
+    line-height: 1.1;
+    color: var(--upcsg-midnight-indigo);
 }
 
 .upcsg-cosmic__overlay {
@@ -150,1716 +1060,379 @@
     inset-inline: 0;
     bottom: 0;
     z-index: 2;
-    padding: 1.4rem 1.1rem 1rem;
-    background: linear-gradient(to top, rgba(6, 3, 24, 0.9), transparent);
+    padding: 1rem 1.25rem;
+    background: rgba(15, 11, 43, 0.82);
 }
 
-/* --- SectionHeading ------------------------------------------------------ */
-
-.upcsg-sechead {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 1.25rem 2rem;
-    margin-bottom: 2.5rem;
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-cosmic__img { transition: none; }
 }
 
-.upcsg-sechead__text { max-width: 46rem; }
-
-.upcsg-sechead__lede { margin-top: 0.85rem; margin-bottom: 0; }
-
-.upcsg-sechead__action { flex-shrink: 0; }
-
-.upcsg-title-xl--center { text-align: center; }
-
-.upcsg-star--tiny {
-    display: inline-block;
-    width: 0.6rem;
-    height: 0.6rem;
-    margin-right: 0.4rem;
-    vertical-align: baseline;
-}
-
-/* --- StatCounter --------------------------------------------------------- */
-
-.upcsg-stat__suffix { font-size: 0.6em; vertical-align: super; }
-
-.upcsg-visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-/* --- EventCard ----------------------------------------------------------- */
+/* ------------------------------------------------------------------ *
+   Feature event: the next one to catch
+ * ------------------------------------------------------------------ */
 
 .upcsg-eventcard {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: var(--upcsg-radius);
-    border: var(--upcsg-hairline);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.5), rgba(22, 17, 58, 0.75));
-    text-decoration: none;
     color: inherit;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
-        border-color 0.35s ease;
+    text-decoration: none;
 }
 
-.upcsg-eventcard:hover,
-.upcsg-eventcard:focus-visible {
-    transform: translateY(-6px);
-    border-color: rgba(204, 174, 222, 0.45);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
+.upcsg-eventcard--feature {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--upcsg-gap);
+    background: var(--tile);
 }
-
-.upcsg-eventcard__poster {
-    aspect-ratio: 16 / 10;
-    border-radius: 0;
-}
-
-/* Quiet: flat ink instead of the gradient. The index at the foot of the detail page
-   should stay behind the article, not compete with it. */
-.upcsg-eventcard--quiet {
-    background: var(--upcsg-ink-panel);
-    border-color: var(--upcsg-ink-rule);
-}
-
-.upcsg-eventcard--quiet:hover,
-.upcsg-eventcard--quiet:focus-visible {
-    background: var(--upcsg-ink-hover);
-    box-shadow: var(--upcsg-shadow-md);
-    transform: translateY(-3px);
-}
-
-/* Feature: the lead entry, poster beside the text. */
-.upcsg-eventcard--feature { flex-direction: row; }
 
 .upcsg-eventcard--feature .upcsg-eventcard__poster {
-    flex: 0 0 clamp(10rem, 34%, 22rem);
-    aspect-ratio: auto;
-}
-
-.upcsg-eventcard--feature .upcsg-eventcard__body {
-    flex: 1;
-    padding: clamp(1.25rem, 3vw, 2rem);
-    align-items: flex-start;
-}
-
-.upcsg-eventcard--feature .upcsg-eventcard__title {
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.35rem, 2.8vw, 2rem);
-    line-height: 1.2;
-}
-
-.upcsg-eventcard__blurb {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-top: 0.7rem;
-    font-size: 0.94rem;
-    line-height: 1.6;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-eventcard__countdown {
-    display: inline-block;
-    margin-top: 0.9rem;
-    padding: 0.25rem 0.7rem;
-    border-radius: 999px;
-    border: var(--upcsg-hairline);
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-}
-
-.upcsg-eventcard__countdown--confirmed { color: var(--upcsg-cosmic-lavender); }
-.upcsg-eventcard__countdown--pending { color: var(--upcsg-liquid-chrome-gold); }
-.upcsg-eventcard__countdown--received { color: var(--upcsg-periwinkle); opacity: 0.8; }
-
-@media (max-width: 46rem) {
-    .upcsg-eventcard--feature { flex-direction: column; }
-
-    .upcsg-eventcard--feature .upcsg-eventcard__poster {
-        flex: none;
-        aspect-ratio: 16 / 10;
-    }
+    min-height: 26rem;
 }
 
 .upcsg-eventcard__body {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.1rem 1.25rem;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1.25rem;
+    padding: clamp(24px, 3vw, 40px);
 }
 
-.upcsg-eventcard__text { flex: 1; min-width: 0; }
+.upcsg-eventcard__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
 
 .upcsg-eventcard__title {
-    display: block;
-    font-family: var(--upcsg-font-heading);
-    font-weight: 600;
-    font-size: 1.05rem;
-    line-height: 1.3;
-    color: var(--upcsg-honeydew-white);
+    font-size: var(--step-head);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 0.92;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.12em;
 }
 
 .upcsg-eventcard__meta {
-    display: block;
-    margin-top: 0.3rem;
-    font-size: 0.85rem;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-eventcard__arrow {
-    flex-shrink: 0;
-    font-size: 1.2rem;
-    color: var(--upcsg-liquid-chrome-gold);
-    transition: transform 0.3s ease;
-}
-
-.upcsg-eventcard:hover .upcsg-eventcard__arrow { transform: translateX(5px); }
-
-/* --- CMS tables on a phone ----------------------------------------------- *
-   MudBlazor already stacks a table below 600px: each cell becomes a full-width
-   row with its DataLabel printed in front. What it does not do is say where one
-   record stops and the next starts - eleven people came out as fifty-five
-   identical bordered lines - or drop the cells that only made sense as columns.
- * ------------------------------------------------------------------------- */
-
-@media (max-width: 600px) {
-    /* Each record becomes a card. Without this the only separator between two
-       people is the same hairline that sits between their name and their role. */
-    .upcsg-datatable .mud-table-body .mud-table-row {
-        display: block;
-        margin-bottom: 0.7rem;
-        border: 1px solid var(--upcsg-ink-rule);
-        border-radius: 12px;
-        background: var(--upcsg-ink-panel);
-        overflow: hidden;
-    }
-
-    /* Group headings inside the table are a label, not a record. */
-    .upcsg-datatable .mud-table-body .mud-table-row:has(> td:only-child) {
-        margin-bottom: 0;
-        border: none;
-        border-radius: 0;
-        background: none;
-    }
-
-    /* The divider goes on the top of each field rather than the bottom, so a hidden
-       last cell - the chevron below - cannot leave a rule floating above the card's
-       own edge. Order-independent, unlike :last-child. */
-    .upcsg-datatable .mud-table-body .mud-table-cell {
-        border-bottom: none;
-        border-top: 1px solid var(--upcsg-ink-rule);
-    }
-
-    .upcsg-datatable .mud-table-body .mud-table-cell:first-child {
-        border-top: none;
-    }
-
-    /* A chevron is a column affordance: it said "this row opens" when the row was
-       a line. Stacked, it becomes a labelless strip under every record saying
-       nothing - and the whole card is tappable anyway. */
-    .upcsg-datatable__chevron {
-        display: none !important;
-    }
-
-    /* Totals lost their pairing when the colspan collapsed: the caption and the
-       amount landed on two separate lines. Put them back on one. */
-    .upcsg-recordtable .mud-table-foot .mud-table-row {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 1rem;
-    }
-
-    .upcsg-recordtable .mud-table-foot .mud-table-cell {
-        border-bottom: none;
-    }
-}
-
-/* --- Order age (orders queue) -------------------------------------------- */
-
-.upcsg-age {
-    display: block;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.85rem;
     font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--upcsg-text);
 }
 
-/* An unattended order past a few days. Gold rather than red: it wants an officer,
-   it is not an error, and the queue would be a wall of alarm otherwise. */
-.upcsg-age--stale {
-    color: var(--upcsg-liquid-chrome-gold);
-}
-
-.upcsg-age--stale::after {
-    content: "";
-    display: inline-block;
-    width: 0.4rem;
-    height: 0.4rem;
-    margin-left: 0.4rem;
-    vertical-align: 0.1em;
-    border-radius: 50%;
-    background: currentColor;
-}
-
-/* --- CMS repeater rows (member achievements, contacts) ------------------- */
-
-.upcsg-repeater__row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 7rem auto;
-    gap: 0.65rem;
-    align-items: start;
-    margin-bottom: 0.65rem;
-}
-
-.upcsg-repeater__year { width: 7rem; }
-
-.upcsg-repeater__kind { width: 100%; }
-
-/* The kind select leads the contact row, so that row's first column is the narrow one. */
-.upcsg-repeater__row:has(.upcsg-repeater__kind) {
-    grid-template-columns: 9rem minmax(0, 1fr) auto;
-}
-
-/* On a phone the row stops being a grid entirely. The earlier attempt moved the
-   year and kind columns by class, but those classes are handed to MudSelect and
-   MudNumericField, which put them on an inner element rather than on the grid
-   child - so the rules addressed nothing and the row stayed at 66px and 229px.
-   Stacking every child needs no knowledge of where a class ended up. */
-@media (max-width: 40rem) {
-    .upcsg-repeater__row,
-    .upcsg-repeater__row:has(.upcsg-repeater__kind) {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-    }
-
-    .upcsg-repeater__year,
-    .upcsg-repeater__kind {
-        width: 100%;
-    }
-
-    /* The delete button is the last child and should not be a full-width bar. */
-    .upcsg-repeater__row > :last-child {
-        align-self: flex-end;
-    }
-}
-
-/* --- OpportunityCard ----------------------------------------------------- */
-
-.upcsg-oppcard {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    border-radius: var(--upcsg-radius);
-    border: var(--upcsg-hairline);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.5), rgba(22, 17, 58, 0.75));
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
-        border-color 0.35s ease;
-}
-
-/* The archive sits under everything actionable, so its cards are muted to keep the eye on
-   what is still open. Full opacity returns on hover: dimmed is a ranking cue, not a
-   statement that the content matters less once you have chosen to look at it. */
-.upcsg-pastcard {
-    opacity: 0.62;
-    filter: saturate(0.75);
-    transition: opacity 0.3s ease, filter 0.3s ease;
-}
-
-.upcsg-pastcard:hover,
-.upcsg-pastcard:focus-within {
-    opacity: 1;
-    filter: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .upcsg-pastcard { transition: none; }
-}
-
-.upcsg-oppcard:hover,
-.upcsg-oppcard:focus-visible {
-    transform: translateY(-6px);
-    border-color: rgba(204, 174, 222, 0.45);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
-}
-
-.upcsg-oppcard--featured {
-    border-color: rgba(226, 190, 122, 0.4);
-}
-
-.upcsg-oppcard__poster {
-    aspect-ratio: 16 / 10;
-    border-radius: 0;
-}
-
-.upcsg-oppcard__body {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding: 1.1rem 1.25rem 1.25rem;
-}
-
-.upcsg-oppcard__meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-}
-
-.upcsg-oppcard__title {
-    display: block;
-    margin: 0;
-    font-family: var(--upcsg-font-heading);
-    font-weight: 600;
-    font-size: 1.05rem;
-    line-height: 1.3;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-oppcard__org {
-    display: block;
-    margin: 0;
-    font-size: 0.85rem;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-oppcard__blurb {
+.upcsg-eventcard__blurb {
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin: 0;
-    font-size: 0.94rem;
-    line-height: 1.6;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-oppcard__foot {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-top: auto;
-    padding-top: 0.85rem;
-}
-
-.upcsg-oppcard__deadline {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    color: var(--upcsg-liquid-chrome-gold);
-}
-
-.upcsg-oppcard__arrow {
-    flex-shrink: 0;
-    font-size: 1.2rem;
-    color: var(--upcsg-liquid-chrome-gold);
-    transition: transform 0.3s ease;
-}
-
-.upcsg-oppcard:hover .upcsg-oppcard__arrow { transform: translateX(5px); }
-
-/* --- Opportunity detail -------------------------------------------------- */
-
-/* Masthead. Not the event hero: an opportunity rarely ships with artwork worth
-   going full-bleed on, so the band supplies its own light - flare, sparkles,
-   metallic-silk title - and the poster, when there is one, floats over the lower
-   edge as a lifted plate rather than sitting behind a scrim. */
-.upcsg-oppmast {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    padding: clamp(6.5rem, 12vw, 9rem) 0 clamp(2rem, 5vw, 3.5rem);
-    border-bottom: var(--upcsg-hairline);
-    background-color: var(--upcsg-bg);
-    background-image:
-        radial-gradient(70% 90% at 10% 0%, rgba(162, 83, 184, 0.4) 0%, transparent 62%),
-        radial-gradient(60% 80% at 92% 100%, rgba(41, 0, 135, 0.5) 0%, transparent 66%),
-        linear-gradient(140deg, rgba(83, 37, 126, 0.5) 0%, rgba(22, 17, 58, 0.85) 60%);
-}
-
-.upcsg-oppmast__flare {
-    width: 26rem;
-    height: 26rem;
-    top: -8rem;
-    left: -6rem;
-    background: radial-gradient(circle, rgba(162, 83, 184, 0.55) 0%, transparent 70%);
-}
-
-.upcsg-oppmast__inner {
-    position: relative;
-    z-index: 2;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 17rem);
-    gap: clamp(1.75rem, 5vw, 3.5rem);
-    align-items: end;
-    width: 100%;
-    max-width: 1180px;
-    margin: 0 auto;
-    padding-inline: 1.5rem;
-}
-
-.upcsg-oppmast__inner--plain { grid-template-columns: minmax(0, 1fr); }
-
-.upcsg-oppmast__back {
-    display: inline-block;
-    margin-bottom: 1.5rem;
-    font-size: 0.9rem;
-}
-
-.upcsg-oppmast__chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-bottom: 1.1rem;
-}
-
-.upcsg-oppmast__title {
-    margin: 0;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(2.4rem, 6vw, 4rem);
-    line-height: 1.05;
-    letter-spacing: -0.01em;
-}
-
-.upcsg-oppmast__meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.4rem 1.25rem;
-    margin: 1.25rem 0 0;
-}
-
-.upcsg-oppmast__org {
-    font-family: var(--upcsg-font-subheading);
-    font-size: 1.1rem;
-    color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-oppmast__where {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.92rem;
-    color: var(--upcsg-periwinkle);
-}
-
-/* Hangs below the band so the plate reads as sitting in front of it, not inside it. */
-.upcsg-oppmast__plate {
-    aspect-ratio: 3 / 4;
-    border-radius: var(--upcsg-radius);
-    margin-bottom: clamp(-3.5rem, -6vw, -2rem);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
-}
-
-.upcsg-oppdeadline {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: clamp(1.5rem, 4vw, 3rem);
-    align-items: center;
-    padding: clamp(1.5rem, 3.5vw, 2.5rem);
-    border-radius: 28px;
-    margin-top: clamp(2rem, 5vw, 3.5rem);
-}
-
-/* The dial is the page's one loud element: a ring showing how much of the
-   application window has gone, wrapped around the days that are left. It reads
-   as a lens flare rather than a progress bar, which is the house vocabulary. */
-.upcsg-dial {
-    --upcsg-dial-size: clamp(9rem, 18vw, 12rem);
-    --upcsg-dial-track: rgba(246, 255, 233, 0.12);
-    --upcsg-dial-fill: var(--upcsg-cosmic-lavender);
-
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: var(--upcsg-dial-size);
-    height: var(--upcsg-dial-size);
-    flex: none;
-    border-radius: 50%;
-    background: conic-gradient(
-        var(--upcsg-dial-fill) calc(var(--upcsg-dial-progress) * 360deg),
-        var(--upcsg-dial-track) 0
-    );
-}
-
-/* Punches the ring out of the disc, leaving a 6px band. */
-.upcsg-dial::before {
-    content: "";
-    position: absolute;
-    inset: 6px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 50% 40%, rgba(162, 83, 184, 0.35) 0%, transparent 70%),
-        var(--upcsg-bg);
-}
-
-/* The bloom behind the glass. */
-.upcsg-dial::after {
-    content: "";
-    position: absolute;
-    inset: -12%;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(162, 83, 184, 0.45) 0%, transparent 68%);
-    filter: blur(18px);
-    z-index: -1;
-}
-
-.upcsg-dial__face {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-inline: 0.75rem;
-}
-
-.upcsg-dial__num {
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(2.5rem, 6vw, 3.75rem);
-    line-height: 1;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-dial__unit {
-    margin-top: 0.4rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    line-height: 1.3;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-}
-
-/* Urgency is the one thing this panel exists to say, so it drives the colour. */
-.upcsg-oppdeadline--urgent { border-color: rgba(246, 200, 117, 0.4); }
-.upcsg-oppdeadline--urgent .upcsg-dial { --upcsg-dial-fill: var(--upcsg-cta); }
-.upcsg-oppdeadline--urgent .upcsg-dial__num { color: var(--upcsg-cta); }
-
-.upcsg-oppdeadline--soon .upcsg-dial { --upcsg-dial-fill: var(--upcsg-liquid-chrome-gold); }
-.upcsg-oppdeadline--soon .upcsg-dial__num { color: var(--upcsg-liquid-chrome-gold); }
-
-.upcsg-oppdeadline--open .upcsg-dial__num { color: var(--upcsg-cosmic-lavender); }
-
-.upcsg-oppdeadline--closed .upcsg-dial { --upcsg-dial-fill: rgba(246, 255, 233, 0.2); }
-
-.upcsg-oppdeadline--closed .upcsg-dial__num {
-    font-size: clamp(1.5rem, 3.5vw, 2rem);
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-oppdeadline__body {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(1.25rem, 3vw, 1.75rem);
-    min-width: 0;
-}
-
-.upcsg-oppstages {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.upcsg-oppstages__step {
-    position: relative;
-    padding-top: 1.1rem;
-    border-top: 2px solid rgba(204, 174, 222, 0.16);
-}
-
-.upcsg-oppstages__step::before {
-    content: "";
-    position: absolute;
-    top: -0.42rem;
-    left: 0;
-    width: 0.75rem;
-    height: 0.75rem;
-    border-radius: 999px;
-    background: var(--upcsg-space-cadet);
-    border: 2px solid rgba(204, 174, 222, 0.35);
-}
-
-.upcsg-oppstages__step--done { border-top-color: rgba(204, 174, 222, 0.45); }
-
-.upcsg-oppstages__step--done::before {
-    background: var(--upcsg-cosmic-lavender);
-    border-color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-oppstages__step--ahead::before { border-color: var(--upcsg-liquid-chrome-gold); }
-
-.upcsg-oppstages__step--blank { opacity: 0.5; }
-
-.upcsg-oppstages__label {
-    display: block;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.66rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-oppstages__value {
-    display: block;
-    margin-top: 0.3rem;
-    font-size: 0.95rem;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-oppdeadline__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-/* --- Opportunity body ---------------------------------------------------- */
-
-.upcsg-oppbody {
-    max-width: 46rem;
-    margin: clamp(2.5rem, 6vw, 4rem) 0 0;
-    padding-left: clamp(1rem, 3vw, 2rem);
-    border-left: 2px solid rgba(246, 200, 117, 0.35);
-}
-
-/* The opening paragraph is the pitch, so it gets set like one. */
-.upcsg-oppbody__lead {
-    margin: 0;
-    font-family: var(--upcsg-font-subheading);
-    font-size: clamp(1.15rem, 2.2vw, 1.45rem);
-    line-height: 1.55;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-oppbody__para {
-    margin: 1.25rem 0 0;
-    font-size: 1rem;
-    line-height: 1.75;
-    color: var(--upcsg-periwinkle);
-}
-
-@media (max-width: 52rem) {
-    .upcsg-oppmast__inner { grid-template-columns: minmax(0, 1fr); }
-
-    .upcsg-oppmast__plate {
-        order: -1;
-        aspect-ratio: 16 / 10;
-        margin-bottom: 0;
-        max-width: 20rem;
-    }
-}
-
-@media (max-width: 46rem) {
-    .upcsg-oppdeadline {
-        grid-template-columns: minmax(0, 1fr);
-        justify-items: center;
-    }
-
-    .upcsg-oppdeadline__body { width: 100%; }
-
-    .upcsg-oppstages { grid-template-columns: minmax(0, 1fr); }
-}
-
-/* --- MerchCard ----------------------------------------------------------- */
-
-.upcsg-merchcard {
-    display: flex;
-    flex-direction: column;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.upcsg-merchcard:hover,
-.upcsg-merchcard:focus-visible { transform: translateY(-6px); }
-
-.upcsg-merchcard__thumb {
-    aspect-ratio: 1;
-    border: var(--upcsg-hairline);
-    transition: box-shadow 0.35s ease, border-color 0.35s ease;
-}
-
-.upcsg-merchcard:hover .upcsg-merchcard__thumb {
-    border-color: rgba(246, 200, 117, 0.5);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
-}
-
-.upcsg-merchcard__body { padding: 0.9rem 0.2rem 0; }
-
-.upcsg-merchcard__name {
-    display: block;
-    font-family: var(--upcsg-font-heading);
-    font-weight: 600;
-    font-size: 0.98rem;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-merchcard__price {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    margin-top: 0.3rem;
-    font-size: 0.9rem;
-}
-
-.upcsg-merchcard__from { color: var(--upcsg-periwinkle); font-size: 0.8rem; }
-.upcsg-merchcard__now { color: var(--upcsg-liquid-chrome-gold); font-weight: 600; }
-.upcsg-merchcard__was { color: var(--upcsg-periwinkle); text-decoration: line-through; font-size: 0.82rem; }
-.upcsg-merchcard__gone { color: var(--upcsg-periwinkle); }
-
-/* A sold-out item stays legible and clickable â€” its page still explains itself â€” but
-   stops competing with what can actually be bought. */
-.upcsg-merchcard--out .upcsg-merchcard__thumb { opacity: 0.55; }
-
-.upcsg-merchcard__variants {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    margin-top: 0.6rem;
-}
-
-.upcsg-merchcard__cue {
-    display: block;
-    margin-top: auto;
-    padding-top: 0.9rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-merchcard:hover .upcsg-merchcard__cue { color: var(--upcsg-liquid-chrome-gold); }
-
-.upcsg-merchcard--card .upcsg-merchcard__body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-}
-
-/* Feature: the leading drop, photo beside the copy. */
-.upcsg-merchcard--feature {
-    flex-direction: row;
-    align-items: stretch;
-    border: var(--upcsg-hairline);
-    border-radius: var(--upcsg-radius);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.45), rgba(22, 17, 58, 0.75));
-    overflow: hidden;
-}
-
-.upcsg-merchcard--feature:hover { transform: translateY(-4px); }
-
-.upcsg-merchcard--feature .upcsg-merchcard__thumb {
-    flex: 0 0 clamp(11rem, 42%, 26rem);
-    aspect-ratio: auto;
-    border: none;
-    border-radius: 0;
-}
-
-.upcsg-merchcard--feature .upcsg-merchcard__body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(1.5rem, 3.5vw, 2.75rem);
-}
-
-.upcsg-merchcard--feature .upcsg-merchcard__name {
-    margin-top: 0.35rem;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
-    line-height: 1.15;
-}
-
-.upcsg-merchcard__blurb {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-top: 0.6rem;
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-merchcard--feature .upcsg-merchcard__price { font-size: 1.15rem; margin-top: 0.8rem; }
-
-.upcsg-merchcard--feature .upcsg-merchcard__cue { margin-top: 1.25rem; padding-top: 0; }
-
-@media (max-width: 52rem) {
-    .upcsg-merchcard--feature { flex-direction: column; }
-
-    .upcsg-merchcard--feature .upcsg-merchcard__thumb {
-        flex: none;
-        aspect-ratio: 16 / 10;
-    }
-}
-
-/* --- Contact channels ---------------------------------------------------- */
-
-.upcsg-channel {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    padding: 1.5rem 1.4rem 1.35rem;
-    border: var(--upcsg-hairline);
-    border-radius: var(--upcsg-radius);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.45), rgba(22, 17, 58, 0.75));
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
-        border-color 0.35s ease;
-}
-
-.upcsg-channel:hover,
-.upcsg-channel:focus-visible {
-    transform: translateY(-6px);
-    border-color: rgba(204, 174, 222, 0.45);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
-}
-
-.upcsg-channel__icon {
-    display: grid;
-    place-items: center;
-    width: 2.9rem;
-    height: 2.9rem;
-    margin-bottom: 1rem;
-    border-radius: 50%;
-    border: var(--upcsg-hairline);
-    background: rgba(6, 3, 24, 0.4);
-    color: var(--upcsg-liquid-chrome-gold);
-}
-
-.upcsg-channel__tag {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--upcsg-cosmic-lavender);
-}
-
-/* Long addresses must wrap inside the card rather than widening the grid track.
-   anywhere, not break-word: an email has no spaces to break at. */
-.upcsg-channel__handle {
-    margin-top: 0.3rem;
-    font-family: var(--upcsg-font-display);
-    font-size: 1.25rem;
-    line-height: 1.25;
-    color: var(--upcsg-honeydew-white);
-    overflow-wrap: anywhere;
-}
-
-.upcsg-channel__meta {
-    margin-top: 0.6rem;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-channel__cue {
-    margin-top: auto;
-    padding-top: 1rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-channel:hover .upcsg-channel__cue { color: var(--upcsg-liquid-chrome-gold); }
-
-/* Two buttons in a closing CTA, stacking on narrow screens. */
-.upcsg-closing__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.85rem;
-    justify-content: center;
-}
-
-/* --- Merch gallery ------------------------------------------------------- */
-
-/* The main frame is a CosmicImage now, so it carries the plate itself rather than
-   wrapping a bare img that had nothing behind it when the URL was dead. */
-.upcsg-gallery__main {
-    aspect-ratio: 1;
-    width: 100%;
-    border: var(--upcsg-hairline);
-}
-
-.upcsg-gallery__thumb .upcsg-cosmic {
-    width: 100%;
-    height: 100%;
-    border-radius: inherit;
-}
-
-/* --- FacePile ------------------------------------------------------------ */
-
-.upcsg-facepile {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem; /* replaces whatever negative-margin overlap you had */
-
-    /* Vertical padding leaves room for the selected face to lift without being clipped. */
-    padding: 0.75rem 0.6rem;
-}
-
-/* MudTooltip wraps each face in an element of its own, so the flex items here are the
-   wrappers and not the buttons â€” flex rules on .upcsg-facepile__face never reach the
-   thing being sized, and the wrappers would shrink the faces rather than wrap them. */
-.upcsg-facepile > .mud-tooltip-root {
-    flex: 0 0 auto;
-    display: inline-flex;
-}
-
-.upcsg-facepile__face {
-    /* A real <button> for Tab and Enter; this first group undoes the browser's default
-       chrome for one. */
-    appearance: none;
-    padding: 0;
-    background: none;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-
-    width: clamp(2.6rem, 6vw, 3.4rem);
-    aspect-ratio: 1;
-    border-radius: 50%;
-    margin-left: -0.6rem;
-    border: 2px solid var(--upcsg-midnight-indigo);
-    box-shadow: var(--upcsg-shadow-sm);
-
-    /* Without this the faces are compressed to fit the row and the strip never
-       overflows, so it never scrolls. */
-    flex: 0 0 auto;
-
-    /* Later faces sit on top of earlier ones, so the row overlaps in reading order
-       instead of the last one being buried. */
-    /* Only needs to sit below the hover and selected states; the faces no longer overlap,
-       so there is nothing to order them against. */
-    z-index: 1;
-    position: relative;
-    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-                box-shadow 0.3s ease,
-                border-color 0.3s ease;
-}
-
-.upcsg-facepile__portrait {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-
-    /* The portrait must not take the pointer, or a drag starting on an image never
-       reaches the button underneath. */
-    pointer-events: none;
-}
-
-.upcsg-facepile__face:hover,
-.upcsg-facepile__face:focus-visible {
-    transform: translateY(-6px) scale(1.08);
-    z-index: 30;
-}
-
-.upcsg-facepile__face:focus-visible {
-    outline: 2px solid var(--upcsg-liquid-chrome-gold);
-    outline-offset: 3px;
-}
-
-/* Whoever is in the plate beside the strip. Lifted and ringed rather than just
-   brightened â€” in a row of round portraits at this size, a colour shift alone does not
-   read as "this one". */
-.upcsg-facepile__face--on {
-    transform: translateY(-6px) scale(1.12);
-    border-color: var(--upcsg-liquid-chrome-gold);
-    box-shadow: 0 0 0 2px rgba(246, 200, 117, 0.35), var(--upcsg-shadow-md);
-    z-index: 31;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .upcsg-facepile {
-        scroll-behavior: auto;
-    }
-
-    .upcsg-facepile__face {
-        transition: none;
-    }
-}
-
-/* --- Marquee ------------------------------------------------------------- */
-
-.upcsg-marquee {
-    overflow: hidden;
-    padding: 1.1rem 0;
-    border-top: var(--upcsg-hairline);
-    border-bottom: var(--upcsg-hairline);
-
-    /* Fades at both ends so items enter and leave instead of being clipped. */
-    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-}
-
-.upcsg-marquee__track {
-    display: flex;
-    width: max-content;
-    animation: upcsg-marquee-scroll var(--marquee-duration, 40s) linear infinite;
-}
-
-.upcsg-marquee__run { display: flex; align-items: center; }
-
-.upcsg-marquee__item {
-    padding: 0 1.1rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.82rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-marquee__sep { flex-shrink: 0; opacity: 0.6; }
-
-.upcsg-marquee:hover .upcsg-marquee__track { animation-play-state: paused; }
-
-@keyframes upcsg-marquee-scroll {
-    from { transform: translateX(0); }
-
-    /* Exactly half: the track holds two identical runs, so at -50% the second sits
-       where the first began and the loop has no seam. */
-    to { transform: translateX(-50%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .upcsg-marquee__track { animation: none; }
-}
-
-.upcsg-marquee--hero {
-    border-top: none;
-    background: linear-gradient(180deg, rgba(22, 17, 58, 0.9), rgba(22, 17, 58, 0));
-}
-
-/* --- Page layout: grids, features, empties ------------------------------- */
-
-.upcsg-cardgrid {
-    display: grid;
-    gap: 1.5rem;
-}
-
-/* auto-fit rather than a fixed count: with two merch items the row fills the width
-   instead of leaving two dead columns, which is the state the store is usually in. */
-.upcsg-cardgrid--3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); }
-.upcsg-cardgrid--4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
-
-.upcsg-skeleton {
-    border-radius: var(--upcsg-radius);
-    background-color: rgba(82, 38, 87, 0.35) !important;
-}
-
-/* Cards sit inside a Reveal wrapper, so the wrapper is the grid item and the card is
-   only as tall as its own text. Roles and quotes vary in length, so a row ended up with
-   cards of four different heights and ragged bottom edges. Making the wrapper a flex
-   container passes the stretched row height through to the card itself. */
-.upcsg-cardgrid > .upcsg-reveal,
-.upcsg-memberpile > .upcsg-reveal {
-    display: flex;
-}
-
-.upcsg-cardgrid > .upcsg-reveal > *,
-.upcsg-memberpile > .upcsg-reveal > * {
-    flex: 1;
-}
-
-/* Feature band: text one side, a large plate the other. Alternating the sides is what
-   gives the page a rhythm the old stack of identical bands never had. */
-.upcsg-feature {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-    gap: clamp(2rem, 5vw, 4rem);
-    align-items: center;
-}
-
-.upcsg-feature--reverse .upcsg-feature__visual { order: -1; }
-
-/* Below the breakpoint the plate always follows the text, whichever side it takes on
-   desktop â€” a picture above its own heading reads as belonging to the section before. */
-@media (max-width: 62rem) {
-    .upcsg-feature--reverse .upcsg-feature__visual { order: 0; }
-}
-
-.upcsg-feature__plate {
-    aspect-ratio: 4 / 5;
-    width: 100%;
-    box-shadow: var(--upcsg-shadow-lg);
-}
-
-/* Marks a cash order in the officers' list. Deliberately quiet: it is a fact about the
-   order, not a warning, and the status pill next to it is what carries urgency. */
-.upcsg-paytag {
-    display: inline-block;
-    margin-left: 0.4rem;
-    padding: 0.1rem 0.45rem;
-    border-radius: 999px;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    vertical-align: middle;
-}
-
-.upcsg-paytag--cash {
-    color: var(--upcsg-liquid-chrome-gold);
-    background: rgba(252, 230, 138, 0.12);
-    border: 1px solid rgba(252, 230, 138, 0.32);
-}
-
-/* Payment choice in the checkout panel. The hint under each label carries the part that
-   actually matters (whether stock is held), so it is styled to be read, not skimmed past. */
-.upcsg-paychoice {
-    margin: 1.25rem 0 0.25rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid var(--upcsg-ink-rule);
-    border-radius: 12px;
-    background: var(--upcsg-ink-panel);
-}
-
-.upcsg-paychoice__title {
-    margin: 0 0 0.5rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-paychoice__label {
-    display: block;
-    font-weight: 600;
-}
-
-.upcsg-paychoice__hint {
-    display: block;
-    margin-top: 0.15rem;
-    font-size: 0.82rem;
-    line-height: 1.4;
-    color: var(--upcsg-text-muted);
-}
-
-/* The radio's own label is centred against a single line of text, which leaves the dot
-   floating beside a three-line block. Top-aligning keeps it next to the name. */
-.upcsg-paychoice .mud-radio .mud-button-root {
-    align-items: flex-start;
-}
-
-/* Officer switcher on the home page. The stage is the positioning context for the
-   outgoing plate, which is taken out of flow so the incoming plate sizes the column. */
-.upcsg-officerstage {
-    position: relative;
-}
-
-.upcsg-officerstage__current {
-    animation: upcsg-officer-in 0.45s ease;
-}
-
-.upcsg-officerstage__leaving {
-    position: absolute;
-    inset: 0;
-    animation: upcsg-officer-out 0.45s ease;
-    pointer-events: none;
-}
-
-@keyframes upcsg-officer-in {
-    from { opacity: 0; transform: translateX(-2.5rem); }
-    to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes upcsg-officer-out {
-    from { opacity: 1; transform: translateX(0); }
-    to   { opacity: 0; transform: translateX(2.5rem); }
-}
-
-/* No slide for anyone who asked the OS to reduce motion; the incoming plate just
-   appears, and the outgoing one is hidden at once rather than lingering on top. */
-@media (prefers-reduced-motion: reduce) {
-    .upcsg-officerstage__current { animation: none; }
-    .upcsg-officerstage__leaving { display: none; }
-}
-
-.upcsg-feature__plate-role {
-    margin: 0;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--upcsg-liquid-chrome-gold);
-}
-
-.upcsg-feature__plate-name {
-    margin: 0.2rem 0 0;
-    font-family: var(--upcsg-font-display);
-    font-size: 1.5rem;
-    line-height: 1.2;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-statrow {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2.5rem;
-    margin-top: 2.25rem;
-    padding-top: 1.75rem;
-    border-top: var(--upcsg-hairline);
-}
-
-.upcsg-empty {
-    display: grid;
-    justify-items: center;
-    gap: 1rem;
-    padding: 3.5rem 1.5rem;
-    border: 1px dashed rgba(246, 255, 233, 0.16);
-    border-radius: var(--upcsg-radius);
-    text-align: center;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-empty img { width: 3.5rem; opacity: 0.4; }
-.upcsg-empty p { margin: 0; max-width: 32rem; }
-
-/* When nothing at all is published the empty state is the page, so it gets room to
-   be a statement rather than a note squeezed under a heading. */
-.upcsg-empty--tall { padding: clamp(3.5rem, 10vw, 6rem) 1.5rem; gap: 1.25rem; }
-.upcsg-empty--tall img { width: 5rem; }
-
-/* --- Hall of Fame ------------------------------------------------------- */
-
-.upcsg-achcard {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: var(--upcsg-radius);
-    border: var(--upcsg-hairline);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.45), rgba(22, 17, 58, 0.75));
-    text-decoration: none;
-    color: inherit;
-    height: 100%;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
-        border-color 0.35s ease;
-}
-
-.upcsg-achcard:hover,
-.upcsg-achcard:focus-visible {
-    transform: translateY(-6px);
-    border-color: rgba(246, 200, 117, 0.45);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
-}
-
-.upcsg-achcard__media {
-    aspect-ratio: 16 / 10;
-    border-radius: 0;
-}
-
-.upcsg-achcard__body {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    padding: 1.15rem 1.25rem 1.35rem;
-}
-
-.upcsg-achcard__kicker {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--upcsg-liquid-chrome-gold);
-    min-height: 1rem;
-}
-
-.upcsg-achcard__title {
-    margin-top: 0.4rem;
-    font-family: var(--upcsg-font-display);
-    font-size: 1.3rem;
-    line-height: 1.25;
-    color: var(--upcsg-honeydew-white);
-}
-
-/* Entries run to several hundred words; the standfirst is the opening paragraph, so
-   without a clamp one long opener sets the height of every card beside it. */
-.upcsg-achcard__standfirst {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-top: 0.55rem;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    color: var(--upcsg-periwinkle);
-}
-
-/* Pushed to the bottom so the cue sits on one line across a row of uneven copy. */
-.upcsg-achcard__cue {
-    margin-top: auto;
-    padding-top: 0.9rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-achcard:hover .upcsg-achcard__cue { color: var(--upcsg-liquid-chrome-gold); }
-
-/* Lead: media beside the copy. */
-.upcsg-achcard--lead { flex-direction: row; }
-
-.upcsg-achcard--lead .upcsg-achcard__media {
-    flex: 0 0 clamp(11rem, 42%, 26rem);
-    aspect-ratio: auto;
-}
-
-.upcsg-achcard--lead .upcsg-achcard__body {
-    justify-content: center;
-    padding: clamp(1.5rem, 3.5vw, 2.75rem);
-}
-
-.upcsg-achcard--lead .upcsg-achcard__title {
-    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
-}
-
-.upcsg-achcard--lead .upcsg-achcard__standfirst {
     -webkit-line-clamp: 4;
-    line-clamp: 4;
-    font-size: 1rem;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    max-width: 46ch;
 }
 
-.upcsg-achcard--lead .upcsg-achcard__cue { margin-top: 1.25rem; padding-top: 0; }
-
-@media (max-width: 52rem) {
-    .upcsg-achcard--lead { flex-direction: column; }
-
-    .upcsg-achcard--lead .upcsg-achcard__media {
-        flex: none;
-        aspect-ratio: 16 / 10;
-    }
+.upcsg-eventcard__countdown {
+    font-weight: 600;
 }
 
-/* The grid item is the Reveal wrapper, so the card needs the stretched height passed
-   through to keep a row's bottom edges level. */
-.upcsg-recordgrid > .upcsg-reveal { display: flex; }
-.upcsg-recordgrid > .upcsg-reveal > * { flex: 1; }
+.upcsg-eventcard__arrow,
+.upcsg-datechip {
+    display: none;
+}
 
-.upcsg-filterrow { margin-bottom: 1.75rem; }
+.upcsg-eventcard:hover .upcsg-eventcard__title {
+    text-decoration-line: underline;
+}
 
-/* --- Events page: calendar rail beside the listing ----------------------- */
+.upcsg-eventcard:hover .upcsg-cosmic__img {
+    transform: scale(1.03);
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-eventcard--feature { grid-template-columns: 1fr; }
+    .upcsg-eventcard--feature .upcsg-eventcard__poster { min-height: 0; aspect-ratio: 4 / 3; }
+}
+
+/* ------------------------------------------------------------------ *
+   Events page: the month at a glance beside the agenda
+ * ------------------------------------------------------------------ */
 
 .upcsg-eventslayout {
     display: grid;
-    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
-    gap: clamp(1.5rem, 4vw, 3rem);
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
     align-items: start;
+    gap: clamp(32px, 5vw, 80px);
 }
 
-.upcsg-eventslayout__rail { position: sticky; top: 1.5rem; }
-
-.upcsg-calcard {
-    padding: 1.25rem;
-    border: var(--upcsg-hairline);
-    border-radius: var(--upcsg-radius);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.42), rgba(22, 17, 58, 0.72));
+.upcsg-eventslayout__rail {
+    position: sticky;
+    top: 104px;
 }
 
-.upcsg-calcard__head { margin-bottom: 1rem; }
-
-/* The month-stepping variant: heading on the left, arrows pinned right. */
-.upcsg-calcard__head--nav {
+.upcsg-calcard__head {
     display: flex;
-    align-items: flex-start;
+    align-items: baseline;
     justify-content: space-between;
-    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
 .upcsg-calcard__title {
-    margin: 0.2rem 0 0;
-    font-family: var(--upcsg-font-display);
-    font-size: 1.6rem;
-    line-height: 1.1;
-    color: var(--upcsg-honeydew-white);
+    margin: 0;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
 }
 
-.upcsg-calcard__note {
-    margin: 1rem 0 0;
-    font-size: 0.78rem;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-calnav {
-    display: flex;
-    gap: 0.35rem;
-    flex: none;
-}
-
-.upcsg-calnav__btn {
-    width: 2rem;
-    height: 2rem;
+.upcsg-cal__grid {
     display: grid;
-    place-items: center;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.upcsg-cal__dow {
+    padding-bottom: 0.4rem;
+    text-align: center;
+    font-size: var(--step-small);
+    font-weight: 600;
+}
+
+.upcsg-cal__cell--empty {
+    aspect-ratio: 1;
+}
+
+.upcsg-cal__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    aspect-ratio: 1;
     padding: 0;
+    border: 0;
+    background: var(--tile);
+    color: inherit;
     font: inherit;
-    font-size: 1.15rem;
-    line-height: 1;
-    color: var(--upcsg-text);
-    background: rgba(246, 255, 233, 0.04);
-    border: 1px solid rgba(204, 174, 222, 0.24);
-    border-radius: 10px;
+    font-size: var(--step-small);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.upcsg-cal__dots {
+    display: flex;
+    gap: 2px;
+}
+
+.upcsg-cal__dot {
+    width: 5px;
+    height: 5px;
+    background: currentColor;
+}
+
+.upcsg-cal__day--has-events {
+    background: var(--upcsg-liquid-chrome-gold);
+    color: var(--upcsg-midnight-indigo);
     cursor: pointer;
-    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+    transition: transform 0.2s var(--upcsg-ease);
 }
 
-.upcsg-calnav__btn:hover:not(:disabled) {
-    transform: translateY(-1px);
-    border-color: var(--upcsg-cosmic-lavender);
-    background: rgba(204, 174, 222, 0.12);
+.upcsg-cal__day--has-events:hover {
+    transform: translateY(-2px);
 }
 
-.upcsg-calnav__btn:focus-visible {
-    outline: 2px solid var(--upcsg-cta);
-    outline-offset: 2px;
+.upcsg-cal__day--past {
+    opacity: 0.55;
 }
 
-/* Disabled means the range ends here, so it stays visible rather than vanishing -
-   the reader can see there is nothing further to page to. */
-.upcsg-calnav__btn:disabled {
-    opacity: 0.3;
-    cursor: default;
+.upcsg-cal__day--today {
+    outline: 3px solid var(--ink);
+    outline-offset: -3px;
 }
 
-.upcsg-eventlist { display: grid; gap: 1.25rem; }
-
-/* Marks the day the reader just picked, so the scroll lands somewhere obvious
-   instead of dumping them at an unremarkable card. */
-.upcsg-eventlist__hit,
-.upcsg-cardhit {
-    position: relative;
-    border-radius: var(--upcsg-radius);
-    outline: 2px solid rgba(246, 200, 117, 0.55);
-    outline-offset: 4px;
+.upcsg-cal__day--selected {
+    background: var(--ink);
+    color: var(--field);
 }
 
-/* The card inside sets the height; without this the outline hugs a taller box than
-   the card in a grid row whose other cards are longer. */
-.upcsg-cardhit { height: 100%; }
-
-/* The rail stops being a rail once it would be narrower than the calendar it holds. */
-@media (max-width: 60rem) {
-    .upcsg-eventslayout { grid-template-columns: minmax(0, 1fr); }
-    .upcsg-eventslayout__rail { position: static; }
+.upcsg-cal__legend {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 1rem;
+    font-size: var(--step-small);
+    font-weight: 600;
 }
 
-/* --- Opportunities planner: a full-width wall calendar ------------------- *
-   Deliberately not the events rail. Events fit one month in a glanceable
-   corner because there are a handful of them on known dates; deadlines are
-   the whole point here, so they get the width and are legible by name in the
-   cell rather than reduced to a dot you have to decode.
- * ------------------------------------------------------------------------ */
-
-.upcsg-planner {
-    --upcsg-planner-cell: clamp(4.5rem, 8.5vw, 7.5rem);
-
-    border: var(--upcsg-hairline);
-    border-radius: 28px;
-    background: linear-gradient(180deg, rgba(83, 37, 126, 0.2) 0%, rgba(22, 17, 58, 0.42) 100%);
-    box-shadow: inset 0 1px 0 rgba(246, 255, 233, 0.07);
-    padding: clamp(1.1rem, 2.6vw, 2rem);
-    overflow: hidden;
+.upcsg-cal__legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
 }
+
+.upcsg-cal__legend i {
+    width: 12px;
+    height: 12px;
+    background: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-cal__legend i.is-today {
+    background: transparent;
+    outline: 3px solid var(--ink);
+    outline-offset: -3px;
+}
+
+.upcsg-comingsoon__count {
+    font-weight: 600;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-eventslayout { grid-template-columns: 1fr; }
+    .upcsg-eventslayout__rail { position: static; max-width: 26rem; }
+}
+
+/* ------------------------------------------------------------------ *
+   Opportunities planner: a wall calendar of deadlines
+ * ------------------------------------------------------------------ */
 
 .upcsg-planner__head {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: clamp(1rem, 2.4vw, 1.75rem);
+    gap: 1rem 2rem;
+    margin-bottom: 2rem;
 }
 
 .upcsg-planner__month {
-    margin: 0.25rem 0 0;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(2rem, 5vw, 3.25rem);
-    line-height: 1;
-    color: var(--upcsg-honeydew-white);
+    margin: 0;
+    font-size: var(--step-head);
 }
 
 .upcsg-planner__month small {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.4em;
-    letter-spacing: 0.14em;
-    color: var(--upcsg-text-muted);
-    margin-left: 0.6rem;
-    vertical-align: middle;
+    margin-left: 0.5rem;
+    font-size: var(--step-lead);
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 .upcsg-planner__controls {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+}
+
+.upcsg-calnav {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.upcsg-calnav__btn {
+    width: 52px;
+    height: 52px;
+    border: 0;
+    background: var(--act-bg);
+    color: var(--act-ink);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s var(--upcsg-ease);
+}
+
+.upcsg-calnav__btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.upcsg-calnav__btn:disabled {
+    opacity: 0.3;
+    cursor: default;
 }
 
 .upcsg-planner__grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 0.4rem;
+    gap: 4px;
 }
 
 .upcsg-planner__dow {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.66rem;
+    padding: 0 0.25rem 0.5rem;
+    font-size: var(--step-small);
     font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-    text-align: left;
-    padding: 0 0 0.5rem 0.35rem;
 }
 
 .upcsg-planner__blank {
-    min-height: var(--upcsg-planner-cell);
-    border-radius: 14px;
-    background: rgba(246, 255, 233, 0.015);
+    min-height: clamp(4rem, 8vw, 7rem);
 }
 
 .upcsg-planner__day {
     display: flex;
     flex-direction: column;
-
-    /* The marked cells are buttons, and the UA stylesheet centres a button's flex
-       children. Left-aligned is what a planner cell wants, and without this the
-       entries shrink to their content instead of filling the cell. */
+    justify-content: flex-start;
     align-items: stretch;
-    gap: 0.25rem;
-    min-height: var(--upcsg-planner-cell);
-    padding: 0.45rem 0.45rem 0.5rem;
-    border: 1px solid rgba(204, 174, 222, 0.12);
-    border-radius: 14px;
-    background: rgba(246, 255, 233, 0.03);
+    gap: 0.35rem;
+    min-width: 0;
+    min-height: clamp(4rem, 8vw, 7rem);
+    padding: 0.5rem 0.55rem;
+    border: 0;
+    background: var(--tile);
+    color: inherit;
     text-align: left;
     font: inherit;
-    color: var(--upcsg-text-muted);
+}
+
+.upcsg-planner__num {
+    font-size: var(--step-small);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
 .upcsg-planner__day--marked {
     cursor: pointer;
-    color: var(--upcsg-text);
-    border-color: rgba(204, 174, 222, 0.3);
-    background: linear-gradient(160deg, rgba(162, 83, 184, 0.2), rgba(83, 37, 126, 0.16));
-    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    background: var(--tile-2);
+    transition: transform 0.2s var(--upcsg-ease);
 }
 
 .upcsg-planner__day--marked:hover {
     transform: translateY(-2px);
-    border-color: var(--upcsg-cosmic-lavender);
-    box-shadow: var(--upcsg-shadow-md);
-}
-
-.upcsg-planner__day--marked:focus-visible {
-    outline: 2px solid var(--upcsg-cta);
-    outline-offset: 2px;
 }
 
 .upcsg-planner__day--today .upcsg-planner__num {
-    color: var(--upcsg-space-cadet);
-    background: var(--upcsg-cta);
+    align-self: flex-start;
+    padding: 0.1rem 0.4rem;
+    background: var(--act-bg);
+    color: var(--act-ink);
 }
 
 .upcsg-planner__day--selected {
-    border-color: var(--upcsg-cta);
-    box-shadow: inset 0 0 0 1px var(--upcsg-cta);
-}
-
-.upcsg-planner__num {
-    display: grid;
-    place-items: center;
-    width: 1.6rem;
-    height: 1.6rem;
-    flex: none;
-    border-radius: 8px;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.82rem;
-    font-weight: 600;
-    line-height: 1;
+    background: var(--upcsg-liquid-chrome-gold);
+    color: var(--upcsg-midnight-indigo);
 }
 
 .upcsg-planner__entries {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.25rem;
     min-width: 0;
 }
 
-/* Two-line clamp keeps a long title from pushing the cell taller than its row. */
 .upcsg-planner__entry {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    padding: 0.14rem 0.3rem;
-    border-left: 2px solid var(--upcsg-liquid-chrome-gold);
-    border-radius: 3px;
-    background: rgba(226, 190, 122, 0.12);
-    font-size: 0.68rem;
-    line-height: 1.25;
+    padding: 0.2rem 0.4rem;
+    background: var(--upcsg-deep-amethyst);
     color: var(--upcsg-honeydew-white);
+    font-size: var(--step-small);
+    font-weight: 600;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .upcsg-planner__entry--happens {
-    border-left-color: var(--upcsg-cosmic-lavender);
-    background: rgba(204, 174, 222, 0.12);
+    background: var(--upcsg-midnight-indigo);
 }
 
 .upcsg-planner__more {
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    color: var(--upcsg-text-muted);
-    padding-left: 0.3rem;
+    font-size: var(--step-small);
+    font-weight: 600;
 }
 
 .upcsg-planner__legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.15rem;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
     margin-top: 1.25rem;
-    font-size: 0.76rem;
-    color: var(--upcsg-text-muted);
+    font-size: var(--step-small);
+    font-weight: 600;
 }
 
 .upcsg-planner__legend span {
@@ -1869,72 +1442,49 @@
 }
 
 .upcsg-planner__legend i {
-    width: 0.85rem;
-    height: 0.85rem;
-    flex: none;
-    border-radius: 3px;
-    border-left: 2px solid var(--upcsg-liquid-chrome-gold);
-    background: rgba(226, 190, 122, 0.12);
+    width: 12px;
+    height: 12px;
+    background: var(--upcsg-deep-amethyst);
 }
 
 .upcsg-planner__legend i.is-happens {
-    border-left-color: var(--upcsg-cosmic-lavender);
-    background: rgba(204, 174, 222, 0.12);
+    background: var(--upcsg-midnight-indigo);
 }
 
 .upcsg-planner__legend i.is-today {
-    border: none;
-    border-radius: 5px;
-    background: var(--upcsg-cta);
+    background: var(--act-bg);
 }
 
-.upcsg-planner__summary { margin-left: auto; }
-
-/* Below this the cells cannot hold a readable title, so the entries collapse to
-   bars. The grid stays a month - a seven-column shape people can read at a
-   glance is worth more than titles that would each wrap to four lines. */
-@media (max-width: 52rem) {
-    .upcsg-planner { --upcsg-planner-cell: 3.4rem; }
-
-    .upcsg-planner__day { padding: 0.3rem; gap: 0.2rem; }
-
-    .upcsg-planner__num {
-        width: 1.35rem;
-        height: 1.35rem;
-        font-size: 0.72rem;
-    }
-
-    .upcsg-planner__entry {
-        height: 0.28rem;
-        padding: 0;
-        border-left: none;
-        border-radius: 999px;
-        font-size: 0;
-        line-height: 0;
-        background: var(--upcsg-liquid-chrome-gold);
-    }
-
-    .upcsg-planner__entry--happens { background: var(--upcsg-cosmic-lavender); }
-
-    .upcsg-planner__more { display: none; }
+.upcsg-planner__summary {
+    margin-left: auto;
 }
 
-/* --- Event detail hero --------------------------------------------------- */
+@media (max-width: 699.98px) {
+    .upcsg-planner__entries { display: none; }
+    .upcsg-planner__blank,
+    .upcsg-planner__day { min-height: 3rem; }
+    .upcsg-planner__day--marked { background: var(--upcsg-deep-amethyst); color: var(--upcsg-honeydew-white); }
+    .upcsg-planner__summary { margin-left: 0; }
+}
+
+/* ------------------------------------------------------------------ *
+   Event detail
+ * ------------------------------------------------------------------ */
 
 .upcsg-eventhero {
     position: relative;
-    isolation: isolate;
-    min-height: clamp(20rem, 46vh, 30rem);
     display: flex;
     align-items: flex-end;
+    min-height: 88svh;
+    padding: 9rem 0 clamp(40px, 5vw, 72px);
+    overflow: hidden;
+    isolation: isolate;
+    color: var(--upcsg-honeydew-white);
 }
 
 .upcsg-eventhero__art {
-    position: absolute;
+    position: absolute !important;
     inset: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
     z-index: -2;
 }
 
@@ -1942,361 +1492,1380 @@
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(
-        to top,
-        var(--upcsg-midnight-indigo) 2%,
-        rgba(22, 17, 58, 0.82) 32%,
-        rgba(22, 17, 58, 0.35) 68%,
-        rgba(22, 17, 58, 0.15) 100%);
+    background: rgba(12, 9, 34, 0.72);
 }
 
 .upcsg-eventhero__inner {
-    width: min(100%, 1180px);
+    width: 100%;
+    max-width: calc(var(--upcsg-measure) + 2 * var(--upcsg-gutter));
     margin: 0 auto;
-    padding: clamp(2rem, 6vw, 4rem) 1rem clamp(1.75rem, 4vw, 2.75rem);
+    padding: 0 var(--upcsg-gutter);
+    box-sizing: border-box;
+}
+
+.upcsg-eventhero__when {
+    margin: 0 0 1.25rem;
+    font-size: var(--step-lead);
+    font-weight: 600;
 }
 
 .upcsg-eventhero__title {
-    margin: 0.4rem 0 1rem;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(2rem, 6vw, 3.6rem);
-    line-height: 1.08;
-    color: var(--upcsg-honeydew-white);
-    text-shadow: 0 4px 32px rgba(6, 3, 24, 0.75);
+    margin: 0;
+    max-width: 16ch;
+    font-size: clamp(3rem, 7.5vw, 7.5rem);
 }
 
-.upcsg-eventbody--wide {
-    max-width: 46rem;
-    margin-bottom: 1rem;
+.upcsg-eventhero__meta {
+    margin: 1.5rem 0 0;
+    max-width: 52ch;
+    font-size: var(--step-lead);
+    line-height: 1.3;
 }
 
-/* Closing CTA: centred, with its own glow, so the page ends on a swell rather than on
-   another band identical to the four above it. */
-.upcsg-closing {
-    position: relative;
-    overflow: hidden;
-    border-radius: var(--upcsg-radius);
-    border: var(--upcsg-hairline);
-    background: radial-gradient(120% 140% at 50% 0%, rgba(82, 38, 87, 0.75), rgba(22, 17, 58, 0.4));
+.upcsg-eventhero__actions {
+    margin-top: 2rem;
 }
 
-.upcsg-closing__inner {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    justify-items: center;
-    text-align: center;
-    gap: 0.4rem;
-    padding: clamp(2.5rem, 6vw, 4.5rem) 1.5rem;
-}
-
-.upcsg-closing__inner .upcsg-lede { max-width: 40rem; margin-bottom: 1.75rem; }
-
-.upcsg-closing__flare {
-    position: absolute;
-    top: -40%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(38rem, 90%);
-    aspect-ratio: 1;
-    background: radial-gradient(circle, rgba(162, 83, 184, 0.5), transparent 62%);
-    pointer-events: none;
-}
-
-/* --- Member roster ------------------------------------------------------- */
-
-/* auto-fill, not auto-fit. auto-fit collapses the empty tracks and stretches what is
-   left, so the Representatives committee â€” which has exactly one member â€” would render
-   as a single card spanning the full page width. auto-fill keeps the column rhythm and
-   lets a short row simply end. */
-.upcsg-memberpile {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
-}
-
-.upcsg-membercard {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 0;
-    border: var(--upcsg-hairline);
-    border-radius: var(--upcsg-radius);
-    background: linear-gradient(180deg, rgba(82, 38, 87, 0.42), rgba(22, 17, 58, 0.72));
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    overflow: hidden;
-    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease,
-        border-color 0.35s ease;
-}
-
-.upcsg-membercard:hover,
-.upcsg-membercard:focus-visible {
-    transform: translateY(-6px);
-    border-color: rgba(204, 174, 222, 0.45);
-    box-shadow: var(--upcsg-shadow-lg), var(--upcsg-bloom);
-}
-
-.upcsg-membercard__portrait {
-    aspect-ratio: 4 / 5;
-    border-radius: 0;
-    width: 100%;
-}
-
-.upcsg-membercard__body {
-    display: block;
-    padding: 1rem 1.1rem 0.4rem;
-    flex: 1;
-}
-
-/* --- Showcase: full-width profile rows ----------------------------------- */
-
-.upcsg-membershowcase {
-    display: grid;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
-}
-
-.upcsg-membercard--spotlight,
-.upcsg-membercard--showcase {
-    flex-direction: row;
-    align-items: stretch;
-}
-
-/* The mirror. row-reverse rather than a reordered DOM, so the portrait stays before
-   the text for a screen reader and for tab order however the row is drawn. */
-.upcsg-membercard--flip { flex-direction: row-reverse; }
-
-.upcsg-membercard--spotlight .upcsg-membercard__portrait,
-.upcsg-membercard--showcase .upcsg-membercard__portrait {
-    /* A fixed share of the card, so the portrait keeps its proportion instead of
-       stretching to whatever height the bio happens to produce. */
-    flex: 0 0 clamp(8rem, 26%, 14rem);
-    aspect-ratio: auto;
-}
-
-.upcsg-membercard--spotlight .upcsg-membercard__portrait {
-    flex-basis: clamp(10rem, 32%, 18rem);
-}
-
-.upcsg-membercard--spotlight .upcsg-membercard__body,
-.upcsg-membercard--showcase .upcsg-membercard__body {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: clamp(1.25rem, 3vw, 2.25rem);
-}
-
-.upcsg-membercard--showcase .upcsg-membercard__name {
-    font-size: clamp(1.35rem, 2.6vw, 1.8rem);
-}
-
-.upcsg-membercard--spotlight .upcsg-membercard__name {
-    font-size: clamp(1.7rem, 3.6vw, 2.5rem);
-}
-
-.upcsg-membercard--spotlight .upcsg-membercard__quote,
-.upcsg-membercard--showcase .upcsg-membercard__quote {
-    -webkit-line-clamp: unset;
-    line-clamp: unset;
-    font-size: 1.02rem;
-}
-
-.upcsg-membercard--spotlight .upcsg-membercard__quote { font-size: 1.15rem; }
-
-/* Four lines is roughly 400 characters at this measure. Today's bios are ~140 and
-   never reach it; a long one clamps here and finishes in the dialog rather than
-   stretching the row past its portrait. */
-.upcsg-membercard__bio {
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-top: 0.8rem;
-    font-size: 0.94rem;
-    line-height: 1.65;
-    color: var(--upcsg-periwinkle);
-}
-
-/* Stacks below the point where a side-by-side portrait leaves the text too narrow to
-   read comfortably. The mirror is dropped with it: alternating left and right means
-   nothing in a single column, and row-reverse would put the portrait under its own
-   text for half the roster. */
-@media (max-width: 46rem) {
-    .upcsg-membercard--spotlight,
-    .upcsg-membercard--showcase,
-    .upcsg-membercard--flip {
-        flex-direction: column;
-    }
-
-    .upcsg-membercard--spotlight .upcsg-membercard__portrait,
-    .upcsg-membercard--showcase .upcsg-membercard__portrait {
-        flex: none;
-        aspect-ratio: 16 / 10;
-    }
-}
-
-/* --- Row: compact strip for short committees ----------------------------- */
-
-.upcsg-memberstrip {
-    display: grid;
-    gap: 1rem;
-    margin-bottom: 2.5rem;
-}
-
-.upcsg-membercard--row {
-    flex-direction: row;
+.upcsg-eventhero__where {
+    display: inline-flex;
     align-items: center;
-    gap: 1rem;
-    padding: 0.9rem 1.1rem;
+    gap: 0.35rem;
 }
 
-.upcsg-membercard--row .upcsg-membercard__portrait {
-    flex: 0 0 3.6rem;
-    width: 3.6rem;
-    aspect-ratio: 1;
-    border-radius: 50%;
+.upcsg-facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
 }
 
-.upcsg-membercard--row .upcsg-membercard__body { padding: 0; }
+.upcsg-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 24px;
+    background: var(--tile);
+}
 
-.upcsg-membercard--row .upcsg-membercard__name { font-size: 1.1rem; }
-
-.upcsg-membercard--row .upcsg-membercard__more { padding: 0.35rem 0 0; }
-
-.upcsg-membercard__role {
-    display: block;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
+.upcsg-fact__label {
     font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--upcsg-liquid-chrome-gold);
 }
 
-.upcsg-membercard__name {
-    display: block;
-    margin-top: 0.3rem;
-    font-family: var(--upcsg-font-display);
-    font-size: 1.25rem;
-    line-height: 1.25;
+.upcsg-fact__value {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+}
+
+.upcsg-facts__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    margin-top: 2rem;
+}
+
+.upcsg-facts__countdown {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-facts__note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0;
+}
+
+.upcsg-readable {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: 2rem var(--upcsg-gap);
+}
+
+.upcsg-readable > h2 {
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-readable__body p {
+    margin: 0 0 1.25rem;
+    max-width: 64ch;
+    line-height: 1.6;
+}
+
+.upcsg-readable__body p:first-child {
+    font-size: var(--step-lead);
+    line-height: 1.35;
+    letter-spacing: -0.015em;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .upcsg-readable { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------ *
+   Opportunity detail
+ * ------------------------------------------------------------------ */
+
+.upcsg-oppmast__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    align-items: end;
+    gap: 2rem var(--upcsg-gap);
+}
+
+.upcsg-oppmast__grid--plain {
+    grid-template-columns: 1fr;
+}
+
+.upcsg-oppmast__back {
+    display: inline-flex;
+    margin-top: 2rem;
+    font-weight: 600;
+}
+
+.upcsg-oppmast__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1.5rem;
+}
+
+.upcsg-oppmast__title {
+    margin: 0;
+    font-size: clamp(2.5rem, 4.6vw, 4.75rem);
+}
+
+.upcsg-oppmast__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1.5rem 0 0;
+    font-size: var(--step-lead);
+    line-height: 1.3;
+}
+
+.upcsg-oppmast__meta span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.upcsg-oppmast__plate {
+    aspect-ratio: 4 / 5;
+}
+
+.upcsg-oppdeadline {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(32px, 5vw, 80px);
+}
+
+.upcsg-dial {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: clamp(10rem, 18vw, 14rem);
+    aspect-ratio: 1;
+}
+
+.upcsg-dial svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.upcsg-dial__track {
+    fill: none;
+    stroke: var(--tile-2);
+    stroke-width: 10;
+}
+
+.upcsg-dial__fill {
+    fill: none;
+    stroke: var(--upcsg-midnight-indigo);
+    stroke-width: 10;
+}
+
+.upcsg-oppdeadline--urgent .upcsg-dial__fill { stroke: var(--upcsg-burnt-nova); }
+
+.upcsg-dial__face {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.upcsg-dial__num {
+    font-size: var(--step-head);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1;
+}
+
+.upcsg-dial__unit {
+    font-weight: 600;
+}
+
+.upcsg-oppstages {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.upcsg-oppstages__step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 20px;
+    background: var(--tile);
+}
+
+.upcsg-oppstages__step--done {
+    background: var(--tile-2);
+}
+
+.upcsg-oppstages__step--ahead {
+    background: var(--upcsg-midnight-indigo);
     color: var(--upcsg-honeydew-white);
 }
 
-/* Two lines of the quote, then it stops. Free-text from the CMS varies wildly in
-   length and unclamped it would make every card in the row a different height. */
-.upcsg-membercard__quote {
+.upcsg-oppstages__label {
+    font-weight: 600;
+}
+
+.upcsg-oppstages__value {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+}
+
+.upcsg-oppdeadline__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.75rem;
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-oppmast__grid { grid-template-columns: 1fr; }
+    .upcsg-oppmast__plate { max-width: 20rem; }
+}
+
+@media (max-width: 599.98px) {
+    .upcsg-oppdeadline { grid-template-columns: 1fr; }
+    .upcsg-oppstages { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------ *
+   Merch page: how ordering works
+ * ------------------------------------------------------------------ */
+
+.upcsg-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.upcsg-step {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 16rem;
+    padding: clamp(24px, 3vw, 36px);
+    background: var(--tile);
+}
+
+.upcsg-step:nth-child(2) { background: var(--tile-2); }
+.upcsg-step:nth-child(3) { background: var(--upcsg-midnight-indigo); color: var(--upcsg-honeydew-white); }
+
+.upcsg-step__title {
+    margin: 0;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-step__text {
+    margin: auto 0 0;
+    line-height: 1.5;
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-steps { grid-template-columns: 1fr; }
+    .upcsg-step { min-height: 0; }
+}
+
+/* ------------------------------------------------------------------ *
+   Hall of Fame
+ * ------------------------------------------------------------------ */
+
+.upcsg-filterrow {
+    margin-bottom: 3rem;
+}
+
+.upcsg-filterrow .mud-chip {
+    margin: 0 0.4rem 0.4rem 0;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: var(--tile) !important;
+    color: inherit !important;
+    font-size: var(--step-small);
+    font-weight: 600;
+}
+
+.upcsg-filterrow .mud-chip.mud-chip-selected {
+    background: var(--upcsg-liquid-chrome-gold) !important;
+    color: var(--upcsg-midnight-indigo) !important;
+}
+
+.upcsg-yeargroup + .upcsg-yeargroup {
+    margin-top: clamp(64px, 7vw, 96px);
+}
+
+.upcsg-yearrule {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 40px;
+}
+
+.upcsg-yearrule__year {
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-yearrule__count {
+    font-weight: 600;
+}
+
+.upcsg-wins {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 48px var(--upcsg-gap);
+}
+
+.upcsg-achcard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.upcsg-achcard__media {
+    aspect-ratio: 4 / 3;
+}
+
+.upcsg-achcard__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.upcsg-achcard__kicker {
+    font-weight: 600;
+}
+
+.upcsg-achcard__kicker .upcsg-star {
+    display: none;
+}
+
+.upcsg-achcard__title {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.15em;
+}
+
+.upcsg-achcard__standfirst {
+    line-height: 1.45;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin-top: 0.6rem;
-    font-family: var(--upcsg-font-subheading);
-    font-style: italic;
-    font-size: 0.88rem;
-    line-height: 1.45;
-    color: var(--upcsg-periwinkle);
 }
 
-.upcsg-membercard__more {
-    display: block;
-    padding: 0.7rem 1.1rem 1.1rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.78rem;
+.upcsg-achcard__cue {
     font-weight: 600;
-    letter-spacing: 0.04em;
-    color: var(--upcsg-cosmic-lavender);
-    opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
 }
 
-.upcsg-membercard:hover .upcsg-membercard__more,
-.upcsg-membercard:focus-visible .upcsg-membercard__more {
-    opacity: 1;
-    transform: none;
+.upcsg-achcard:hover .upcsg-achcard__title {
+    text-decoration-line: underline;
 }
 
-/* Keyboard users never trigger :hover, so the affordance has to be visible whenever
-   the card is focused â€” and on touch, where hover does not exist at all. */
-@media (hover: none) {
-    .upcsg-membercard__more { opacity: 1; transform: none; }
+.upcsg-achcard:hover .upcsg-cosmic__img {
+    transform: scale(1.03);
 }
 
-/* Committee divider: a rule with the name sitting on it. */
+.upcsg-achcard--lead {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: end;
+    gap: var(--upcsg-gap);
+}
+
+.upcsg-achcard--lead .upcsg-achcard__title {
+    font-size: clamp(1.75rem, 1.3rem + 1.4vw, 2.5rem);
+    line-height: 1.02;
+}
+
+.upcsg-achcard--lead .upcsg-achcard__standfirst {
+    -webkit-line-clamp: 5;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-wins { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .upcsg-achcard--lead { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 559.98px) {
+    .upcsg-wins { grid-template-columns: 1fr; }
+}
+
+.upcsg-article__head {
+    padding: calc(var(--upcsg-chapter-pad) + 40px) 0 0;
+}
+
+.upcsg-article__headinner {
+    display: grid;
+    grid-template-columns: minmax(0, 9fr) minmax(0, 3fr);
+    gap: 1.5rem var(--upcsg-gap);
+}
+
+.upcsg-article__kind {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-weight: 600;
+}
+
+.upcsg-article__title {
+    margin: 0;
+    font-size: clamp(2rem, 1rem + 2.8vw, 3.5rem);
+    line-height: 0.98;
+}
+
+.upcsg-article__cta {
+    grid-column: 1;
+}
+
+.upcsg-article__standfirst {
+    grid-column: 1;
+    margin: 0;
+    max-width: 52ch;
+    font-size: var(--step-lead);
+    line-height: 1.35;
+}
+
+.upcsg-article__byline {
+    grid-column: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.75rem;
+    font-size: var(--step-small);
+    font-weight: 600;
+}
+
+.upcsg-article__figure {
+    margin: clamp(48px, 6vw, 80px) 0 0;
+}
+
+.upcsg-article__art {
+    aspect-ratio: 16 / 9;
+}
+
+.upcsg-article__figure figcaption {
+    margin-top: 0.75rem;
+    font-size: var(--step-small);
+}
+
+.upcsg-article__body {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr) minmax(0, 2fr);
+    gap: 0 var(--upcsg-gap);
+    margin-top: clamp(48px, 6vw, 80px);
+}
+
+.upcsg-article__text {
+    grid-column: 2;
+}
+
+.upcsg-article__aside {
+    grid-column: 1;
+    grid-row: 1;
+    font-weight: 600;
+}
+
+.upcsg-article__para {
+    margin: 0 0 1.25rem;
+    max-width: 64ch;
+    line-height: 1.65;
+}
+
+.upcsg-article__para:first-child {
+    font-size: var(--step-lead);
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+}
+
+.upcsg-article__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+    align-items: center;
+    margin-top: 2.5rem;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-article__headinner,
+    .upcsg-article__body { grid-template-columns: 1fr; }
+    .upcsg-article__text,
+    .upcsg-article__aside { grid-column: 1; grid-row: auto; }
+}
+
+/* ------------------------------------------------------------------ *
+   About
+ * ------------------------------------------------------------------ */
+
+.upcsg-identity {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    align-items: end;
+    gap: 2rem var(--upcsg-gap);
+}
+
+.upcsg-identity__title {
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-identity__lede {
+    margin: 0;
+    font-size: var(--step-lead);
+    line-height: 1.35;
+}
+
+.upcsg-photorail {
+    position: relative;
+    margin: clamp(56px, 7vw, 96px) calc(50% - 50vw) 0;
+    padding-inline: 0;
+    overflow: hidden;
+}
+
+.upcsg-photorail__track {
+    display: flex;
+    width: max-content;
+    animation: upcsg-rail var(--rail-duration, 60s) linear infinite;
+}
+
+.upcsg-photorail:hover .upcsg-photorail__track {
+    animation-play-state: paused;
+}
+
+.upcsg-photorail__run {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-right: 12px;
+}
+
+.upcsg-photorail__frame {
+    margin: 0;
+    flex: none;
+}
+
+.upcsg-photorail__frame img {
+    display: block;
+    width: clamp(16rem, 30vw, 26rem);
+    height: clamp(12rem, 22vw, 19rem);
+    object-fit: cover;
+    background: var(--tile);
+}
+
+.upcsg-photorail__frame figcaption {
+    max-width: clamp(16rem, 30vw, 26rem);
+    margin-top: 0.6rem;
+    font-size: var(--step-small);
+}
+
+@keyframes upcsg-rail {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-photorail__track { animation: none; }
+    .upcsg-photorail { overflow-x: auto; }
+}
+
+.upcsg-creed {
+    margin: clamp(56px, 7vw, 96px) 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: 1rem var(--upcsg-gap);
+}
+
+.upcsg-creed blockquote {
+    grid-column: 2;
+    margin: 0;
+    max-width: 30ch;
+    font-size: var(--step-lead);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.upcsg-creed figcaption {
+    grid-column: 2;
+    font-size: var(--step-small);
+    font-weight: 600;
+}
+
 .upcsg-committee-rule {
     display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    margin: 0 0 1.5rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--upcsg-cosmic-lavender);
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: clamp(64px, 7vw, 112px) 0 1.5rem;
+    padding: 1.25rem 0;
 }
 
-.upcsg-committee-rule::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, rgba(204, 174, 222, 0.4), transparent);
+.upcsg-committee-rule h3 {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    margin: 0;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
 }
 
 .upcsg-committee-rule__count {
-    order: 1;
-    padding: 0.1rem 0.55rem;
-    border: var(--upcsg-hairline);
-    border-radius: 999px;
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
-    color: var(--upcsg-periwinkle);
+    font-weight: 600;
 }
 
-/* --- Maker's mark -------------------------------------------------------- */
+.upcsg-officer {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: center;
+    gap: 2rem clamp(24px, 5vw, 80px);
+    padding: clamp(28px, 3vw, 40px) 0;
+}
 
-/* Stacked under the email rather than given a row of its own, so it reads as a small
-   signature on the contact block instead of a band across the footer. Kept in the same
-   flex item as the email so it inherits that item's right-hand alignment. */
-.upcsg-footer__contact {
+.upcsg-officer--flip {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+}
+
+.upcsg-officer--flip .upcsg-officer__plate {
+    order: 2;
+}
+
+.upcsg-officer__plate {
+    position: relative;
+}
+
+.upcsg-officer__bloom {
+    display: none;
+}
+
+.upcsg-officer__portrait {
+    aspect-ratio: 4 / 5;
+}
+
+.upcsg-officer__role {
+    margin: 0.6rem 0 0;
+    font-weight: 600;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-officer__name {
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-officer__quote {
+    margin: 1.25rem 0 0;
+    padding: 0;
+    max-width: 40ch;
+    font-size: var(--step-lead);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.upcsg-officer__quote::before { content: "\201C"; }
+.upcsg-officer__quote::after { content: "\201D"; }
+
+.upcsg-officer__bio {
+    margin: 1rem 0 0;
+    max-width: 58ch;
+    line-height: 1.55;
+}
+
+.upcsg-officer__more.mud-button-root {
+    margin-top: 1.75rem;
+}
+
+@media (max-width: 699.98px) {
+    .upcsg-identity,
+    .upcsg-creed { grid-template-columns: 1fr; }
+    .upcsg-creed blockquote,
+    .upcsg-creed figcaption { grid-column: 1; }
+    .upcsg-officer,
+    .upcsg-officer--flip { grid-template-columns: 1fr; }
+    .upcsg-officer--flip .upcsg-officer__plate { order: 0; }
+    .upcsg-officer__plate { max-width: 16rem; }
+}
+
+/* ------------------------------------------------------------------ *
+   Contact
+ * ------------------------------------------------------------------ */
+
+.upcsg-channels {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: clamp(56px, 7vw, 112px);
+}
+
+.upcsg-channel {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 0.5rem;
+    gap: 0.6rem;
+    min-height: 18rem;
+    padding: clamp(24px, 3vw, 36px);
+    background: var(--tile);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.upcsg-channel:hover {
+    background: var(--tile-2);
+}
+
+.upcsg-channel__icon {
+    margin-bottom: 1rem;
+}
+
+.upcsg-channel__tag {
+    font-weight: 600;
+}
+
+.upcsg-channel__handle {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.1;
+    overflow-wrap: break-word;
+}
+
+.upcsg-channel__meta {
+    line-height: 1.45;
+}
+
+.upcsg-channel__cue {
+    margin-top: auto;
+    padding-top: 1rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+.upcsg-feature {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    align-items: start;
+    gap: 3rem var(--upcsg-gap);
+}
+
+.upcsg-feature__body .upcsg-title-xl {
+    margin-bottom: 1.5rem;
+}
+
+.upcsg-feature__body p {
+    max-width: 52ch;
+    line-height: 1.55;
+}
+
+.upcsg-contact__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 2rem 0 0;
+}
+
+.upcsg-contact__facts > div {
+    padding: 20px;
+    background: var(--tile);
+}
+
+.upcsg-contact__facts dt {
+    font-weight: 600;
+}
+
+.upcsg-contact__facts dd {
+    margin: 0.35rem 0 0;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    line-height: 1.15;
+}
+
+.upcsg-waysin {
+    padding: clamp(24px, 3vw, 40px);
+    background: var(--upcsg-midnight-indigo);
+    color: var(--upcsg-honeydew-white);
+}
+
+.upcsg-waysin__title {
+    margin: 0 0 1.5rem;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-waysin__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.upcsg-waysin__list li {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.upcsg-waysin__what {
+    font-weight: 600;
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-waysin__how {
+    line-height: 1.45;
+}
+
+.upcsg-faq.mud-expansion-panels {
+    display: grid;
+    gap: 8px;
+    border-radius: 0;
+}
+
+.upcsg-faq .mud-expand-panel {
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: var(--tile) !important;
+    color: inherit !important;
+}
+
+.upcsg-faq .mud-expand-panel::before {
+    display: none;
+}
+
+.upcsg-faq .mud-expand-panel-header {
+    padding: 1.25rem 1.5rem;
+}
+
+.upcsg-faq .mud-expand-panel-header .mud-expand-panel-text {
+    font-size: var(--step-lead);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.upcsg-faq .mud-expand-panel-content {
+    padding: 0 1.5rem 1.5rem;
+    max-width: 68ch;
+    font-size: var(--step-body);
+    line-height: 1.6;
+}
+
+.upcsg-faq .mud-expand-panel-icon {
+    color: inherit;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-channels,
+    .upcsg-feature { grid-template-columns: 1fr; }
+    .upcsg-channel { min-height: 0; }
+}
+
+/* ------------------------------------------------------------------ *
+   Sign in, the signed-in band, not found
+ * ------------------------------------------------------------------ */
+
+.upcsg-auth {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: 2rem var(--upcsg-gap);
+}
+
+.upcsg-auth__panel {
+    padding: clamp(24px, 3vw, 40px);
+    background: var(--tile);
+}
+
+.upcsg-auth__title {
+    margin: 0 0 1rem;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-auth__text {
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+
+.upcsg-auth__actions {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.upcsg-auth__google {
+    min-height: 44px;
+}
+
+.upcsg-auth__fineprint {
+    margin: 1.5rem 0 0;
+    font-size: var(--step-small);
+    line-height: 1.5;
+}
+
+.upcsg-auth__aside h2 {
+    margin: 0 0 1.5rem;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-auth__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.upcsg-auth__list li {
+    padding: 1.25rem 1.5rem;
+    background: var(--tile);
+    font-size: var(--step-lead);
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.upcsg-cta-band {
+    padding: clamp(28px, 4vw, 48px);
+    background: var(--tile);
+}
+
+.upcsg-cta-band .mud-button-root {
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-auth { grid-template-columns: 1fr; }
+}
+
+.upcsg-lost {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.upcsg-lost__title {
+    margin: 0;
+    font-size: clamp(3.5rem, 10vw, 9rem);
+}
+
+.upcsg-lost p {
+    margin: 0;
+    max-width: 44ch;
+    font-size: var(--step-lead);
+    line-height: 1.35;
+}
+/* ------------------------------------------------------------------ *
+   Specimens: each item alone on a flat tile, same scale, named plainly
+ * ------------------------------------------------------------------ */
+
+.upcsg-specimens {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 40px var(--upcsg-gap);
+}
+
+.upcsg-specimen {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.upcsg-specimen__ground {
+    display: block;
+    margin-bottom: 0.6rem;
+    padding: 12%;
+    background: var(--upcsg-periwinkle);
+}
+
+.upcsg-specimen:nth-child(3n + 2) .upcsg-specimen__ground,
+.upcsg-reveal:nth-child(3n + 2) .upcsg-specimen__ground { background: var(--upcsg-liquid-chrome-gold); }
+
+.upcsg-specimen__img {
+    aspect-ratio: 4 / 5;
+}
+
+.upcsg-specimen__name {
+    font-weight: 600;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.2em;
+}
+
+.upcsg-specimen__price {
+    font-variant-numeric: tabular-nums;
+}
+
+.upcsg-specimen:hover .upcsg-specimen__name {
+    text-decoration-line: underline;
+}
+
+.upcsg-specimen:hover .upcsg-cosmic__img {
+    transform: scale(1.04);
+}
+
+.upcsg-specimen--out .upcsg-specimen__img {
+    filter: grayscale(0.7);
+}
+
+.upcsg-product__back {
+    margin-top: 1rem;
+}
+
+.upcsg-product__about {
+    margin-top: clamp(64px, 8vw, 128px);
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-specimens { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ------------------------------------------------------------------ *
+   Product page: the picture large, the order form beside it
+ * ------------------------------------------------------------------ */
+
+.upcsg-product {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    align-items: start;
+    gap: 2.5rem clamp(24px, 4vw, 64px);
+}
+
+.upcsg-gallery {
+    display: grid;
+    gap: 8px;
+}
+
+.upcsg-gallery__main {
+    aspect-ratio: 4 / 5;
+    background: var(--upcsg-periwinkle);
+}
+
+.upcsg-gallery__main img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.upcsg-gallery__strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.upcsg-gallery__thumb {
+    width: 96px;
+    height: 120px;
+    padding: 0;
+    border: 0;
+    background: var(--tile);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease, transform 0.25s var(--upcsg-ease);
+}
+
+.upcsg-gallery__thumb .upcsg-cosmic {
+    width: 100%;
+    height: 100%;
+}
+
+.upcsg-gallery__thumb:hover {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.upcsg-gallery__thumb--on {
+    opacity: 1;
+    outline: 3px solid var(--ink);
+    outline-offset: -3px;
+}
+
+.upcsg-buy {
+    position: sticky;
+    top: 104px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.upcsg-buy__name {
+    margin: 0;
+    font-size: var(--step-head);
+}
+
+.upcsg-buy__kind {
+    margin: 0.75rem 0 0;
+    font-weight: 600;
+}
+
+.upcsg-buy__price {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.5rem 0.9rem;
+    margin: 0;
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.upcsg-buy__from,
+.upcsg-buy__was {
+    font-size: var(--step-body);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.upcsg-buy__was {
+    text-decoration: line-through;
+}
+
+.upcsg-buy__desc {
+    margin: 0;
+    max-width: 48ch;
+    line-height: 1.5;
+}
+
+.upcsg-buy__block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.upcsg-buy__label {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 0;
+    font-weight: 600;
+}
+
+.upcsg-buy__required {
+    color: var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.upcsg-variant {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+    min-width: 5.5rem;
+    min-height: 52px;
+    padding: 0.6rem 1rem;
+    border: 0;
+    background: var(--tile-2);
+    color: var(--ink);
+    font: 600 var(--step-body) var(--upcsg-font);
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s var(--upcsg-ease), background-color 0.2s ease;
+}
+
+.upcsg-variant:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.upcsg-variant--on {
+    background: var(--act-bg);
+    color: var(--act-ink);
+}
+
+.upcsg-variant__price,
+.upcsg-variant__note {
+    font-size: var(--step-small);
+    font-weight: 400;
+}
+
+.upcsg-variant--gone,
+.upcsg-variant:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+
+.upcsg-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.upcsg-qty__step {
+    width: 52px;
+    height: 52px;
+    border: 0;
+    background: var(--tile-2);
+    color: var(--ink);
+    font: 600 1.4rem var(--upcsg-font);
+    cursor: pointer;
+}
+
+.upcsg-qty__step:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.upcsg-qty__value {
+    width: 72px;
+    height: 52px;
+    border: 0;
+    background: var(--tile);
+    color: var(--ink);
+    font: 600 var(--step-body) var(--upcsg-font);
+    text-align: center;
+    -moz-appearance: textfield;
+}
+
+.upcsg-qty__value::-webkit-outer-spin-button,
+.upcsg-qty__value::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.upcsg-qty__cap {
+    margin-left: 0.5rem;
+}
+
+.upcsg-buy__total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 1.1rem 1.25rem;
+    background: var(--tile);
+    font-weight: 600;
+}
+
+.upcsg-buy__total strong {
+    font-size: var(--step-lead);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
+.upcsg-buy__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.upcsg-buy__note {
+    margin: 0;
+    line-height: 1.45;
+}
+
+@media (max-width: 899.98px) {
+    .upcsg-product { grid-template-columns: 1fr; }
+    .upcsg-buy { position: static; order: -1; }
+    .upcsg-gallery__strip { flex-wrap: nowrap; }
+}
+
+/* ------------------------------------------------------------------ *
+   Member dialog and the maker's mark
+ * ------------------------------------------------------------------ */
+
+.upcsg-sparkle {
+    position: absolute;
+    color: var(--upcsg-honeydew-white);
+    filter: drop-shadow(0 0 6px rgba(252, 230, 138, 0.9));
+    pointer-events: none;
+    animation: upcsg-twinkle 5s ease-in-out infinite;
+}
+
+.upcsg-sparkle--gold { color: var(--upcsg-starlight-core); }
+.upcsg-sparkle--lilac { color: var(--upcsg-cosmic-lavender); }
+.upcsg-sparkle--delay-2 { animation-delay: -2.8s; }
+
+@keyframes upcsg-twinkle {
+    0%, 100% { transform: scale(0.6); opacity: 0.3; }
+    50%      { transform: scale(1.15); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upcsg-sparkle { animation: none; }
 }
 
 .upcsg-madeby {
     display: inline-flex;
 
-    /* Deliberately fainter than the footer text around it. A maker's mark should be
-       findable rather than noticed; the hover state is what makes it legible. */
-    color: var(--upcsg-periwinkle) !important;
+        color: var(--upcsg-periwinkle) !important;
     opacity: 0.25;
     transition: opacity 0.25s ease, color 0.25s ease;
 }
 
 .upcsg-madeby:hover,
 .upcsg-madeby:focus-visible {
-    /* Overrides the generic .upcsg-footer a:hover, which turns links gold â€” gold would
-       fight the mark's own lilac dot. */
-    color: var(--upcsg-honeydew-white) !important;
+        color: var(--upcsg-honeydew-white) !important;
     opacity: 0.9;
 }
 
 .upcsg-madeby:focus-visible {
     outline: 2px solid var(--upcsg-liquid-chrome-gold);
     outline-offset: 4px;
-    border-radius: 4px;
+    border-radius: 0;
 }
 
-/* Height-driven; the viewBox is roughly 4:1 so the width follows. Sized below the
-   footer's 0.85rem text so it sits under the email without rivalling it. */
 .upcsg-madeby__mark {
     display: block;
     height: 16px;
@@ -2307,128 +2876,19 @@
     .upcsg-madeby { transition: none; }
 }
 
-/* --- Officer bands (About) ----------------------------------------------- *
-   One band of page per officer, sides alternating. No card: the portrait is lit
-   from behind by the nebula and the text sits on the page, so eleven officers
-   read as eleven people rather than eleven identical gradient tiles.
- * ------------------------------------------------------------------------- */
-
-.upcsg-officer {
-    display: grid;
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    gap: clamp(1.5rem, 5vw, 4rem);
-    align-items: center;
-    padding: clamp(2rem, 5vw, 3.25rem) 0;
-    border-bottom: var(--upcsg-hairline);
+.upcsg-mdlg__paper .mud-dialog-title {
+    display: none;
 }
 
-.upcsg-officer:last-child { border-bottom: none; }
-
-/* Reordering alone would leave the wide column on the same side, so the tracks
-   swap with it. */
-.upcsg-officer--flip { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
-
-.upcsg-officer--flip .upcsg-officer__plate { order: 2; }
-
-.upcsg-officer__plate {
-    position: relative;
-    isolation: isolate;
-}
-
-.upcsg-officer__bloom {
-    position: absolute;
-    z-index: -1;
-    inset: -12%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 40% 35%, rgba(162, 83, 184, 0.55) 0%, transparent 68%);
-    filter: blur(30px);
-    pointer-events: none;
-}
-
-.upcsg-officer__portrait {
-    aspect-ratio: 3 / 4;
-    border-radius: var(--upcsg-radius);
-    box-shadow: var(--upcsg-shadow-lg);
-}
-
-.upcsg-officer__role {
-    margin: 0 0 0.5rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--upcsg-liquid-chrome-gold);
-}
-
-.upcsg-officer__name {
-    margin: 0;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.8rem, 4.5vw, 2.9rem);
-    line-height: 1.05;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-officer__quote {
-    margin: 1.1rem 0 0;
-    padding-left: 1rem;
-    border-left: 2px solid rgba(246, 200, 117, 0.35);
-    font-family: var(--upcsg-font-subheading);
-    font-size: 1.05rem;
-    font-style: italic;
-    line-height: 1.55;
-    color: var(--upcsg-cosmic-lavender);
-}
-
-.upcsg-officer__quote::before { content: "\201C"; }
-.upcsg-officer__quote::after { content: "\201D"; }
-
-.upcsg-officer__bio {
-    margin: 1.1rem 0 0;
-    font-size: 0.95rem;
-    line-height: 1.75;
-    color: var(--upcsg-periwinkle);
-}
-
-.upcsg-officer__more { margin-top: 1.5rem; }
-
-@media (max-width: 52rem) {
-    .upcsg-officer,
-    .upcsg-officer--flip {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 1.25rem;
-    }
-
-    /* On one column the portrait always leads: a picture below its own heading
-       reads as belonging to the officer above it. */
-    .upcsg-officer--flip .upcsg-officer__plate { order: 0; }
-
-    .upcsg-officer__plate { max-width: 18rem; }
-}
-
-/* --- Member dialog ------------------------------------------------------- */
-
-/* The dialog paper itself. MudBlazor's default is a flat plum rectangle, which is the
-   one surface on the site that looked like a component library rather than the guild. */
-/* The purple was doing too much: a 0.55 wash over the whole top plus a second bloom
-   behind the portrait, which read as a purple card rather than as a night sky. The
-   wash is halved and pushed into the corner, and a thin warm note comes in from the
-   other side so the two brand colours share the surface instead of one flooding it. */
 .upcsg-mdlg__paper {
-    border-radius: 26px !important;
-    border: var(--upcsg-hairline);
-    overflow: hidden;
+    border-radius: var(--upcsg-radius-lg) !important;
+        overflow: hidden;
 
-    background:
-        radial-gradient(ellipse 90% 60% at 12% 0%, rgba(83, 37, 126, 0.28) 0%, transparent 62%),
-        radial-gradient(ellipse 70% 50% at 95% 8%, rgba(226, 190, 122, 0.09) 0%, transparent 60%),
-        linear-gradient(180deg, #171240 0%, #100C2B 100%) !important;
+    background: var(--upcsg-midnight-indigo) !important;
 
-    box-shadow: var(--upcsg-shadow-lg) !important;
+    box-shadow: 0 30px 80px rgba(6, 3, 24, 0.6) !important;
 }
 
-/* MudBlazor pads dialog content by default, which framed the portrait in a 24px
-   border and made it read as a picture pasted into a box. */
 .upcsg-mdlg__content {
     padding: 0 !important;
     overflow: hidden;
@@ -2444,8 +2904,6 @@
     outline: none;
 }
 
-/* Keyed on the officer index, so moving between profiles plays as a move rather than a
-   silent content swap. */
 .upcsg-mdlg__stage {
     animation: upcsg-mdlg-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -2455,9 +2913,6 @@
     to   { opacity: 1; transform: none; }
 }
 
-/* Masthead: the portrait at full frame beside the name, quote and all. A two-column
-   grid rather than a flex row, so the text column can never be squeezed by a long
-   name and the portrait keeps its ratio. */
 .upcsg-mdlg__head {
     position: relative;
     isolation: isolate;
@@ -2466,7 +2921,7 @@
     gap: clamp(1.1rem, 3vw, 2rem);
     align-items: center;
     padding: clamp(1.75rem, 4vw, 2.5rem) clamp(1.5rem, 4vw, 2.5rem) clamp(1.5rem, 3.5vw, 2rem);
-    border-bottom: 1px solid rgba(246, 200, 117, 0.22);
+    background: #1F1950;
 }
 
 .upcsg-mdlg__bloom {
@@ -2477,7 +2932,7 @@
     width: 45%;
     aspect-ratio: 1;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(162, 83, 184, 0.3) 0%, transparent 70%);
+    background: transparent;
     filter: blur(34px);
     pointer-events: none;
 }
@@ -2494,15 +2949,11 @@
 .upcsg-mdlg__spark--b { bottom: 22%; right: 22%; }
 .upcsg-mdlg__spark--b .upcsg-star { width: 0.55rem; height: 0.55rem; }
 
-/* The whole frame, at the crop the CMS asks portraits to be shot in, rather than a
-   disc that cut everyone down to a head. */
 .upcsg-mdlg__portrait {
     width: 100%;
     aspect-ratio: 3 / 4;
-    border-radius: var(--upcsg-radius);
-    border: 1px solid rgba(246, 200, 117, 0.28);
-    box-shadow: var(--upcsg-shadow-md);
-}
+    border-radius: 0;
+    }
 
 .upcsg-mdlg__close {
     position: absolute !important;
@@ -2517,11 +2968,10 @@
 
 .upcsg-mdlg__role {
     margin: 0 0 0.35rem;
-    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
     font-size: 0.7rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-liquid-chrome-gold);
 }
 
@@ -2537,19 +2987,15 @@
     display: inline-block;
     margin-top: 0.6rem;
     padding: 0.2rem 0.6rem;
-    border-radius: 999px;
-    border: 1px solid rgba(204, 174, 222, 0.3);
+    border-radius: 0;
+    background: #2A2266;
     background: rgba(204, 174, 222, 0.08);
-    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
     font-size: 0.66rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
 }
 
-/* Their own words, in the metal rather than the lavender. Gold is the accent the rest
-   of the card spends on the year gutter and the link icons, so the quote reading in it
-   ties the head to the body; lavender put it in the same key as the background wash. */
 .upcsg-mdlg__quote {
     margin: 1rem 0 0;
     padding-left: 0.9rem;
@@ -2594,15 +3040,13 @@
 
 .upcsg-mdlg__panel-title {
     margin: 0 0 0.85rem;
-    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
     font-size: 0.66rem;
     font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
 }
 
-/* Year gutter: a fixed first column so the eye runs down the dates. */
 .upcsg-mdlg__record {
     display: grid;
     gap: 0.55rem;
@@ -2619,10 +3063,10 @@
 }
 
 .upcsg-mdlg__year {
-    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
     font-size: 0.78rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     color: var(--upcsg-liquid-chrome-gold);
     font-variant-numeric: tabular-nums;
 }
@@ -2648,8 +3092,7 @@
     gap: 0.15rem 0.6rem;
     align-items: center;
     padding: 0.55rem 0.75rem;
-    border: var(--upcsg-hairline);
-    border-radius: 12px;
+        border-radius: 0;
     background: rgba(246, 255, 233, 0.03);
     text-decoration: none;
     transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
@@ -2668,11 +3111,10 @@
 }
 
 .upcsg-mdlg__linkkind {
-    font-family: var(--upcsg-font-heading);
+    font-weight: 600;
     font-size: 0.62rem;
     font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--upcsg-text-muted);
 }
 
@@ -2687,9 +3129,7 @@
 @media (max-width: 40rem) {
     .upcsg-mdlg__head { grid-template-columns: minmax(0, 1fr); }
 
-    /* The portrait keeps its ratio but stops eating the screen once it is the only
-       thing in the column. */
-    .upcsg-mdlg__portrait { max-width: 11rem; }
+        .upcsg-mdlg__portrait { max-width: 11rem; }
 }
 
 .upcsg-mdlg__nav {
@@ -2700,11 +3140,9 @@
     gap: 0.5rem;
 }
 
-/* Circular ghost arrows rather than text buttons carrying the neighbour's first name.
-   The names made the footer read like breadcrumbs and pushed the counter off-centre;
-   the name each arrow leads to is still announced, on aria-label. */
 .upcsg-mdlg__arrow {
-    border: var(--upcsg-hairline) !important;
+    border: 0 !important;
+    background: #1F1950 !important;
     background: rgba(246, 255, 233, 0.04) !important;
     color: var(--upcsg-cosmic-lavender) !important;
     transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
@@ -2716,14 +3154,12 @@
     transform: scale(1.08);
 }
 
-/* Set as a fraction in the display face: "03 / 11" reads as a position in a series,
-   where "3 / 11" read as a page number. */
 .upcsg-mdlg__pos {
     display: inline-flex;
     align-items: baseline;
     gap: 0.35rem;
     font-family: var(--upcsg-font-display);
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
 }
 
 .upcsg-mdlg__pos-now {
@@ -2742,213 +3178,238 @@
     .upcsg-mdlg__arrow { transition: none; }
 }
 
-/* --- Ways in (Contact) --------------------------------------------------- *
-   Replaced a purple quote slab whose line restated the heading next to it. This
-   is a list rather than a plate: no fixed aspect ratio to fill, so it ends where
-   its content ends, and the gold marks the four routes without another gradient.
- * ------------------------------------------------------------------------- */
-
-.upcsg-waysin {
-    padding: clamp(1.25rem, 3vw, 1.75rem);
-    border: var(--upcsg-hairline);
-    border-radius: var(--upcsg-radius);
-    background: rgba(246, 255, 233, 0.03);
+/* A pile of guild prints beside a column of text (sign in, contact). */
+.upcsg-pile {
+    position: relative;
+    height: clamp(18rem, 28vw, 26rem);
+    margin-top: 2.5rem;
 }
 
-.upcsg-waysin__title {
-    margin: 0 0 1.1rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.68rem;
+.upcsg-pile figure {
+    position: absolute;
+    margin: 0;
+    width: 46%;
+    padding: 8px;
+    background: var(--upcsg-honeydew-white);
+}
+
+.upcsg-pile img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    height: auto;
+    object-fit: cover;
+}
+
+.upcsg-pile figure:nth-child(1) { top: 0; left: 4%; transform: rotate(-6deg); }
+.upcsg-pile figure:nth-child(2) { top: 6%; left: 36%; transform: rotate(4deg); }
+.upcsg-pile figure:nth-child(3) { top: 22%; right: 0; width: 34%; transform: rotate(-2deg); }
+
+.upcsg-lost__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    align-items: start;
+    gap: 2rem var(--upcsg-gap);
+    margin-top: clamp(56px, 7vw, 96px);
+}
+
+.upcsg-lost__links {
+    display: grid;
+    gap: 6px;
+}
+
+.upcsg-lost__links h2 {
+    margin: 0 0 1rem;
+    font-size: var(--step-lead);
+    letter-spacing: 0;
+}
+
+.upcsg-lost__links a {
+    padding: 1rem 1.25rem;
+    background: var(--tile);
+    font-size: var(--step-lead);
     font-weight: 600;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    transition: transform 0.25s var(--upcsg-ease), background-color 0.2s ease;
+}
+
+.upcsg-lost__links a:hover {
+    background: var(--tile-2);
+    transform: translateX(4px);
+}
+
+.upcsg-lost__grid .upcsg-pile {
+    margin-top: 0;
+}
+
+@media (max-width: 799.98px) {
+    .upcsg-lost__grid { grid-template-columns: 1fr; }
+}
+
+/* ------------------------------------------------------------------ *
+   Brandbook layer: rounded, glowing pictures; glassy tiles on the violet
+   night; Aileron on display figures; gold on headings and metrics.
+ * ------------------------------------------------------------------ */
+
+.upcsg-cosmic,
+.upcsg-menurow__pic,
+.upcsg-photorail__frame img,
+.upcsg-specimen__ground,
+.upcsg-membercard__portrait,
+.upcsg-officer__portrait,
+.upcsg-oppmast__plate,
+.upcsg-article__art,
+.upcsg-gallery__main,
+.upcsg-gallery__thumb,
+.upcsg-showcase__img {
+    border-radius: var(--upcsg-radius);
+}
+
+.upcsg-prints__print,
+.upcsg-pile figure {
+    border-radius: 14px;
+    box-shadow: 0 0 40px -10px rgba(162, 83, 184, 0.7);
+}
+
+.upcsg-prints__print img,
+.upcsg-pile img {
+    border-radius: 8px;
+}
+
+.upcsg-oppmast__plate,
+.upcsg-article__art,
+.upcsg-showcase__img,
+.upcsg-officer__portrait,
+.upcsg-eventcard--feature .upcsg-eventcard__poster {
+    box-shadow: 0 0 0 1px rgba(246, 255, 233, 0.35), 0 0 60px -14px rgba(162, 83, 184, 0.75);
+}
+
+.upcsg-eventcard--feature,
+.upcsg-fact,
+.upcsg-board__tile,
+.upcsg-channel,
+.upcsg-step,
+.upcsg-oppstages__step,
+.upcsg-auth__panel,
+.upcsg-auth__list li,
+.upcsg-cta-band,
+.upcsg-contact__facts > div,
+.upcsg-waysin,
+.upcsg-lost__links a,
+.upcsg-buy__total,
+.upcsg-faq .mud-expand-panel {
+    border: 1px solid rgba(204, 174, 222, 0.2) !important;
+    border-radius: var(--upcsg-radius) !important;
+    backdrop-filter: blur(6px);
+}
+
+.upcsg-eventcard--feature {
+    overflow: hidden;
+}
+
+.upcsg-planner__day,
+.upcsg-planner__blank,
+.upcsg-cal__day,
+.upcsg-calnav__btn,
+.upcsg-variant,
+.upcsg-qty__step,
+.upcsg-qty__value,
+.upcsg-planner__entry {
+    border-radius: 10px;
+}
+
+.upcsg-board__head {
+    border-radius: var(--upcsg-radius);
+    background:
+        radial-gradient(80% 90% at 100% 0%, rgba(252, 230, 138, 0.9), transparent 70%),
+        var(--upcsg-liquid-chrome-gold);
+}
+
+.upcsg-step:nth-child(3),
+.upcsg-oppstages__step--ahead,
+.upcsg-waysin {
+    background: rgba(22, 17, 58, 0.6);
+}
+
+.upcsg-board__name,
+.upcsg-eventcard__title,
+.upcsg-achcard__title,
+.upcsg-fact__value,
+.upcsg-dial__num,
+.upcsg-oppstages__value,
+.upcsg-contact__facts dd,
+.upcsg-channel__handle,
+.upcsg-menu-group__head h3,
+.upcsg-calcard__title,
+.upcsg-showcase__price,
+.upcsg-buy__price,
+.upcsg-buy__total strong,
+.upcsg-facts__countdown,
+.upcsg-planner__month,
+.upcsg-yearrule__year,
+.upcsg-waysin__title,
+.upcsg-auth__title,
+.upcsg-sky__none {
+    font-family: var(--upcsg-font-head);
+}
+
+.upcsg-showcase__price,
+.upcsg-buy__price,
+.upcsg-dial__num,
+.upcsg-facts__countdown,
+.upcsg-yearrule__year,
+.upcsg-planner__month small,
+.upcsg-officer__role,
+.upcsg-membercard__role {
     color: var(--upcsg-liquid-chrome-gold);
 }
 
-.upcsg-waysin__list {
-    display: grid;
-    gap: 1.1rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+.upcsg-mast__lede,
+.upcsg-hero__lede,
+.upcsg-close__foot p,
+.upcsg-identity__lede,
+.upcsg-readable__body p:first-child,
+.upcsg-article__standfirst,
+.upcsg-oppmast__meta,
+.upcsg-eventhero__meta,
+.upcsg-creed blockquote,
+.upcsg-officer__quote {
+    font-family: var(--upcsg-font-serif);
+    font-weight: 400;
 }
 
-.upcsg-waysin__list li {
-    padding-left: 1.1rem;
-    border-left: 2px solid rgba(246, 200, 117, 0.3);
+.upcsg-mast__facts,
+.upcsg-eventhero__when,
+.upcsg-article__kind {
+    font-family: var(--upcsg-font-serif);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--upcsg-starlight-core);
 }
 
-.upcsg-waysin__what {
-    display: block;
-    font-family: var(--upcsg-font-heading);
-    font-weight: 600;
-    font-size: 0.98rem;
+.upcsg-membercard__portrait .upcsg-cosmic__img {
+    mix-blend-mode: luminosity;
+    filter: grayscale(1) contrast(1.1);
+}
+
+.upcsg-membercard--tint-0 { --tint: var(--upcsg-galactic-orchid); }
+.upcsg-membercard--tint-1 { --tint: var(--upcsg-dark-ultramarine); }
+.upcsg-membercard--tint-2 { --tint: var(--upcsg-deep-amethyst); }
+.upcsg-membercard--tint-3 { --tint: var(--upcsg-cosmic-lavender); }
+
+.upcsg-membercard__portrait .upcsg-cosmic__initials {
     color: var(--upcsg-honeydew-white);
 }
 
-.upcsg-waysin__how {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.9rem;
-    line-height: 1.6;
-    color: var(--upcsg-periwinkle);
+.upcsg-specimen__ground,
+.upcsg-specimen:nth-child(3n + 2) .upcsg-specimen__ground,
+.upcsg-reveal:nth-child(3n + 2) .upcsg-specimen__ground {
+    background: radial-gradient(70% 70% at 50% 40%, rgba(204, 174, 222, 0.55), rgba(83, 37, 126, 0.4));
 }
 
-/* --- About: identity ----------------------------------------------------- *
-   Claim, then evidence, then belief. The statement is centred and narrow so it
-   reads as a single sentence rather than a column of body copy; the rail below
-   is the only place on the site with real photography, so it gets the full
-   width of the viewport; the creed closes the section in the guild's own words.
- * ------------------------------------------------------------------------- */
-
-.upcsg-identity__statement {
-    max-width: 44rem;
-    margin: 0 auto;
-    text-align: center;
-}
-
-.upcsg-identity__title {
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(2.2rem, 6vw, 4rem);
-    line-height: 1.04;
-    margin: 0 0 1.25rem;
-    color: var(--upcsg-honeydew-white);
-}
-
-.upcsg-identity__lede {
-    margin-bottom: 0;
-}
-
-/* Breaks the page container so the photos run edge to edge. */
-.upcsg-photorail {
-    position: relative;
-    margin: clamp(2.5rem, 6vw, 4rem) calc(50% - 50vw);
-    overflow: hidden;
-
-    /* Photos drift out of nothing rather than being cut off against an edge. The
-       fade is a fixed width, not a percentage: at 10% of the viewport it grew with
-       the window until 144px of photo sat ghosted at each end, which read as the
-       rail failing to reach the edge rather than as a soft entry. */
-    mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
-}
-
-.upcsg-photorail__track {
-    display: flex;
-    width: max-content;
-    animation: upcsg-marquee-scroll var(--rail-duration, 60s) linear infinite;
-}
-
-.upcsg-photorail:hover .upcsg-photorail__track {
-    animation-play-state: paused;
-}
-
-.upcsg-photorail__run {
-    display: flex;
-    align-items: flex-start;
-    gap: clamp(0.75rem, 2vw, 1.25rem);
-    padding-right: clamp(0.75rem, 2vw, 1.25rem);
-}
-
-.upcsg-photorail__frame {
-    margin: 0;
-    flex: none;
-}
-
-/* Both dimensions are fixed rather than letting each photo size itself. Uniform
-   frames read as a rail instead of a ragged strip, a portrait photo gets cropped
-   rather than becoming a sliver, and the track's width does not change as images
-   arrive - an auto width collapses to nothing until the file has loaded. */
-.upcsg-photorail__frame img {
-    display: block;
-    width: clamp(14rem, 28vw, 22rem);
-    height: clamp(11rem, 21vw, 16.5rem);
-    object-fit: cover;
-    background: rgba(246, 255, 233, 0.04);
-    border-radius: var(--upcsg-radius);
-    border: var(--upcsg-hairline);
-    box-shadow: var(--upcsg-shadow-md);
-}
-
-.upcsg-photorail__frame figcaption {
-    max-width: clamp(14rem, 28vw, 22rem);
-    margin-top: 0.6rem;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    color: var(--upcsg-text-muted);
-}
-
-.upcsg-identity__creed {
-    position: relative;
-    isolation: isolate;
-    max-width: 40rem;
-    margin: 0 auto;
-    padding-top: 1rem;
-    text-align: center;
-}
-
-.upcsg-identity__burst {
-    position: absolute;
-    z-index: -1;
-    top: 50%;
-    left: 50%;
-    width: clamp(16rem, 34vw, 26rem);
-    transform: translate(-50%, -50%);
-    opacity: 0.14;
-    pointer-events: none;
-}
-
-.upcsg-identity__quote {
-    margin: 0;
-    font-family: var(--upcsg-font-display);
-    font-size: clamp(1.35rem, 3.2vw, 2.1rem);
-    line-height: 1.35;
-    color: var(--upcsg-honeydew-white);
-}
-
-/* Quotation marks belong to the sentence, not to a decorative slab beside it. */
-.upcsg-identity__quote::before { content: "\201C"; }
-.upcsg-identity__quote::after { content: "\201D"; }
-
-.upcsg-identity__source {
-    margin: 1.1rem 0 0;
-    font-family: var(--upcsg-font-heading);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--upcsg-text-muted);
-}
-
-/* A stopped marquee hides everything past the first screenful, so when motion is
-   off the rail becomes something you can scroll through instead. */
-@media (prefers-reduced-motion: reduce) {
-    .upcsg-photorail {
-        overflow-x: auto;
-        mask-image: none;
-        -webkit-mask-image: none;
-    }
-
-    .upcsg-photorail__track { animation: none; }
-
-    .upcsg-photorail__run:nth-child(2) { display: none; }
-}
-
-.upcsg-statrow--spread {
-    justify-content: space-around;
-    margin-top: 0;
-    padding-top: 0;
-    border-top: none;
-}
-
-/* Hero drift: --scroll-depth is published by motion.js, so the parallax is described
-   here rather than by a script writing inline styles every frame. */
-.upcsg-hero__inner {
-    transform: translateY(calc(var(--scroll-depth, 0) * 42px));
-    opacity: calc(1 - var(--scroll-depth, 0) * 0.85);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .upcsg-hero__inner { transform: none; opacity: 1; }
+.upcsg-cosmic--plate {
+    background:
+        radial-gradient(70% 60% at 30% 25%, rgba(204, 174, 222, 0.35), transparent 70%),
+        linear-gradient(150deg, var(--plate-a, #53257E), var(--plate-b, #290087));
 }

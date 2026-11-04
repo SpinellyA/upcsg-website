@@ -7,239 +7,192 @@
 
 <PageTitle>Opportunities - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 28%; right: 30%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 28%; right: 46%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
+<PageMasthead Section="Opportunities"
+              Field="ultra"
+              Meta="@([_loading ? null : $"{_open.Count} open now", _past.Count > 0 ? $"{_past.Count} closed" : null])"
+              Title="Competitions and calls">
+    <Lede>
+        Hackathons, quizbowls, scholarships and calls worth a guilder's time, posted by the
+        ExeCom and sorted by the soonest deadline.
+    </Lede>
+    <Actions>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="opportunities#open">See what's open</MudButton>
+    </Actions>
+</PageMasthead>
 
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Get involved</p>
-        <h1 class="upcsg-banner__title">Opportunities</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            Hackathons, competitions, quizbowls and calls worth your time. Posted by the
-            ExeCom, soonest deadline first.
-        </p>
-    </div>
-</section>
+@if (_loading)
+{
+    <Chapter Field="paper">
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="420px" Class="upcsg-skeleton" />
+    </Chapter>
+}
+else if (_open.Count == 0)
+{
+    <Chapter Field="paper">
+        <SectionHeading Title="Nothing open right now" />
+        <div class="upcsg-empty">
+            <p>
+                The ExeCom posts hackathons, competitions and calls here as they come in. Check
+                back, or ask on the guild chat.
+            </p>
+            <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button" Href="contact">Ask the ExeCom</MudButton>
+        </div>
+    </Chapter>
+}
+else
+{
+    <Chapter Field="paper">
+        <div class="upcsg-planner__head">
+            <h2 class="upcsg-planner__month">
+                Deadlines in @_month.ToString("MMMM")<small>@_month.ToString("yyyy")</small>
+            </h2>
 
-<Marquee Items="@Ticker" DurationSeconds="52" Class="upcsg-marquee--hero" />
-
-<div class="upcsg-page upcsg-page--after-hero">
-    @if (_loading)
-    {
-        <section class="upcsg-section">
-            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="420px" Class="upcsg-skeleton mb-6" />
-            <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                @for (var i = 0; i < 6; i++)
+            <div class="upcsg-planner__controls">
+                @if (_month != EarliestMonth)
                 {
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="240px" Class="upcsg-skeleton" />
-                }
-            </div>
-        </section>
-    }
-    else if (_open.Count == 0)
-    {
-        @* Nothing to enter, but the archive below may still have entries, so this is a
-           notice rather than the whole page. It only takes over the page when there is
-           genuinely nothing on record at all. *@
-        <section class="upcsg-section">
-            <Reveal Variant="Reveal.RevealMotion.Fade">
-                <div class="@(_past.Count == 0 ? "upcsg-empty upcsg-empty--tall" : "upcsg-empty")">
-                    @if (_past.Count == 0)
-                    {
-                        <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-                    }
-                    <h2 class="upcsg-title-xl">Nothing open right now</h2>
-                    <p>
-                        The ExeCom posts hackathons, competitions and calls here as they come
-                        in. Check back, or ask on the guild chat.
-                    </p>
-                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="contact">
-                        Get in touch
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button" OnClick="GoToThisMonth">
+                        This month
                     </MudButton>
+                }
+                <div class="upcsg-calnav">
+                    <button type="button" class="upcsg-calnav__btn"
+                            disabled="@(!CanGoBack)"
+                            aria-label="Previous month"
+                            @onclick="() => ShiftMonth(-1)">&lsaquo;</button>
+                    <button type="button" class="upcsg-calnav__btn"
+                            disabled="@(!CanGoForward)"
+                            aria-label="Next month"
+                            @onclick="() => ShiftMonth(1)">&rsaquo;</button>
                 </div>
-            </Reveal>
-        </section>
-    }
-    else
-    {
-        <section class="upcsg-section">
-            <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-planner">
-                <div class="upcsg-planner__head">
-                    <div>
-                        <p class="upcsg-kicker">
-                            <span class="upcsg-star upcsg-star--tiny"></span> The board
-                        </p>
-                        <h2 class="upcsg-planner__month">
-                            @_month.ToString("MMMM")<small>@_month.ToString("yyyy")</small>
-                        </h2>
+            </div>
+        </div>
+
+        <div class="upcsg-planner__grid" role="grid" aria-label="@($"{_month:MMMM yyyy} deadlines")">
+            @foreach (var dow in DayNames)
+            {
+                <div class="upcsg-planner__dow" role="columnheader">@dow</div>
+            }
+
+            @for (var blank = 0; blank < LeadingBlanks; blank++)
+            {
+                <div class="upcsg-planner__blank"></div>
+            }
+
+            @for (var day = 1; day <= DaysInMonth; day++)
+            {
+                var date = new DateTime(_month.Year, _month.Month, day);
+                var entries = EntriesOn(date);
+                var isToday = date == DateTime.Today;
+
+                if (entries.Count == 0)
+                {
+                    <div class="upcsg-planner__day @(isToday ? "upcsg-planner__day--today" : null)">
+                        <span class="upcsg-planner__num">@day</span>
                     </div>
-
-                    <div class="upcsg-planner__controls">
-                        @if (_month != EarliestMonth)
-                        {
-                            <MudButton Variant="Variant.Text" Class="upcsg-ghost-button px-4"
-                                       OnClick="GoToThisMonth">
-                                Today
-                            </MudButton>
-                        }
-
-                        <div class="upcsg-calnav">
-                            <button type="button" class="upcsg-calnav__btn"
-                                    disabled="@(!CanGoBack)"
-                                    aria-label="Previous month"
-                                    @onclick="() => ShiftMonth(-1)">&lsaquo;</button>
-                            <button type="button" class="upcsg-calnav__btn"
-                                    disabled="@(!CanGoForward)"
-                                    aria-label="Next month"
-                                    @onclick="() => ShiftMonth(1)">&rsaquo;</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="upcsg-planner__grid" role="grid" aria-label="@($"{_month:MMMM yyyy} deadlines")">
-                    @foreach (var dow in DayNames)
-                    {
-                        <div class="upcsg-planner__dow" role="columnheader">@dow</div>
-                    }
-
-                    @for (var blank = 0; blank < LeadingBlanks; blank++)
-                    {
-                        <div class="upcsg-planner__blank"></div>
-                    }
-
-                    @for (var day = 1; day <= DaysInMonth; day++)
-                    {
-                        var date = new DateTime(_month.Year, _month.Month, day);
-                        var entries = EntriesOn(date);
-                        var isToday = date == DateTime.Today;
-
-                        if (entries.Count == 0)
-                        {
-                            <div class="upcsg-planner__day @(isToday ? "upcsg-planner__day--today" : null)">
-                                <span class="upcsg-planner__num">@day</span>
-                            </div>
-                        }
-                        else
-                        {
-                            var picked = date;
-
-                            <button type="button"
-                                    class="upcsg-planner__day upcsg-planner__day--marked @(isToday ? "upcsg-planner__day--today" : null) @(_selectedDate == date ? "upcsg-planner__day--selected" : null)"
-                                    aria-label="@DayLabel(date, entries)"
-                                    @onclick="() => SelectDayAsync(picked)">
-                                <span class="upcsg-planner__num">@day</span>
-
-                                <span class="upcsg-planner__entries">
-                                    @foreach (var entry in entries.Take(2))
-                                    {
-                                        <span class="upcsg-planner__entry @(entry.IsDeadline ? null : "upcsg-planner__entry--happens")">
-                                            @entry.Item.Title
-                                        </span>
-                                    }
-
-                                    @if (entries.Count > 2)
-                                    {
-                                        <span class="upcsg-planner__more">+@(entries.Count - 2) more</span>
-                                    }
+                }
+                else
+                {
+                    var picked = date;
+                    <button type="button"
+                            class="upcsg-planner__day upcsg-planner__day--marked @(isToday ? "upcsg-planner__day--today" : null) @(_selectedDate == date ? "upcsg-planner__day--selected" : null)"
+                            aria-label="@DayLabel(date, entries)"
+                            @onclick="() => SelectDayAsync(picked)">
+                        <span class="upcsg-planner__num">@day</span>
+                        <span class="upcsg-planner__entries">
+                            @foreach (var entry in entries.Take(2))
+                            {
+                                <span class="upcsg-planner__entry @(entry.IsDeadline ? null : "upcsg-planner__entry--happens")">
+                                    @entry.Item.Title
                                 </span>
-                            </button>
-                        }
-                    }
-                </div>
-
-                <div class="upcsg-planner__legend">
-                    <span><i></i> Deadline</span>
-                    <span><i class="is-happens"></i> Happens</span>
-                    <span><i class="is-today"></i> Today</span>
-                    <span class="upcsg-planner__summary">@MonthSummary</span>
-                </div>
-            </Reveal>
-        </section>
-
-        <section class="upcsg-section">
-            <SectionHeading Kicker="@ListKicker" Title="@ListTitle">
-                <Action>
-                    @if (_selectedDate is not null)
-                    {
-                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
-                                   OnClick="ClearSelection">
-                            Show all @_open.Count
-                        </MudButton>
-                    }
-                </Action>
-            </SectionHeading>
-
-            @if (Listed.Count == 0)
-            {
-                <div class="upcsg-empty">
-                    <p>Nothing on @_selectedDate?.ToString("MMMM d").</p>
-                </div>
+                            }
+                            @if (entries.Count > 2)
+                            {
+                                <span class="upcsg-planner__more">+@(entries.Count - 2) more</span>
+                            }
+                        </span>
+                    </button>
+                }
             }
-            else
-            {
-                <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                    @foreach (var (item, i) in Listed.Select((o, i) => (o, i)))
-                    {
-                        <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
-                            <div id="@($"opportunity-{item.Id}")"
-                                 class="@(IsHit(item) ? "upcsg-cardhit" : null)">
-                                <OpportunityCard Opportunity="item" />
-                            </div>
-                        </Reveal>
-                    }
-                </div>
-            }
-        </section>
-    }
+        </div>
 
-    @* Kept below everything actionable, and visually quietened by --past, so the archive is
-       reachable without competing with what is still open. *@
-    @if (!_loading && _past.Count > 0)
-    {
-        <section class="upcsg-section upcsg-pastboard">
-            <SectionHeading Kicker="@($"{_past.Count} closed")" Title="Past" />
+        <div class="upcsg-planner__legend">
+            <span><i></i> Deadline</span>
+            <span><i class="is-happens"></i> Event day</span>
+            <span><i class="is-today"></i> Today</span>
+            <span class="upcsg-planner__summary">@MonthSummary</span>
+        </div>
+    </Chapter>
 
-            <div class="upcsg-cardgrid upcsg-cardgrid--3">
-                @foreach (var (item, i) in _past.Select((o, i) => (o, i)))
+    <Chapter Field="night" Id="open">
+        <SectionHeading Title="@(_selectedDate is null ? "Open now" : _selectedDate.Value.ToString("dddd, MMMM d"))"
+                        Kicker="@ListKicker">
+            <Action>
+                @if (_selectedDate is not null)
+                {
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button" OnClick="ClearSelection">
+                        Show all @_open.Count
+                    </MudButton>
+                }
+            </Action>
+        </SectionHeading>
+
+        @if (Listed.Count == 0)
+        {
+            <div class="upcsg-empty">
+                <p>Nothing on @_selectedDate?.ToString("MMMM d").</p>
+            </div>
+        }
+        else
+        {
+            <div class="upcsg-menu">
+                @foreach (var (item, i) in Listed.Select((o, i) => (o, i)))
                 {
                     <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
-                        <div id="@($"opportunity-{item.Id}")" class="upcsg-pastcard">
-                            <OpportunityCard Opportunity="item" />
-                        </div>
+                        <OpportunityRow Opportunity="item" ShowBlurb="true"
+                                        Id="@($"opportunity-{item.Id}")"
+                                        Hit="IsHit(item)" />
                     </Reveal>
                 }
             </div>
-        </section>
-    }
+        }
+    </Chapter>
+}
 
-    <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
+@if (!_loading && _past.Count > 0)
+{
+    <Chapter Field="amethyst">
+        <SectionHeading Title="Already closed" Kicker="@($"{_past.Count} on record")" />
 
-        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
-            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Know of one?</p>
-            <h2 class="upcsg-title-xl">Tell us about it</h2>
-            <p class="upcsg-lede">
-                If you have come across a competition, scholarship or call that other guilders
-                should see, send it our way and we will put it up here.
-            </p>
-            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
-                Get in Touch
-            </MudButton>
-        </Reveal>
-    </section>
-</div>
+        <div class="upcsg-menu">
+            @foreach (var (item, i) in _past.Select((o, i) => (o, i)))
+            {
+                <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
+                    <OpportunityRow Opportunity="item" Id="@($"opportunity-{item.Id}")" />
+                </Reveal>
+            }
+        </div>
+    </Chapter>
+}
+
+<Chapter Field="gold" Class="upcsg-close">
+    <h2 class="upcsg-close__title">
+        <span>Know of</span>
+        <span>another?</span>
+    </h2>
+    <div class="upcsg-close__foot">
+        <p>
+            Seen a competition, scholarship or call other guilders should hear about? Send it our
+            way and we'll put it on the board.
+        </p>
+        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="contact">Send it to the ExeCom</MudButton>
+    </div>
+</Chapter>
 
 @code {
     private record Entry(OpportunityDto Item, bool IsDeadline);
 
     private static readonly string[] DayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    private static readonly string[] Ticker =
-    [
-        "Hackathons", "Competitions", "Quizbowls", "Scholarships",
-        "Internships", "Calls for papers", "Conferences", "Deadlines",
-    ];
 
     // Split on arrival and kept apart from there. Everything on this page above the Past
     // section - the calendar, its month range, the counts - is about what a reader can still

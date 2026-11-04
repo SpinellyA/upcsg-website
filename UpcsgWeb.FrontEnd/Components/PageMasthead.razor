@@ -1,0 +1,71 @@
+<header class="upcsg-mast @Class">
+    <div class="upcsg-mast__inner">
+        <p class="upcsg-mast__index">
+            <span><span class="upcsg-star" aria-hidden="true"></span>@Section</span>
+            @foreach (var item in Meta.Where(m => !string.IsNullOrWhiteSpace(m)))
+            {
+                <span class="upcsg-mast__index-sep" aria-hidden="true"></span>
+                <span>@item</span>
+            }
+        </p>
+
+        <h1 class="upcsg-mast__title">
+            @Title@if (!string.IsNullOrWhiteSpace(Accent))
+            {
+                @(" ")<em>@Accent</em>
+            }
+        </h1>
+
+        @if (Lede is not null || Actions is not null)
+        {
+            <div class="upcsg-mast__aside">
+                @if (Lede is not null)
+                {
+                    <p class="upcsg-mast__lede">@Lede</p>
+                }
+
+                @if (Actions is not null)
+                {
+                    <div class="upcsg-mast__actions">@Actions</div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (Horizon)
+    {
+        <div class="upcsg-horizon" style="--horizon-at: @TodayAt" aria-hidden="true">
+            <span class="upcsg-horizon__label">Today &middot; @DateTime.Today.ToString("MMM d")</span>
+            <span class="upcsg-horizon__mark"></span>
+        </div>
+    }
+</header>
+
+@code {
+    [Parameter, EditorRequired] public string Section { get; set; } = string.Empty;
+
+    [Parameter] public IEnumerable<string?> Meta { get; set; } = [];
+
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    [Parameter] public string? Accent { get; set; }
+
+    [Parameter] public RenderFragment? Lede { get; set; }
+
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    [Parameter] public bool Horizon { get; set; } = true;
+
+    [Parameter] public string? Class { get; set; }
+
+    private static string TodayAt
+    {
+        get
+        {
+            var today = DateTime.Today;
+            var days = DateTime.DaysInMonth(today.Year, today.Month);
+            var at = (today.Day - 0.5) / days * 100;
+            return at.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture) + "%";
+        }
+    }
+}

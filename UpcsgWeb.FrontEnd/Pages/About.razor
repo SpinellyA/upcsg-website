@@ -6,22 +6,15 @@
 
 <PageTitle>About - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 34%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 30%; right: 44%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
-
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> About</p>
-        <h1 class="upcsg-banner__title">The Guild</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            The official student organization for Computer Science majors at the
-            University of the Philippines Cebu.
-        </p>
-    </div>
-</section>
-
-<Marquee Items="@Ticker" DurationSeconds="52" Class="upcsg-marquee--hero" />
+<PageMasthead Section="About"
+              Meta="@(["UP Cebu", "A.Y. 2026–2027", _allOfficers.Count > 0 ? $"{_allOfficers.Count} officers" : null])"
+              Title="The"
+              Accent="Guild">
+    <Lede>
+        The official student organization for Computer Science majors at the University of
+        the Philippines Cebu. Run by students, for students.
+    </Lede>
+</PageMasthead>
 
 <div class="upcsg-page upcsg-page--after-hero">
 
@@ -45,7 +38,6 @@
         }
 
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-identity__creed">
-            <img class="upcsg-identity__burst" src="img/starburst.png" alt="" aria-hidden="true" />
 
             <blockquote class="upcsg-identity__quote">
                 Computer science is not just an industry of machines, but a canvas of endless
@@ -100,7 +92,7 @@
             {
                 <Reveal Variant="Reveal.RevealMotion.Fade" Class="upcsg-committee-rule">
                     <span>@committee.Name</span>
-                    <span class="upcsg-committee-rule__count">@committee.Count</span>
+                    <span class="upcsg-committee-rule__count">@committee.Count @(committee.Count == 1 ? "officer" : "officers")</span>
                 </Reveal>
 
                 @foreach (var row in committee.Rows)
@@ -114,7 +106,6 @@
     </section>
 
     <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
 
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
             <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Fancy a hand in it?</p>
@@ -146,11 +137,6 @@
     private List<GuildPhoto> _photos = [];
     private bool _loading = true;
 
-    private static readonly string[] Ticker =
-    [
-        "Academic support", "Competitions", "Industry nights", "Committees",
-        "Socials", "Mentoring", "UP Cebu", "Computer Science",
-    ];
 
     protected override async Task OnInitializedAsync()
     {

@@ -5,22 +5,15 @@
 
 <PageTitle>Hall of Fame - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 28%; right: 34%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 32%; right: 46%;"><span class="upcsg-star" style="width: 0.65rem; height: 0.65rem;"></span></span>
-
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Hall of fame</p>
-        <h1 class="upcsg-banner__title">What We've Won</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            The wins, awards, and milestones our members and the guild have collected over the
-            years, each one written up properly, not just listed.
-        </p>
-    </div>
-</section>
-
-<Marquee Items="@Ticker" DurationSeconds="46" Class="upcsg-marquee--hero" />
+<PageMasthead Section="Hall of Fame"
+              Meta="@([_loading ? null : $"{_all.Count} on the record", "Verified by the ExeCom"])"
+              Title="What we've"
+              Accent="won">
+    <Lede>
+        The wins, awards, and milestones our members and the guild have collected over the
+        years, each one written up properly, not just listed.
+    </Lede>
+</PageMasthead>
 
 <div class="upcsg-page upcsg-page--after-hero">
 
@@ -124,7 +117,6 @@
     }
 
     <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
 
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
             <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Missing something?</p>
@@ -148,13 +140,6 @@
     private List<string> _categories = [];
     private string? _activeCategory;
     private bool _loading = true;
-
-    private IReadOnlyList<string> Ticker =>
-        _all.Count == 0
-            ? ["Competitions", "Milestones", "Recognition", "Verified by the ExeCom"]
-            : [.. _categories
-                .Concat(_all.Select(a => a.Year.ToString()).Distinct().OrderByDescending(y => y))
-                .Append("Verified by the ExeCom")];
 
     private AchievementDto? Lead => _all
         .OrderByDescending(a => a.Year)

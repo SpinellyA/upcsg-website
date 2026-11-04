@@ -11,38 +11,37 @@
 <PageTitle>UPCSG</PageTitle>
 
 <section class="upcsg-hero" @ref="_hero">
-    <div class="upcsg-flare upcsg-hero__flare--orchid"></div>
-    <img class="upcsg-hero__burst" src="img/starburst.png" alt="" aria-hidden="true" />
-
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 18%; right: 14%;"><span class="upcsg-star" style="width: 1.5rem; height: 1.5rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--delay-1" style="top: 38%; right: 28%;"><span class="upcsg-star" style="width: 0.7rem; height: 0.7rem;"></span></span>
-    <span class="upcsg-sparkle upcsg-sparkle--lilac upcsg-sparkle--delay-2" style="bottom: 26%; right: 20%;"><span class="upcsg-star" style="width: 1.1rem; height: 1.1rem;"></span></span>
-
     <div class="upcsg-hero__inner">
-        <div class="upcsg-hero__content">
-            <p class="upcsg-eyebrow"><span class="upcsg-star"></span> A.Y. 2026&ndash;2027</p>
-            <h1 class="upcsg-hero__title">
-                UP Computer<br />Science <span class="upcsg-gradient-text">Guild</span>
-            </h1>
+        <p class="upcsg-hero__index">
+            <span class="upcsg-hero__index-lead"><span class="upcsg-star" aria-hidden="true"></span> UP Cebu</span>
+            <span>A.Y. 2026&ndash;2027</span>
+            <span>@DateTime.Today.ToString("dddd, MMMM d")</span>
+        </p>
+
+        <h1 class="upcsg-hero__title">
+            <span class="upcsg-hero__line">UP Computer</span>
+            <span class="upcsg-hero__line">Science <em>Guild</em></span>
+        </h1>
+
+        <div class="upcsg-hero__foot">
             <p class="upcsg-hero__lede">
                 A diverse and dynamic community at UP Cebu nurturing the next generation of
                 trailblazing technology leaders.
             </p>
             <div class="upcsg-hero__actions">
-                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="about">
-                    Learn More
+                <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="events">
+                    See what's on
                 </MudButton>
-                <MudButton Variant="Variant.Outlined" Size="Size.Large" Class="upcsg-ghost-button px-8" Href="events">
-                    See Events
+                <MudButton Variant="Variant.Outlined" Size="Size.Large" Class="upcsg-ghost-button px-7" Href="about">
+                    Meet the guild
                 </MudButton>
             </div>
         </div>
     </div>
 
-    <a class="upcsg-hero__scroll" href="#explore">
-        <span>Explore</span>
-        <span>&darr;</span>
-    </a>
+    <div class="upcsg-hero__chart">
+        <SkyChart Points="_sky" />
+    </div>
 </section>
 
 <Marquee Items="@Ticker" DurationSeconds="46" Class="upcsg-marquee--hero" />
@@ -188,8 +187,8 @@
         }
         else
         {
-            <div class="upcsg-cardgrid upcsg-cardgrid--4">
-                @foreach (var (item, i) in _merch.Take(4).Select((m, i) => (m, i)))
+            <div class="upcsg-cardgrid upcsg-cardgrid--3">
+                @foreach (var (item, i) in _merch.Take(3).Select((m, i) => (m, i)))
                 {
                     <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
                         <MerchCard Item="item" />
@@ -231,7 +230,6 @@
     }
 
     <section class="upcsg-section upcsg-closing">
-        <div class="upcsg-flare upcsg-closing__flare"></div>
 
         <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
             <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Already one of us</p>
@@ -268,6 +266,8 @@
     private MemberDto? _selected;
     private MemberDto? _leaving;
     private int _transition;
+
+    private List<SkyChart.SkyPoint> _sky = [];
 
     private int _execCount;
     private bool _loading = true;
@@ -337,6 +337,8 @@
         // has passed is not one; the archive lives on the opportunities page.
         _opportunities = [.. (await OpportunityFeed.GetAllAsync()).Where(o => !o.IsClosed)];
 
+        _sky = BuildSky();
+
         _achievements = await AchievementService.GetAchievementsAsync();
         _latestAchievement = _achievements
             .OrderByDescending(a => a.Year)
@@ -362,6 +364,36 @@
         {
             await Motion.TrackScrollAsync(_hero);
         }
+    }
+
+    private List<SkyChart.SkyPoint> BuildSky()
+    {
+        var points = new List<SkyChart.SkyPoint>();
+
+        foreach (var evt in _events.Where(e => e.IsScheduled))
+        {
+            if (EventTiming.Starts(evt) is { } starts)
+            {
+                points.Add(new(starts.Date, evt.Title, $"events/{evt.Id}", SkyChart.SkyKind.Event));
+            }
+        }
+
+        foreach (var item in _opportunities.Where(o => !o.IsDateTentative))
+        {
+            if (item.ClosesAt is { } closes)
+            {
+                points.Add(new(closes.ToLocalTime().Date, item.Title, $"opportunities/{item.Id}",
+                    SkyChart.SkyKind.Deadline, item.DaysLeft is <= 7));
+            }
+
+            if (item.HappensAt is { } happens)
+            {
+                points.Add(new(happens.ToLocalTime().Date, item.Title, $"opportunities/{item.Id}",
+                    SkyChart.SkyKind.Happens));
+            }
+        }
+
+        return points;
     }
 
     private static string FirstParagraph(string? text)

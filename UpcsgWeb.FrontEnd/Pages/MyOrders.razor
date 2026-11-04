@@ -7,16 +7,9 @@
 
 <PageTitle>My Orders - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guild store</p>
-        <h1 class="upcsg-banner__title">My Orders</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            Everything you've ordered, and where each one stands.
-        </p>
-    </div>
-</section>
+<PageMasthead Section="My orders" Meta="@(["Guild store"])" Title="Your" Accent="orders" Horizon="false">
+    <Lede>Everything you've ordered, and where each one stands.</Lede>
+</PageMasthead>
 
 <div class="upcsg-page upcsg-page--after-hero">
     @if (_loading)

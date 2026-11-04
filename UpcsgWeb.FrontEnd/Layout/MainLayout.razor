@@ -10,39 +10,42 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Class="upcsg-appbar">
-        <a href="" class="upcsg-brand">
-            <img class="upcsg-brand__mark" src="img/upcsg-crest.png" alt="UPCSG crest" />
-            <span class="upcsg-brand__text">UPCSG</span>
+        <a href="" class="upcsg-brand" aria-label="UPCSG home">
+            <img class="upcsg-brand__mark" src="img/upcsg-crest.png" alt="" />
+            <span class="upcsg-brand__text">
+                UPCSG
+                <small>Computer Science Guild</small>
+            </span>
         </a>
 
         <MudSpacer />
 
-        <nav class="upcsg-desktop-nav">
-            <NavLink class="upcsg-navlink" href="" Match="NavLinkMatch.All">Home</NavLink>
-            <NavLink class="upcsg-navlink" href="about">About</NavLink>
-            <NavLink class="upcsg-navlink" href="events">Events</NavLink>
-            <NavLink class="upcsg-navlink" href="opportunities">Opportunities</NavLink>
-            <NavLink class="upcsg-navlink" href="merch">Merch</NavLink>
-            <NavLink class="upcsg-navlink" href="hall-of-fame">Hall of Fame</NavLink>
-            <NavLink class="upcsg-navlink" href="contact">Contact</NavLink>
+        <nav class="upcsg-desktop-nav" aria-label="Site">
+            @foreach (var (href, label) in NavMenu.Links)
+            {
+                <NavLink class="upcsg-navlink" href="@href"
+                         Match="@(href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">@label</NavLink>
+            }
+
+            <span class="upcsg-nav-divider" aria-hidden="true"></span>
 
             <AuthorizeView>
                 <Authorized>
-                    <MudIconButton Icon="@Icons.Material.Filled.ShoppingCart"
-                                   Color="Color.Inherit"
-                                   Title="Your cart"
-                                   Href="cart" />
-
                     <AuthorizeView Policy="ExeCom" Context="admin">
-                        <NavLink class="upcsg-navlink" href="admin">Admin</NavLink>
+                        <NavLink class="upcsg-navlink" href="admin">CMS</NavLink>
                     </AuthorizeView>
 
-                    <MudMenu AnchorOrigin="Origin.TopRight"
-                             TransformOrigin="Origin.TopLeft"
+                    <MudIconButton Icon="@Icons.Material.Outlined.ShoppingBag"
+                                   Class="upcsg-carticon"
+                                   aria-label="Your cart"
+                                   Href="cart" />
+
+                    <MudMenu AnchorOrigin="Origin.BottomRight"
+                             TransformOrigin="Origin.TopRight"
                              PopoverClass="upcsg-usermenu"
                              ListClass="pa-0"
                              AriaLabel="Your account"
-                             Class="ml-2">
+                             Class="ml-1">
 
                         <ActivatorContent Context="menu">
                             <MudAvatar Class="upcsg-useravatar" Size="Size.Medium"
@@ -65,62 +68,129 @@
 
                             <MudDivider />
 
-                            <MudMenuItem Href="orders" Icon="@Icons.Material.Filled.Receipt">My Orders</MudMenuItem>
-                            <MudMenuItem Href="cart" Icon="@Icons.Material.Filled.ShoppingCart">Cart</MudMenuItem>
+                            <MudMenuItem Href="orders" Icon="@Icons.Material.Outlined.Receipt">My orders</MudMenuItem>
+                            <MudMenuItem Href="cart" Icon="@Icons.Material.Outlined.ShoppingBag">Cart</MudMenuItem>
 
                             <MudDivider />
 
-                            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="SignOutAsync">
+                            <MudMenuItem Icon="@Icons.Material.Outlined.Logout" OnClick="SignOutAsync">
                                 Sign out
                             </MudMenuItem>
                         </ChildContent>
                     </MudMenu>
                 </Authorized>
                 <NotAuthorized>
-                    <NavLink class="upcsg-navlink ml-2" href="login">Sign in</NavLink>
+                    <NavLink class="upcsg-navlink upcsg-navlink--signin" href="login">Sign in</NavLink>
                 </NotAuthorized>
             </AuthorizeView>
-
         </nav>
 
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.End" OnClick="@DrawerToggle" Class="upcsg-mobile-toggle" />
+        <MudIconButton Icon="@Icons.Material.Rounded.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.End"
+                       aria-label="Open menu"
+                       OnClick="@DrawerToggle"
+                       Class="upcsg-mobile-toggle" />
     </MudAppBar>
 
-    <MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.End" Variant="DrawerVariant.Temporary" Elevation="2">
-        <MudDrawerHeader>
-            <MudText Typo="Typo.h6" Class="upcsg-heading">UPCSG</MudText>
-        </MudDrawerHeader>
-        <NavMenu />
-        <MudDivider Class="my-2" />
+    <MudDrawer @bind-Open="_drawerOpen"
+               Anchor="Anchor.End"
+               Variant="DrawerVariant.Temporary"
+               Elevation="0"
+               Width="min(86vw, 340px)"
+               Class="upcsg-drawer">
+        <div class="upcsg-drawer__head">
+            <a href="" class="upcsg-brand" @onclick="CloseDrawer">
+                <img class="upcsg-brand__mark" src="img/upcsg-crest.png" alt="" />
+                <span class="upcsg-brand__text">UPCSG</span>
+            </a>
+            <MudIconButton Icon="@Icons.Material.Rounded.Close"
+                           Color="Color.Inherit"
+                           aria-label="Close menu"
+                           OnClick="CloseDrawer" />
+        </div>
 
-        <AuthorizeView>
-            <Authorized>
-                <MudListItem T="string" Href="cart" Icon="@Icons.Material.Filled.ShoppingCart">Cart</MudListItem>
-                <MudListItem T="string" Href="orders" Icon="@Icons.Material.Filled.Receipt">My Orders</MudListItem>
+        <NavMenu OnNavigate="CloseDrawer" />
 
-                <AuthorizeView Policy="ExeCom" Context="admin">
-                    <MudListItem T="string" Href="admin" Icon="@Icons.Material.Filled.AdminPanelSettings">Admin</MudListItem>
-                </AuthorizeView>
+        <div class="upcsg-drawer__account">
+            <AuthorizeView>
+                <Authorized>
+                    <p class="upcsg-drawer__who">Signed in as @context.User.Identity?.Name</p>
+                    <a class="upcsg-drawer__small" href="cart" @onclick="CloseDrawer">
+                        <MudIcon Icon="@Icons.Material.Outlined.ShoppingBag" Size="Size.Small" /> Cart
+                    </a>
+                    <a class="upcsg-drawer__small" href="orders" @onclick="CloseDrawer">
+                        <MudIcon Icon="@Icons.Material.Outlined.Receipt" Size="Size.Small" /> My orders
+                    </a>
 
-                <MudListItem T="string" Href="login" Icon="@Icons.Material.Filled.AccountCircle">
-                    @context.User.Identity?.Name
-                </MudListItem>
-                <MudListItem T="string" OnClick="SignOutAsync" Icon="@Icons.Material.Filled.Logout">Sign out</MudListItem>
-            </Authorized>
-            <NotAuthorized>
-                <MudListItem T="string" Href="login" Icon="@Icons.Material.Filled.Login">Sign in</MudListItem>
-            </NotAuthorized>
-        </AuthorizeView>
+                    <AuthorizeView Policy="ExeCom" Context="admin">
+                        <a class="upcsg-drawer__small" href="admin" @onclick="CloseDrawer">
+                            <MudIcon Icon="@Icons.Material.Outlined.Dashboard" Size="Size.Small" /> CMS
+                        </a>
+                    </AuthorizeView>
 
-        <MudListItem T="string" OnClick="@DarkModeToggle" Icon="@(DarkLightModeButtonIcon)">Toggle theme</MudListItem>
+                    <button type="button" class="upcsg-drawer__small" @onclick="SignOutAsync">
+                        <MudIcon Icon="@Icons.Material.Outlined.Logout" Size="Size.Small" /> Sign out
+                    </button>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="upcsg-drawer__small" href="login" @onclick="CloseDrawer">
+                        <MudIcon Icon="@Icons.Material.Outlined.Login" Size="Size.Small" /> Sign in
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
     </MudDrawer>
 
     <MudMainContent Class="upcsg-main">
         @Body
 
-        <div class="upcsg-container" style="padding-inline: 1.5rem;">
-            <footer class="upcsg-footer">
-                <span>&copy; @DateTime.Now.Year UP Computer Science Guild &middot; University of the Philippines Cebu</span>
+        <footer class="upcsg-footer">
+            <div class="upcsg-footer__inner">
+                <div class="upcsg-footer__brand">
+                    <div class="upcsg-footer__mark">
+                        <img src="img/upcsg-crest.png" alt="" />
+                        <div>
+                            <p class="upcsg-footer__name">UP Computer Science <em>Guild</em></p>
+                            <p class="upcsg-footer__where">
+                                The student organization for Computer Science majors at the
+                                University of the Philippines Cebu.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upcsg-footer__col">
+                    <h2>The guild</h2>
+                    <ul>
+                        <li><a href="about">About</a></li>
+                        <li><a href="events">Events</a></li>
+                        <li><a href="opportunities">Opportunities</a></li>
+                        <li><a href="hall-of-fame">Hall of Fame</a></li>
+                    </ul>
+                </div>
+
+                <div class="upcsg-footer__col">
+                    <h2>Store</h2>
+                    <ul>
+                        <li><a href="merch">Merch</a></li>
+                        <li><a href="cart">Cart</a></li>
+                        <li><a href="orders">My orders</a></li>
+                    </ul>
+                </div>
+
+                <div class="upcsg-footer__col">
+                    <h2>Reach us</h2>
+                    <ul>
+                        <li><a href="https://facebook.com/upcsg" target="_blank" rel="noopener">Facebook</a></li>
+                        <li><a href="https://instagram.com/upcsg" target="_blank" rel="noopener">Instagram</a></li>
+                        <li><a href="contact">All channels</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="upcsg-footer__base">
+                <span>&copy; @DateTime.Now.Year UP Computer Science Guild &middot; UP Cebu</span>
                 <span class="upcsg-footer__contact">
                     <a href="mailto:upcsg.upcebu@gmail.com">upcsg.upcebu@gmail.com</a>
 
@@ -132,14 +202,13 @@
                         <SpinellyMark />
                     </a>
                 </span>
-            </footer>
-        </div>
+            </div>
+        </footer>
     </MudMainContent>
 </MudLayout>
 
 @code {
     private bool _drawerOpen = false;
-    private bool _isDarkMode = true;
     private MudTheme? _theme;
 
     protected override void OnInitialized()
@@ -150,18 +219,19 @@
         {
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
-            LayoutProperties = new LayoutProperties(),
+            LayoutProperties = new LayoutProperties { DefaultBorderRadius = "8px" },
             Typography = new Typography
             {
-                Default = new DefaultTypography { FontFamily = ["Inter", "Helvetica Now", "Neue Montreal", "sans-serif"] },
-                H1 = new H1Typography { FontFamily = ["Playfair Display", "Noto Serif", "serif"] },
-                H2 = new H2Typography { FontFamily = ["Playfair Display", "Noto Serif", "serif"] },
-                H3 = new H3Typography { FontFamily = ["Playfair Display", "Noto Serif", "serif"] },
-                H4 = new H4Typography { FontFamily = ["Poppins", "Aileron", "sans-serif"] },
-                H5 = new H5Typography { FontFamily = ["Poppins", "Aileron", "sans-serif"] },
-                H6 = new H6Typography { FontFamily = ["Poppins", "Aileron", "sans-serif"] },
-                Subtitle1 = new Subtitle1Typography { FontFamily = ["Noto Serif", "serif"] },
-                Subtitle2 = new Subtitle2Typography { FontFamily = ["Noto Serif", "serif"] },
+                Default = new DefaultTypography { FontFamily = ["Hanken Grotesk", "Helvetica Now", "sans-serif"] },
+                H1 = new H1Typography { FontFamily = ["Bodoni Moda", "Noto Serif", "serif"] },
+                H2 = new H2Typography { FontFamily = ["Bodoni Moda", "Noto Serif", "serif"] },
+                H3 = new H3Typography { FontFamily = ["Bodoni Moda", "Noto Serif", "serif"] },
+                H4 = new H4Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
+                H5 = new H5Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
+                H6 = new H6Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
+                Subtitle1 = new Subtitle1Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
+                Subtitle2 = new Subtitle2Typography { FontFamily = ["Hanken Grotesk", "sans-serif"] },
+                Button = new ButtonTypography { FontFamily = ["Hanken Grotesk", "sans-serif"], TextTransform = "none", FontWeight = "600" },
             }
         };
     }
@@ -171,9 +241,9 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    private void DarkModeToggle()
+    private void CloseDrawer()
     {
-        _isDarkMode = !_isDarkMode;
+        _drawerOpen = false;
     }
 
     private async Task SignOutAsync()
@@ -193,11 +263,6 @@
         var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
         return string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
     }
-
-    private static string FirstName(string? name) =>
-        string.IsNullOrWhiteSpace(name)
-            ? "Account"
-            : name.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0];
 
     private readonly PaletteLight _lightPalette = new()
     {
@@ -225,12 +290,12 @@
         Secondary = "#F6C875",
         SecondaryDarken = "#E28D39",
         Tertiary = "#CCAEDE",
-        Surface = "#522657",
+        Surface = "#1C1650",
         Background = "#16113A",
-        BackgroundGray = "#1F1750",
+        BackgroundGray = "#191347",
         AppbarText = "#CAC5E5",
-        AppbarBackground = "rgba(22,17,58,0.85)",
-        DrawerBackground = "#16113A",
+        AppbarBackground = "rgba(15,11,43,0.72)",
+        DrawerBackground = "#0F0B2B",
         DrawerText = "#F6FFE9",
         DrawerIcon = "#CAC5E5",
         ActionDefault = "#CAC5E5",
@@ -239,19 +304,17 @@
         TextPrimary = "#F6FFE9",
         TextSecondary = "#CAC5E5",
         TextDisabled = "#ffffff33",
-        Info = "#4a86ff",
-        Success = "#3dcb6c",
+        Info = "#CCAEDE",
+        InfoContrastText = "#16113A",
+        Success = "#7BD8A6",
+        SuccessContrastText = "#16113A",
         Warning = "#F6C875",
-        Error = "#ff3f5f",
-        LinesDefault = "#3a2f6b",
-        TableLines = "#3a2f6b",
-        Divider = "#3a2f6b",
+        WarningContrastText = "#16113A",
+        Error = "#FF6B7F",
+        LinesDefault = "#3a3170",
+        LinesInputs = "#4a3f85",
+        TableLines = "#2e2763",
+        Divider = "#2e2763",
         OverlayLight = "#1e1e2d80",
-    };
-
-    public string DarkLightModeButtonIcon => _isDarkMode switch
-    {
-        true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode,
     };
 }

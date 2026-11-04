@@ -6,21 +6,15 @@
 
 <PageTitle>Events - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 32%; right: 36%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
-
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Events</p>
-        <h1 class="upcsg-banner__title">@_month.ToString("MMMM yyyy")</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            We publish the current month only. Later months are still being planned and
-            would only change on you.
-        </p>
-    </div>
-</section>
-
-<Marquee Items="@Ticker" DurationSeconds="50" Class="upcsg-marquee--hero" />
+<PageMasthead Section="Events"
+              Meta="@([_loading ? null : (_events.Count == 0 ? "Nothing dated yet" : $"{_events.Count} scheduled"), _comingSoon.Count > 0 ? $"{_comingSoon.Count} coming soon" : null])"
+              Title="@_month.ToString("MMMM")"
+              Accent="@_month.ToString("yyyy")">
+    <Lede>
+        We publish the current month only. Later months are still being planned and would
+        only change on you.
+    </Lede>
+</PageMasthead>
 
 <div class="upcsg-page upcsg-page--after-hero">
 
@@ -211,11 +205,6 @@
 @code {
     private static readonly string[] DayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    private static readonly string[] Ticker =
-    [
-        "General assemblies", "Industry nights", "CodeSprints", "Workshops",
-        "Orientations", "Merch drops", "Socials", "UP Cebu",
-    ];
 
     private DateTime _month = DateTime.Today;
 

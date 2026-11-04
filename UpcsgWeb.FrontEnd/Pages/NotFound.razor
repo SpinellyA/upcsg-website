@@ -1,9 +1,18 @@
 @page "/not-found"
 @layout MainLayout
 
-<PageTitle>Not Found</PageTitle>
+<PageTitle>Not found - UPCSG</PageTitle>
 
-<MudText Typo="Typo.h3" GutterBottom="true">404 - Page Not Found</MudText>
-<MudText Class="mb-8">Sorry, the content you are looking for does not exist.</MudText>
-
-<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">Go to Home</MudButton>
+<div class="upcsg-page">
+    <section class="upcsg-lost">
+        <span class="upcsg-lost__code">404 &middot; Off the chart</span>
+        <h1 class="upcsg-lost__title">Nothing at <em>these coordinates</em></h1>
+        <p>
+            The page may have moved, or the link was mistyped. Everything the guild has
+            published is reachable from the home page.
+        </p>
+        <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="">
+            Back to home
+        </MudButton>
+    </section>
+</div>

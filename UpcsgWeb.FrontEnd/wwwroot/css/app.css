@@ -19,7 +19,7 @@
 }
 
     #blazor-error-ui .reload {
-        color: #594AE2;
+        color: #CCAEDE;
         font-weight: 600;
         margin-left: 0.5rem;
         text-decoration: none;
@@ -131,11 +131,11 @@
 .upcsg-splash__word {
     position: relative;
     margin: 0;
-    font-family: var(--upcsg-font-heading, 'Poppins', sans-serif);
-    font-size: clamp(0.7rem, 2.2vw, 0.85rem);
+    font-family: var(--upcsg-font-display, Georgia, serif);
+    font-style: italic;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
     font-weight: 600;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: rgba(246, 255, 233, 0.72);
 }
 
@@ -163,8 +163,8 @@
 .upcsg-splash__pct {
     position: relative;
     margin: 0;
-    font-family: var(--upcsg-font-body, 'Inter', sans-serif);
-    font-size: 0.75rem;
+    font-family: var(--upcsg-font-mono, monospace);
+    font-size: 0.7rem;
     font-variant-numeric: tabular-nums;
     color: rgba(202, 197, 229, 0.75);
 }
@@ -186,7 +186,7 @@
     position: relative;
     max-width: 30rem;
     margin: 0;
-    font-family: var(--upcsg-font-body, 'Inter', sans-serif);
+    font-family: var(--upcsg-font-body, sans-serif);
     font-size: 0.8rem;
     line-height: 1.6;
     color: rgba(202, 197, 229, 0.85);

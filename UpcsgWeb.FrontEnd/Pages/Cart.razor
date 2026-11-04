@@ -8,16 +8,9 @@
 
 <PageTitle>Your Cart - UPCSG</PageTitle>
 
-<section class="upcsg-banner">
-    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
-    <div class="upcsg-banner__inner">
-        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guild store</p>
-        <h1 class="upcsg-banner__title">Your Cart</h1>
-        <p class="upcsg-lede" style="margin-bottom: 0;">
-            Review your items, then check out and send your GCash receipt.
-        </p>
-    </div>
-</section>
+<PageMasthead Section="Cart" Meta="@(["Guild store", "Pay with GCash"])" Title="Your" Accent="cart" Horizon="false">
+    <Lede>Review your items, then check out and send your GCash receipt.</Lede>
+</PageMasthead>
 
 <div class="upcsg-page upcsg-page--after-hero">
     @if (_loading)

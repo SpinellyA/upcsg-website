@@ -10,23 +10,25 @@
 
 @if (_loading)
 {
-    <Chapter Field="paper" Class="upcsg-chapter--first">
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="520px" Class="upcsg-skeleton" />
-    </Chapter>
+    <div class="upcsg-page">
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    </div>
 }
 else if (_item is null)
 {
-    <Chapter Field="gold" Class="upcsg-chapter--first">
-        <div class="upcsg-lost">
-            <h1 class="upcsg-lost__title">Item not found</h1>
-            <p>It may have been taken down, or the link may be wrong.</p>
-            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="merch">See the store</MudButton>
-        </div>
-    </Chapter>
+    <div class="upcsg-page">
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that item. It may have been taken down, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="merch">
+            Back to the store
+        </MudButton>
+    </div>
 }
 else
 {
-    <Chapter Field="paper" Class="upcsg-chapter--first">
+    <div class="upcsg-page upcsg-page--tight">
+        <MudLink Href="merch" Class="mb-4 d-inline-block">&larr; Guild store</MudLink>
 
         <section class="upcsg-product">
 
@@ -58,18 +60,14 @@ else
             </div>
 
             <div class="upcsg-buy">
-                <div>
-                    <h1 class="upcsg-buy__name">@_item.Name</h1>
-                    <p class="upcsg-buy__kind">Official UPCSG merch from the guild store</p>
-                    <a class="upcsg-textlink upcsg-product__back" href="merch"><span aria-hidden="true">&larr;</span> Back to the store</a>
-                </div>
+                <h1 class="upcsg-buy__name">@_item.Name</h1>
 
                 <p class="upcsg-buy__price">
                     @if (_selected is null && _item.HasPriceRange)
                     {
                         <span class="upcsg-buy__from">from</span>
                     }
-                    <span>&#8369;@UnitPrice.ToString("N2")</span>
+                    <span class="upcsg-gradient-text">&#8369;@UnitPrice.ToString("N2")</span>
 
                     @if (_item.HasActiveSale && ListUnitPrice > UnitPrice)
                     {
@@ -216,36 +214,43 @@ else
 
         @if (!string.IsNullOrWhiteSpace(_item.Description))
         {
-            <div class="upcsg-readable upcsg-product__about">
-                <h2>Details</h2>
-                <div class="upcsg-readable__body">
-                    @foreach (var paragraph in Prose.Paragraphs(_item.Description))
+            <section class="upcsg-section">
+                <Reveal Variant="Reveal.RevealMotion.Up">
+                    <div class="upcsg-surface upcsg-product__about">
+                        <p class="upcsg-kicker">
+                            <span class="upcsg-star upcsg-star--tiny" aria-hidden="true"></span> Details
+                        </p>
+                        @foreach (var paragraph in Prose.Paragraphs(_item.Description))
+                        {
+                            <p class="upcsg-product__para">@paragraph</p>
+                        }
+                    </div>
+                </Reveal>
+            </section>
+        }
+
+        @if (_more.Count > 0)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="Also in the store" Title="More to rep">
+                    <Action>
+                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="merch">
+                            Shop all
+                        </MudButton>
+                    </Action>
+                </SectionHeading>
+
+                <div class="upcsg-cardgrid upcsg-cardgrid--4 upcsg-recordgrid">
+                    @foreach (var (other, i) in _more.Select((m, i) => (m, i)))
                     {
-                        <p>@paragraph</p>
+                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                            <MerchCard Item="other" />
+                        </Reveal>
                     }
                 </div>
-            </div>
+            </section>
         }
-    </Chapter>
-
-    @if (_more.Count > 0)
-    {
-        <Chapter Field="night">
-            <SectionHeading Title="More from the store">
-                <Action>
-                    <a class="upcsg-textlink" href="merch">The whole store <span aria-hidden="true">&rarr;</span></a>
-                </Action>
-            </SectionHeading>
-            <div class="upcsg-specimens">
-                @foreach (var (other, i) in _more.Select((m, i) => (m, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 70)">
-                        <MerchCard Item="other" />
-                    </Reveal>
-                }
-            </div>
-        </Chapter>
-    }
+    </div>
 }
 
 @code {

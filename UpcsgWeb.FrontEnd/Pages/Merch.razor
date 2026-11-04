@@ -5,98 +5,139 @@
 
 <PageTitle>Merch - UPCSG</PageTitle>
 
-<PageMasthead Section="Merch"
-              Field="amethyst"
-              Meta="@([_loading ? null : $"{All.Count} item{(All.Count == 1 ? "" : "s")}", "Pay by GCash or cash"])"
-              Title="The guild store">
-    <Lede>
-        Shirts and totes in the guild's colours. Pick your size, order here, and claim it from an
-        officer once it's ready.
-    </Lede>
-    <Actions>
-        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="merch#items">Browse the items</MudButton>
-    </Actions>
-</PageMasthead>
+<section class="upcsg-banner">
+    <img class="upcsg-banner__crest" src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+    <span class="upcsg-sparkle upcsg-sparkle--gold" style="top: 30%; right: 36%;"><span class="upcsg-star" style="width: 1rem; height: 1rem;"></span></span>
 
-@if (_loading)
-{
-    <Chapter Field="plum">
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="520px" Class="upcsg-skeleton" />
-    </Chapter>
-}
-else if (All.Count == 0)
-{
-    <Chapter Field="plum">
-        <SectionHeading Title="The store is empty" />
-        <div class="upcsg-empty">
-            <p>
-                Nothing is up for order right now. Drops get announced on our socials first, and
-                they'll show up here as soon as the window opens.
-            </p>
-        </div>
-    </Chapter>
-}
-else
-{
-    <div id="items">
-        @foreach (var (item, i) in All.Select((m, i) => (m, i)))
-        {
-            <MerchChapter Item="item" Field="@Fields[i % Fields.Length]" />
-        }
-    </div>
-}
-
-<Chapter Field="paper">
-    <SectionHeading Title="How ordering works" Kicker="From cart to claim" />
-
-    <div class="upcsg-steps">
-        <Reveal Variant="Reveal.RevealMotion.Up" Delay="0" Class="upcsg-step">
-            <h3 class="upcsg-step__title">Choose and add to cart</h3>
-            <p class="upcsg-step__text">
-                Open an item, pick your size or variant, and add it. You'll sign in with your UP
-                account so officers know whose order it is.
-            </p>
-        </Reveal>
-        <Reveal Variant="Reveal.RevealMotion.Up" Delay="90" Class="upcsg-step">
-            <h3 class="upcsg-step__title">Check out and pay</h3>
-            <p class="upcsg-step__text">
-                Place the order, then pay by GCash and send the reference, or choose cash and pay
-                an officer in person.
-            </p>
-        </Reveal>
-        <Reveal Variant="Reveal.RevealMotion.Up" Delay="180" Class="upcsg-step">
-            <h3 class="upcsg-step__title">Claim it on release day</h3>
-            <p class="upcsg-step__text">
-                An officer confirms your payment. Follow the order under My orders and pick it up
-                on the announced release date.
-            </p>
-        </Reveal>
-    </div>
-</Chapter>
-
-<Chapter Field="night" Class="upcsg-close">
-    <h2 class="upcsg-close__title">
-        <span>Wrong size?</span>
-        <span>We'll fix it.</span>
-    </h2>
-    <div class="upcsg-close__foot">
-        <p>
-            A payment that didn't go through, or a question about a drop: message the guild and an
-            officer will pick it up.
+    <div class="upcsg-banner__inner">
+        <p class="upcsg-eyebrow"><span class="upcsg-star"></span> Guild store</p>
+        <h1 class="upcsg-banner__title">Merch</h1>
+        <p class="upcsg-lede" style="margin-bottom: 0;">
+            Rep the guild. Pick your size, order online, and pay with GCash. Officers
+            confirm each order and tell you when to claim it.
         </p>
-        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="contact">Message the guild</MudButton>
     </div>
-</Chapter>
+</section>
+
+<Marquee Items="@Ticker" DurationSeconds="44" Class="upcsg-marquee--hero" />
+
+<div class="upcsg-page upcsg-page--after-hero">
+
+    @if (_loading)
+    {
+        <section class="upcsg-section">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="upcsg-skeleton mb-6" />
+            <div class="upcsg-cardgrid upcsg-cardgrid--4">
+                @for (var i = 0; i < 4; i++)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" Class="upcsg-skeleton" />
+                }
+            </div>
+        </section>
+    }
+    else if (_featured is null)
+    {
+        <section class="upcsg-section">
+            <Reveal Variant="Reveal.RevealMotion.Fade">
+                <div class="upcsg-empty upcsg-empty--tall">
+                    <img src="img/upcsg-crest.png" alt="" aria-hidden="true" />
+                    <h2 class="upcsg-title-xl">The store is empty</h2>
+                    <p>
+                        Nothing is up for order right now. Drops get announced on our socials first,
+                        and they'll show up here as soon as the window opens.
+                    </p>
+                    <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="contact">
+                        Get in touch
+                    </MudButton>
+                </div>
+            </Reveal>
+        </section>
+    }
+    else
+    {
+        <section class="upcsg-section">
+            <Reveal Variant="Reveal.RevealMotion.Scale">
+                <MerchCard Item="_featured" Variant="MerchCard.Density.Feature" />
+            </Reveal>
+        </section>
+
+        @if (_catalog.Count > 0)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="@($"{_catalog.Count} more item{(_catalog.Count == 1 ? "" : "s")}")"
+                                Title="The full catalog" />
+
+                <div class="upcsg-cardgrid upcsg-cardgrid--4 upcsg-recordgrid">
+                    @foreach (var (item, i) in _catalog.Select((m, i) => (m, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                            <MerchCard Item="item" />
+                        </Reveal>
+                    }
+                </div>
+            </section>
+        }
+    }
+
+    <section class="upcsg-section upcsg-band">
+        <SectionHeading Kicker="From cart to claim" Title="How ordering works" />
+
+        <div class="upcsg-steps">
+            <div class="upcsg-step">
+                <span class="upcsg-step__num upcsg-gradient-text">01</span>
+                <h3 class="upcsg-step__title">Pick and add to cart</h3>
+                <p class="upcsg-step__text">
+                    Open an item, choose your size or variant, and add it. You'll need to be
+                    signed in with your UP account so officers know whose order it is.
+                </p>
+            </div>
+            <div class="upcsg-step">
+                <span class="upcsg-step__num upcsg-gradient-text">02</span>
+                <h3 class="upcsg-step__title">Check out and send proof</h3>
+                <p class="upcsg-step__text">
+                    Review your cart, place the order, then pay by GCash and upload the receipt.
+                    Your order sits as awaiting payment until you do.
+                </p>
+            </div>
+            <div class="upcsg-step">
+                <span class="upcsg-step__num upcsg-gradient-text">03</span>
+                <h3 class="upcsg-step__title">Officers confirm, then you claim</h3>
+                <p class="upcsg-step__text">
+                    An officer checks the receipt and confirms your order. You can follow its
+                    status under My Orders, and claim it on the announced release date.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="upcsg-section upcsg-closing">
+        <div class="upcsg-flare upcsg-closing__flare"></div>
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-closing__inner">
+            <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> Something not right?</p>
+            <h2 class="upcsg-title-xl">We'll sort it out</h2>
+            <p class="upcsg-lede">
+                Wrong size, a payment that didn't go through, or a question about a drop:
+                message the guild and an officer will pick it up.
+            </p>
+            <MudButton Variant="Variant.Filled" Size="Size.Large" Class="upcsg-cta-button px-8" Href="contact">
+                Get in Touch
+            </MudButton>
+        </Reveal>
+    </section>
+
+</div>
 
 @code {
     private MerchItemDto? _featured;
     private List<MerchItemDto> _catalog = [];
-
-    private static readonly string[] Fields = ["plum", "gold", "peri", "ultra"];
-
-    private List<MerchItemDto> All => _featured is null ? _catalog : [_featured, .. _catalog];
     private bool _loading = true;
 
+    private static readonly string[] Ticker =
+    [
+        "Limited drops", "Pre-orders", "GCash", "Claim on campus",
+        "Sized to fit", "Officer-verified", "UP Cebu",
+    ];
 
     protected override async Task OnInitializedAsync()
     {

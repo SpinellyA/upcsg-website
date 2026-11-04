@@ -2,7 +2,7 @@
 @inject IDialogService Dialogs
 
 <button type="button"
-        class="upcsg-membercard upcsg-membercard--@Variant.ToString().ToLowerInvariant() upcsg-membercard--tint-@(Tint % 4)"
+        class="upcsg-membercard upcsg-membercard--@Variant.ToString().ToLowerInvariant() @(Flip ? "upcsg-membercard--flip" : null)"
         aria-label="@($"Read {Member.Name}'s profile, {Member.Role}")"
         @onclick="OpenAsync">
 
@@ -12,13 +12,22 @@
                  ShowInitials="true"
                  Class="upcsg-membercard__portrait" />
 
-    <span class="upcsg-membercard__name">@Member.Name</span>
-    <span class="upcsg-membercard__role">@Member.Role</span>
+    <span class="upcsg-membercard__body">
+        <span class="upcsg-membercard__role">@Member.Role</span>
+        <span class="upcsg-membercard__name">@Member.Name</span>
 
-    @if (ShowsBio && !string.IsNullOrWhiteSpace(Member.Bio))
-    {
-        <span class="upcsg-membercard__bio">@Member.Bio</span>
-    }
+        @if (Variant != Density.Row && !string.IsNullOrWhiteSpace(Member.Quote))
+        {
+            <span class="upcsg-membercard__quote">&ldquo;@Member.Quote&rdquo;</span>
+        }
+
+        @if (ShowsBio && !string.IsNullOrWhiteSpace(Member.Bio))
+        {
+            <span class="upcsg-membercard__bio">@Member.Bio</span>
+        }
+
+        <span class="upcsg-membercard__more" aria-hidden="true">Read profile &rarr;</span>
+    </span>
 </button>
 
 @code {
@@ -38,8 +47,6 @@
     [Parameter] public Density Variant { get; set; } = Density.Card;
 
     [Parameter] public bool Flip { get; set; }
-
-    [Parameter] public int Tint { get; set; }
 
     private bool ShowsBio => Variant is Density.Spotlight or Density.Showcase;
 

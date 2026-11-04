@@ -1,45 +1,9 @@
 @page "/not-found"
 @layout MainLayout
-@using UpcsgWeb.FrontEnd.Services
-@inject IGuildPhotoService GuildPhotos
 
-<PageTitle>Not found - UPCSG</PageTitle>
+<PageTitle>Not Found</PageTitle>
 
-<Chapter Field="gold" Class="upcsg-chapter--first">
-    <div class="upcsg-lost">
-        <h1 class="upcsg-lost__title">Page not found</h1>
-        <p>
-            It may have moved, or the link was mistyped. This is a page of the UP Computer Science
-            Guild's site; everything it publishes is one click from here.
-        </p>
-        <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="">Go to the home page</MudButton>
-    </div>
+<MudText Typo="Typo.h3" GutterBottom="true">404 - Page Not Found</MudText>
+<MudText Class="mb-8">Sorry, the content you are looking for does not exist.</MudText>
 
-    <div class="upcsg-lost__grid">
-        <nav class="upcsg-lost__links" aria-label="Main sections">
-            <h2>Try one of these</h2>
-            <a href="events">What's on this month</a>
-            <a href="opportunities">Competitions and calls</a>
-            <a href="merch">The guild store</a>
-            <a href="hall-of-fame">Wins on the record</a>
-            <a href="about">About the guild</a>
-        </nav>
-
-        @if (_photos.Count > 0)
-        {
-            <div class="upcsg-pile">
-                @foreach (var photo in _photos.Take(3))
-                {
-                    <figure><img src="@photo.File" alt="Guilders at a UPCSG event" width="600" height="800" loading="lazy" /></figure>
-                }
-            </div>
-        }
-    </div>
-</Chapter>
-
-@code {
-    private List<GuildPhoto> _photos = [];
-
-    protected override async Task OnInitializedAsync() =>
-        _photos = await GuildPhotos.GetAsync();
-}
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/">Go to Home</MudButton>

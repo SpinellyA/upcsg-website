@@ -25,8 +25,7 @@
     {
         <div class="upcsg-section-head">
             <div>
-                <h1 class="upcsg-title-xl">Order #@_order.Reference</h1>
-                <p class="upcsg-subline">
+                <p class="upcsg-kicker">
                     @(string.IsNullOrWhiteSpace(_order.GuilderName)
                         ? $"Guilder {OrderReference.For(_order.UserId)}"
                         : _order.GuilderName)
@@ -40,6 +39,7 @@
                         <text> &middot; last moved @Ago(_order.UpdatedAt)</text>
                     }
                 </p>
+                <h1 class="upcsg-title-xl">Order #@_order.Reference</h1>
                 @if (!string.IsNullOrWhiteSpace(_order.GuilderEmail))
                 {
                     <p class="upcsg-lede">@_order.GuilderEmail</p>

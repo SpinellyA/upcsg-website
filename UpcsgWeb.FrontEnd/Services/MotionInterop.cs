@@ -20,9 +20,6 @@ public class MotionInterop(IJSRuntime js) : IAsyncDisposable
     public async Task TrackScrollAsync(ElementReference element) =>
         await CallAsync("trackScroll", element);
 
-    public async Task TrackChaptersAsync(string headerSelector) =>
-        await CallAsync("trackChapters", headerSelector);
-
     private async Task CallAsync(string method, params object?[] args)
     {
         try

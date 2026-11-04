@@ -10,104 +10,121 @@
 
 @if (_loading)
 {
-    <Chapter Field="paper" Class="upcsg-chapter--first">
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="420px" Class="upcsg-skeleton" />
-    </Chapter>
+    <div class="upcsg-page">
+        <MudProgressLinear Indeterminate="true" Class="my-8" />
+    </div>
 }
 else if (_entry is null)
 {
-    <Chapter Field="gold" Class="upcsg-chapter--first">
-        <div class="upcsg-lost">
-            <h1 class="upcsg-lost__title">Entry not found</h1>
-            <p>It may have been removed, or the link may be wrong.</p>
-            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="hall-of-fame">See the whole record</MudButton>
-        </div>
-    </Chapter>
+    <div class="upcsg-page">
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that entry. It may have been removed, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="hall-of-fame">
+            Back to the Hall of Fame
+        </MudButton>
+    </div>
 }
 else
 {
-    <article class="upcsg-article upcsg-field--paper" data-field="paper">
+    <article class="upcsg-article">
+
         <header class="upcsg-article__head">
-            <div class="upcsg-wrap upcsg-article__headinner">
-                <p class="upcsg-article__kind">
-                    @(string.IsNullOrWhiteSpace(_entry.Category) ? "Win" : _entry.Category), @_entry.Year
+            <div class="upcsg-article__headinner">
+                <p class="upcsg-eyebrow">
+                    <span class="upcsg-star"></span>
+                    @if (!string.IsNullOrWhiteSpace(_entry.Category))
+                    {
+                        <text>@_entry.Category &middot; </text>
+                    }
+                    @_entry.Year
                 </p>
+
                 <h1 class="upcsg-article__title">@_entry.Title</h1>
+
                 @if (Standfirst.Length > 0)
                 {
                     <p class="upcsg-article__standfirst">@Standfirst</p>
                 }
+
                 <div class="upcsg-article__byline">
-                    <span>From the UPCSG Hall of Fame, verified by the ExeCom</span>
+                    <span class="upcsg-article__source">UP Computer Science Guild</span>
+                    <span class="upcsg-article__dot" aria-hidden="true">&middot;</span>
+                    <span>Verified by the ExeCom</span>
+                    <span class="upcsg-article__dot" aria-hidden="true">&middot;</span>
                     <span>@ReadingTime min read</span>
-                </div>
-                <div class="upcsg-article__cta">
-                    <MudButton Variant="Variant.Filled" Class="upcsg-cta-button"
-                               StartIcon="@Icons.Material.Outlined.Link" OnClick="CopyLinkAsync">
-                        Copy link
-                    </MudButton>
                 </div>
             </div>
         </header>
 
-        <div class="upcsg-wrap">
+        <Reveal Variant="Reveal.RevealMotion.Scale">
             <figure class="upcsg-article__figure">
                 <CosmicImage Src="@_entry.ImageUrl"
                              Alt="@_entry.Title"
                              Seed="@_entry.Title"
+                             Badge="@_entry.Year.ToString()"
                              Eager="true"
                              Class="upcsg-article__art" />
+
                 @if (string.IsNullOrWhiteSpace(_entry.ImageUrl))
                 {
                     <figcaption>No photo on file for this entry yet.</figcaption>
                 }
             </figure>
+        </Reveal>
 
-            <div class="upcsg-article__body" style="padding-bottom: var(--upcsg-chapter-pad)">
-                <h2 class="upcsg-article__aside" style="font-size: var(--step-lead); letter-spacing: -0.03em; line-height: 1.1">The story</h2>
-                <div class="upcsg-article__text">
-                    @if (Body.Count == 0)
-                    {
-                        <p class="upcsg-article__para">
-                            This entry hasn't been written up yet. Only the headline is on record.
-                            If you were part of it and can fill in the story,
-                            <MudLink Href="contact">get in touch</MudLink>.
-                        </p>
-                    }
-                    else
-                    {
-                        @foreach (var paragraph in Body)
-                        {
-                            <p class="upcsg-article__para">@paragraph</p>
-                        }
-                    }
+        <div class="upcsg-article__body">
+            @if (Body.Count == 0)
+            {
+                <p class="upcsg-article__para upcsg-article__para--thin">
+                    This entry hasn't been written up yet. Only the headline is on record.
+                    If you were part of it and can fill in the story,
+                    <MudLink Href="contact">get in touch</MudLink>.
+                </p>
+            }
+            else
+            {
+                @foreach (var paragraph in Body)
+                {
+                    <p class="upcsg-article__para">@paragraph</p>
+                }
+            }
 
-                    <div class="upcsg-article__actions">
-                        <a class="upcsg-textlink" href="hall-of-fame"><span aria-hidden="true">&larr;</span> Back to the record</a>
-                    </div>
-                </div>
+            <div class="upcsg-article__actions">
+                <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
+                           StartIcon="@Icons.Material.Outlined.Link" OnClick="CopyLinkAsync">
+                    Copy link
+                </MudButton>
+                <MudButton Variant="Variant.Text" Href="hall-of-fame">
+                    &larr; Back to the record
+                </MudButton>
             </div>
         </div>
     </article>
 
-    @if (_more.Count > 0)
-    {
-        <Chapter Field="night">
-            <SectionHeading Title="More wins" Kicker="Elsewhere on the record">
-                <Action>
-                    <a class="upcsg-textlink" href="hall-of-fame">The whole record <span aria-hidden="true">&rarr;</span></a>
-                </Action>
-            </SectionHeading>
-            <div class="upcsg-wins">
-                @foreach (var (other, i) in _more.Select((a, i) => (a, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 70)">
-                        <AchievementCard Entry="other" />
-                    </Reveal>
-                }
-            </div>
-        </Chapter>
-    }
+    <div class="upcsg-page">
+        @if (_more.Count > 0)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="Elsewhere on the record" Title="More wins">
+                    <Action>
+                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="hall-of-fame">
+                            View all
+                        </MudButton>
+                    </Action>
+                </SectionHeading>
+
+                <div class="upcsg-cardgrid upcsg-cardgrid--3 upcsg-recordgrid">
+                    @foreach (var (other, i) in _more.Select((a, i) => (a, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Scale" Delay="@(i * 70)">
+                            <AchievementCard Entry="other" />
+                        </Reveal>
+                    }
+                </div>
+            </section>
+        }
+    </div>
 }
 
 @code {

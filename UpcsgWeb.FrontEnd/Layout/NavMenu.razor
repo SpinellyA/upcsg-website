@@ -1,26 +1,9 @@
-<nav class="upcsg-drawer__nav" aria-label="Site">
-    @foreach (var (href, label) in Links)
-    {
-        <NavLink class="upcsg-drawer__link"
-                 href="@href"
-                 Match="@(href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)"
-                 @onclick="OnNavigate">
-            @label
-        </NavLink>
-    }
-</nav>
-
-@code {
-    public static readonly (string Href, string Label)[] Links =
-    [
-        ("", "Home"),
-        ("about", "About"),
-        ("events", "Events"),
-        ("opportunities", "Opportunities"),
-        ("merch", "Merch"),
-        ("hall-of-fame", "Hall of Fame"),
-        ("contact", "Contact"),
-    ];
-
-    [Parameter] public EventCallback OnNavigate { get; set; }
-}
+<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="about" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Groups">About</MudNavLink>
+    <MudNavLink Href="events" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Event">Events</MudNavLink>
+    <MudNavLink Href="opportunities" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Explore">Opportunities</MudNavLink>
+    <MudNavLink Href="merch" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Storefront">Merch</MudNavLink>
+    <MudNavLink Href="hall-of-fame" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.EmojiEvents">Hall of Fame</MudNavLink>
+    <MudNavLink Href="contact" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ContactMail">Contact</MudNavLink>
+</MudNavMenu>

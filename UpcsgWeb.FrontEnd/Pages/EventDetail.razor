@@ -10,108 +10,139 @@
 
 @if (_loading)
 {
-    <Chapter Field="night" Class="upcsg-chapter--first">
-        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="420px" Class="upcsg-skeleton" />
-    </Chapter>
+    <div class="upcsg-page">
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="320px" Class="upcsg-skeleton my-6" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Width="60%" />
+        <MudSkeleton SkeletonType="SkeletonType.Text" Width="90%" />
+    </div>
 }
 else if (_event is null)
 {
-    <Chapter Field="gold" Class="upcsg-chapter--first">
-        <div class="upcsg-lost">
-            <h1 class="upcsg-lost__title">Event not found</h1>
-            <p>It may have been removed, or the link may be wrong.</p>
-            <MudButton Variant="Variant.Filled" Class="upcsg-cta-button" Href="events">See this month's events</MudButton>
-        </div>
-    </Chapter>
+    <div class="upcsg-page">
+        <MudAlert Severity="Severity.Warning">
+            We couldn't find that event. It may have been removed, or the link may be wrong.
+        </MudAlert>
+        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6 mt-4" Href="events">
+            Back to Events
+        </MudButton>
+    </div>
 }
 else
 {
-    <section class="upcsg-eventhero" data-field="night">
+    <section class="upcsg-eventhero">
         <CosmicImage Src="@_event.PosterUrl"
                      Alt="@($"Poster for {_event.Title}")"
                      Seed="@_event.Title"
                      Eager="true"
                      Class="upcsg-eventhero__art" />
+
         <div class="upcsg-eventhero__scrim"></div>
 
         <div class="upcsg-eventhero__inner">
-            <p class="upcsg-eventhero__when">@HeroWhen</p>
-            <h1 class="upcsg-eventhero__title">@_event.Title</h1>
-            <p class="upcsg-eventhero__meta">
-                A UP Computer Science Guild event@(string.IsNullOrWhiteSpace(_event.Location) ? "" : $" at {_event.Location}"). @EventTiming.StatusLabel(_event).
+            <p class="upcsg-eyebrow">
+                <span class="upcsg-star"></span>
+                @HeroWhen
             </p>
-            <div class="upcsg-eventhero__actions">
-                <MudButton Variant="Variant.Filled" Class="upcsg-cta-button"
-                           StartIcon="@Icons.Material.Outlined.Share" OnClick="ShareAsync">
-                    Share this event
-                </MudButton>
+            <h1 class="upcsg-eventhero__title">@_event.Title</h1>
+
+            <div class="upcsg-eventhero__meta">
+                <span class="upcsg-statuspill upcsg-statuspill--@EventTiming.StatusSlug(_event)">
+                    @EventTiming.StatusLabel(_event)
+                </span>
+                <span class="upcsg-eventhero__where">
+                    <MudIcon Icon="@Icons.Material.Outlined.Place" Size="Size.Small" />
+                    @_event.Location
+                </span>
             </div>
         </div>
     </section>
 
-    <Chapter Field="paper">
-        <h2 class="upcsg-visually-hidden">At a glance</h2>
-        <div class="upcsg-facts">
-            <Reveal Variant="Reveal.RevealMotion.Up" Class="upcsg-fact">
-                <span class="upcsg-fact__label">When</span>
-                <span class="upcsg-fact__value">@GlanceWhen</span>
-            </Reveal>
-            <Reveal Variant="Reveal.RevealMotion.Up" Delay="80" Class="upcsg-fact">
-                <span class="upcsg-fact__label">Time</span>
-                <span class="upcsg-fact__value">@EventTiming.TimeRange(_event)</span>
-            </Reveal>
-            <Reveal Variant="Reveal.RevealMotion.Up" Delay="160" Class="upcsg-fact">
-                <span class="upcsg-fact__label">Runs for</span>
-                <span class="upcsg-fact__value">@EventTiming.DurationLabel(_event)</span>
-            </Reveal>
-            <Reveal Variant="Reveal.RevealMotion.Up" Delay="240" Class="upcsg-fact">
-                <span class="upcsg-fact__label">Where</span>
-                <span class="upcsg-fact__value">@_event.Location</span>
-            </Reveal>
-        </div>
+    <div class="upcsg-page upcsg-page--after-hero">
+        <MudLink Href="events" Class="mb-4 d-inline-block">&larr; All events this month</MudLink>
 
-        <div class="upcsg-facts__row">
-            <span class="upcsg-facts__countdown">@EventTiming.Countdown(_event)</span>
-        </div>
+        <Reveal Variant="Reveal.RevealMotion.Up">
+            <MudPaper Elevation="0" Class="upcsg-surface upcsg-glance mb-6">
+                <MudGrid Spacing="3">
+                    <MudItem xs="6" md="3">
+                        <p class="upcsg-glance__label">When</p>
+                        <p class="upcsg-glance__value">@GlanceWhen</p>
+                    </MudItem>
 
-        @if (EventTiming.IsOnline(_event))
-        {
-            <p class="upcsg-facts__note">
-                <MudIcon Icon="@Icons.Material.Outlined.Videocam" Size="Size.Small" />
-                Runs online. The joining link goes out in the guild channels closer to the day.
-            </p>
-        }
+                    <MudItem xs="6" md="3">
+                        <p class="upcsg-glance__label">Time</p>
+                        <p class="upcsg-glance__value">@EventTiming.TimeRange(_event)</p>
+                    </MudItem>
 
-        <div class="upcsg-readable" style="margin-top: clamp(64px, 8vw, 128px)">
-            <h2>About this event</h2>
-            <div class="upcsg-readable__body">
+                    <MudItem xs="6" md="3">
+                        <p class="upcsg-glance__label">Runs for</p>
+                        <p class="upcsg-glance__value">@EventTiming.DurationLabel(_event)</p>
+                    </MudItem>
+
+                    <MudItem xs="6" md="3">
+                        <p class="upcsg-glance__label">Where</p>
+                        <p class="upcsg-glance__value">@_event.Location</p>
+                    </MudItem>
+                </MudGrid>
+
+                <MudDivider Class="my-4" />
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap"
+                          AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
+                    <span class="upcsg-glance__countdown upcsg-glance__countdown--@EventTiming.StatusSlug(_event)">
+                        @EventTiming.Countdown(_event)
+                    </span>
+
+                    <MudButton Variant="@(EventTiming.HasEnded(_event) ? Variant.Outlined : Variant.Filled)"
+                               Class="@(EventTiming.HasEnded(_event) ? "upcsg-ghost-button px-6" : "upcsg-cta-button px-6")"
+                               StartIcon="@Icons.Material.Outlined.Share"
+                               OnClick="ShareAsync">
+                        Share
+                    </MudButton>
+                </MudStack>
+
+                @if (EventTiming.IsOnline(_event))
+                {
+                    <p class="upcsg-glance__note">
+                        <MudIcon Icon="@Icons.Material.Outlined.Videocam" Size="Size.Small" />
+                        Runs online. The joining link goes out in the guild channels closer to the day.
+                    </p>
+                }
+            </MudPaper>
+        </Reveal>
+
+        <Reveal Variant="Reveal.RevealMotion.Up" Delay="80">
+            <article class="upcsg-eventbody upcsg-eventbody--wide">
+                <p class="upcsg-kicker"><span class="upcsg-star upcsg-star--tiny"></span> About this event</p>
+
                 @foreach (var paragraph in Paragraphs)
                 {
-                    <p>@paragraph</p>
+                    <p class="upcsg-eventbody__para">@paragraph</p>
                 }
-                <a class="upcsg-textlink" href="events">All events this month <span aria-hidden="true">&rarr;</span></a>
-            </div>
-        </div>
-    </Chapter>
+            </article>
+        </Reveal>
 
-    @if (_others.Count > 0)
-    {
-        <Chapter Field="night">
-            <SectionHeading Title="Also this month" Kicker="@($"{_others.Count} more")">
-                <Action>
-                    <a class="upcsg-textlink" href="events">The calendar <span aria-hidden="true">&rarr;</span></a>
-                </Action>
-            </SectionHeading>
-            <div class="upcsg-menu">
-                @foreach (var (other, i) in _others.Select((o, i) => (o, i)))
-                {
-                    <Reveal Variant="Reveal.RevealMotion.Up" Delay="@(i * 60)">
-                        <EventRow Event="other" />
-                    </Reveal>
-                }
-            </div>
-        </Chapter>
-    }
+        @if (_others.Count > 0)
+        {
+            <section class="upcsg-section">
+                <SectionHeading Kicker="Also on this month" Title="More events">
+                    <Action>
+                        <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6" Href="events">
+                            View calendar
+                        </MudButton>
+                    </Action>
+                </SectionHeading>
+
+                <div class="upcsg-eventlist">
+                    @foreach (var (other, i) in _others.Select((o, i) => (o, i)))
+                    {
+                        <Reveal Variant="Reveal.RevealMotion.Fade" Delay="@(i * 60)">
+                            <EventCard Event="other" Variant="EventCard.Density.Row" Quiet="true" />
+                        </Reveal>
+                    }
+                </div>
+            </section>
+        }
+    </div>
 }
 
 @code {

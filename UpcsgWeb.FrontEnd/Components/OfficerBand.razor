@@ -5,7 +5,7 @@
    nebula, text beside it, a hairline under. Sides alternate down the list. The card
    framing that used to be here put every person in an identical gradient box, which
    made eleven people read as eleven tiles rather than eleven people. *@
-<article class="upcsg-officer @(Flip ? "upcsg-officer--flip" : null)">
+<section class="upcsg-officer @(Flip ? "upcsg-officer--flip" : null)">
     <div class="upcsg-officer__plate">
         <div class="upcsg-officer__bloom" aria-hidden="true"></div>
 
@@ -17,8 +17,8 @@
     </div>
 
     <div class="upcsg-officer__text">
-        <h4 class="upcsg-officer__name">@Member.Name</h4>
         <p class="upcsg-officer__role">@Member.Role</p>
+        <h3 class="upcsg-officer__name">@Member.Name</h3>
 
         @if (!string.IsNullOrWhiteSpace(Member.Quote))
         {
@@ -42,7 +42,7 @@
             </MudButton>
         }
     </div>
-</article>
+</section>
 
 @code {
     [Parameter, EditorRequired] public MemberDto Member { get; set; } = default!;

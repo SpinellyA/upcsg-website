@@ -8,16 +8,7 @@
     </span>
 
     <span class="upcsg-channel__tag">@Label</span>
-    <span class="upcsg-channel__handle">
-        @if (Handle.IndexOf('@') > 0)
-        {
-            @Handle[..Handle.IndexOf('@')]<wbr />@Handle[Handle.IndexOf('@')..]
-        }
-        else
-        {
-            @Handle
-        }
-    </span>
+    <span class="upcsg-channel__handle">@Handle</span>
     <span class="upcsg-channel__meta">@ChildContent</span>
 
     <span class="upcsg-channel__cue">@Cue <span aria-hidden="true">&rarr;</span></span>

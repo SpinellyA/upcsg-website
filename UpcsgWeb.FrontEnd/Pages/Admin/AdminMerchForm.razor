@@ -27,6 +27,7 @@
     {
         <div class="upcsg-section-head">
             <div>
+                <p class="upcsg-kicker">Guild CMS</p>
                 <h1 class="upcsg-title-xl">@(IsNew ? "New item" : _item.Name)</h1>
             </div>
             <MudSwitch T="bool" @bind-Value="_item.InStock" Color="Color.Success" Label="In stock" />
@@ -146,7 +147,8 @@
         <section class="upcsg-section mt-4">
             <div class="upcsg-section-head">
                 <div>
-                    <h2 class="upcsg-title-xl">Variants (@_item.Variants.Count)</h2>
+                    <p class="upcsg-kicker">@_item.Variants.Count variant(s)</p>
+                    <h2 class="upcsg-title-xl">Variants</h2>
                 </div>
                 <MudButton Variant="Variant.Outlined" Class="upcsg-ghost-button px-6"
                            StartIcon="@Icons.Material.Filled.Add" OnClick="AddVariantAsync">

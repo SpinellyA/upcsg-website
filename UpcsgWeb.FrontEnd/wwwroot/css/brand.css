@@ -481,11 +481,14 @@ h4, h5, h6, .upcsg-heading {
     border-bottom: var(--upcsg-hairline);
     /* Inline padding lives on __inner so the hero copy lines up with .upcsg-page below. */
     padding: 8rem 0 6rem;
-    /* Brandbook nebula plate under a tinted scrim. The scrim alpha is what keeps the
-       texture readable behind the headline; drop the url() layer to go back to flat. */
+    /* Brandbook nebula plate under one flat, even dim. The dim is what keeps the headline
+       readable over the photo's bright cloud areas; it is a single colour on purpose. It
+       used to be a diagonal purple gradient, which washed the clouds to a milky lavender
+       and read as a generated background rather than as a photograph. (The two-stop
+       linear-gradient below is the CSS way to lay a solid colour over an image.) */
     background-color: var(--upcsg-bg);
     background-image:
-        linear-gradient(145deg, rgba(83, 37, 126, 0.72) 0%, rgba(22, 17, 58, 0.86) 52%, rgba(41, 0, 135, 0.68) 100%),
+        linear-gradient(rgba(22, 17, 58, 0.78), rgba(22, 17, 58, 0.78)),
         url('../img/nebula-texture.jpg');
     background-size: auto, cover;
     background-position: center, center;
@@ -513,12 +516,12 @@ h4, h5, h6, .upcsg-heading {
     background: radial-gradient(circle, rgba(252, 230, 138, 0.55) 0%, rgba(226, 141, 57, 0.22) 38%, transparent 68%);
 }
 
-.upcsg-hero__flare--orchid {
-    bottom: -32%;
-    left: -12%;
-    width: 40rem;
-    height: 40rem;
-    background: radial-gradient(circle, rgba(162, 83, 184, 0.6) 0%, rgba(41, 0, 135, 0.3) 45%, transparent 70%);
+/* The hero's accent word. Solid brand gold: the gold-to-lavender gradient fill it used to
+   carry is the most recognisable tell of generated design, and the word reads as
+   emphasis through colour alone. (.upcsg-gradient-text is still used for prices and
+   stats elsewhere; only the hero is changed here.) */
+.upcsg-hero__accent {
+    color: var(--upcsg-liquid-chrome-gold);
 }
 
 .upcsg-hero__inner {
